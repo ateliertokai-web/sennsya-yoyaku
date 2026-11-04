@@ -109,21 +109,19 @@ input:focus{background:#fff;box-shadow:0 0 0 1.5px var(--ink);outline:none}
 .install .x{width:32px;height:32px;border:0;border-radius:50%;background:none;color:var(--mute);font-size:18px;line-height:1}
 .ios-steps{margin:8px 0 0;padding-left:1.2em;font-size:12.5px}
 
-/* プルダウン(下から出るリスト) */
-.dd{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;height:52px;padding:0 15px;border:0;border-radius:var(--r);background:var(--soft);font-size:16px;font-weight:600;text-align:left}
-.dd svg{flex:none;color:var(--mute);transition:transform .15s}
-.dd[aria-expanded=true]{background:#fff;box-shadow:0 0 0 1.5px var(--ink)}
-.dd[aria-expanded=true] svg{transform:rotate(180deg)}
-.dd .tag,.opt .tag{margin-left:8px;padding:1px 8px;border-radius:99px;background:#e9e7e2;font-size:11px;font-weight:600;color:var(--sub);vertical-align:2px}
-.sheet-bg{position:fixed;inset:0;z-index:20;background:rgba(20,20,22,.36);backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px)}
-.sheet{position:fixed;left:0;right:0;bottom:0;z-index:21;max-width:480px;margin:0 auto;max-height:72vh;overflow:auto;border-radius:22px 22px 0 0;background:#fff;padding:6px 0 calc(16px + env(safe-area-inset-bottom));overscroll-behavior:contain;box-shadow:0 -10px 40px rgba(0,0,0,.12)}
-.sheet::before{content:"";display:block;width:36px;height:4px;margin:4px auto 8px;border-radius:2px;background:#dddcd8}
-.sheet h4{margin:14px 24px 4px;font-size:11.5px;font-weight:600;color:var(--mute);letter-spacing:.1em}
-.opt{display:flex;align-items:center;justify-content:space-between;width:100%;min-height:52px;padding:0 24px;border:0;background:none;font-size:16px;text-align:left}
-.opt.on{font-weight:600}
-.opt svg{color:var(--ink)}
-.opt:active,.opt:focus-visible{background:var(--soft);outline:none}
-@media (prefers-reduced-motion:no-preference){.sheet{animation:up .22s cubic-bezier(.2,.8,.2,1)}}
+/* 車種のタイル */
+.mgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.mt{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60px;padding:6px 4px;border:0;border-radius:14px;background:var(--soft);color:var(--ink);transition:background .18s,color .18s,transform .12s,box-shadow .18s}
+.mt b{font-size:16px;font-weight:600;letter-spacing:.08em;line-height:1.3}
+.mt small{margin-top:1px;font-size:10px;font-weight:600;color:var(--mute);letter-spacing:.1em;line-height:1.3;transition:color .18s}
+.mt.wide{grid-column:span 2}
+.mt.wide b{font-size:13.5px;letter-spacing:.04em}
+.mt:active{transform:scale(.95)}
+@media (hover:hover){.mt:not(.on):hover{background:#e9e7e2}}
+.mt.on{background:var(--ink);color:#fff;box-shadow:0 6px 16px rgba(0,0,0,.14)}
+.mt.on small{color:#d6b46a}
+.mt.on::after{content:"";position:absolute;top:8px;right:8px;width:6px;height:6px;border-radius:50%;background:#d6b46a}
+@media (max-width:340px){.mgrid{grid-template-columns:repeat(3,minmax(0,1fr))}}
 
 /* ルール一覧 */
 .rules{margin:16px 0 0;padding:6px 20px;background:var(--card);border-radius:var(--rl);box-shadow:0 0 0 1px var(--line)}
@@ -288,7 +286,7 @@ body.hasbar .toast{bottom:calc(100px + env(safe-area-inset-bottom))}
   </div>
   <div class="card fields" id="carForm">
   <label id="fModelLbl">車種</label>
-  <button type="button" class="dd" id="fModel" aria-haspopup="listbox" aria-expanded="false"><span id="fModelTxt"></span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
+  <div class="mgrid" id="fModel" role="radiogroup" aria-labelledby="fModelLbl"></div>
   <label for="fPlate">車両ナンバー</label>
   <input type="text" id="fPlate" placeholder="鹿児島 330 あ 12-34" autocomplete="off">
   </div>
@@ -548,24 +546,25 @@ let curModel = '';
 function setModel(name) {
   curModel = name || '';
   const m = cfg.models.find(m => m.name === curModel);
-  $('fModelTxt').innerHTML = m ? esc(m.name) + (m.large ? '<span class="tag">大型</span>' : '') : '選んでください';
-  updDur();
+  drawModels(); updDur();
   if (m) prefetch(!!m.large);
 }
-/* 下から出る選択リスト */
-$('fModel').onclick = () => {
-  const btn = $('fModel'), bg = document.createElement('div'), sh = document.createElement('div');
-  bg.className = 'sheet-bg'; sh.className = 'sheet'; sh.setAttribute('role', 'listbox'); sh.setAttribute('aria-label', '車種');
-  const opt = m => `<button class="opt ${m.name === curModel ? 'on' : ''}" role="option" aria-selected="${m.name === curModel}" data-v="${esc(m.name)}"><span>${esc(m.name)}</span>${m.name === curModel ? '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>' : ''}</button>`;
-  const std = cfg.models.filter(m => !m.large), big = cfg.models.filter(m => m.large);
-  sh.innerHTML = (big.length && std.length ? '<h4>普通車</h4>' : '') + std.map(opt).join('') + (big.length ? (std.length ? '<h4>大型車</h4>' : '') + big.map(opt).join('') : '');
-  const close = () => { bg.remove(); sh.remove(); btn.setAttribute('aria-expanded', 'false'); document.removeEventListener('keydown', key); btn.focus(); };
-  const key = e => { if (e.key === 'Escape') close(); };
-  bg.onclick = close; document.addEventListener('keydown', key);
-  sh.querySelectorAll('.opt').forEach(o => o.onclick = () => { setModel(o.dataset.v); close(); });
-  document.body.append(bg, sh); btn.setAttribute('aria-expanded', 'true');
-  const on = sh.querySelector('.opt.on') || sh.querySelector('.opt'); if (on) { on.scrollIntoView({ block: 'center' }); on.focus(); }
-};
+/* 車種はタイルを押して選ぶ(並び順は管理画面の順番) */
+function drawModels() {
+  const el = $('fModel');
+  el.innerHTML = cfg.models.map(m => {
+    const on = m.name === curModel, wide = [...m.name].length > 4;
+    return `<button type="button" class="mt ${on ? 'on' : ''} ${wide ? 'wide' : ''}" role="radio" aria-checked="${on}" tabindex="${on || (!curModel && m === cfg.models[0]) ? 0 : -1}" data-v="${esc(m.name)}"><b>${esc(m.name)}</b>${m.large && !/大型/.test(m.name) ? '<small>大型</small>' : ''}</button>`;
+  }).join('');
+  const tiles = [...el.querySelectorAll('.mt')];
+  tiles.forEach((t, i) => {
+    t.onclick = () => setModel(t.dataset.v);
+    t.onkeydown = e => {
+      const d = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[e.key]; if (!d) return;
+      e.preventDefault(); const n = tiles[(i + d + tiles.length) % tiles.length]; setModel(n.dataset.v); el.querySelector('.mt.on').focus();
+    };
+  });
+}
 $('goReserve').onclick = () => goInfo('cal');
 /* ナンバーとメールが入ったら、予約済みの月をすぐ調べ始める */
 ['fPlate', 'fMail'].forEach(id => $(id).addEventListener('change', () => {
