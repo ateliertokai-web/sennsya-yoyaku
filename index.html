@@ -6,6 +6,10 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="洗車予約">
 <meta name="theme-color" content="#f5f4f1">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <title>洗車予約</title>
 <style>
 :root{--ink:#1d1d1f;--sub:#6e6e73;--mute:#a1a1a6;--line:#e9e8e5;--bg:#f5f4f1;--card:#fff;--soft:#f2f1ee;--ok:#2f8f63;--few:#e0891c;--red:#c4412d;--r:12px;--rl:18px}
@@ -24,19 +28,30 @@ button{font:inherit;color:inherit;letter-spacing:inherit;cursor:pointer}
 .top h1{margin:0;font-size:16px;line-height:1.35;font-weight:600;letter-spacing:.12em}
 .top p{margin:0;font-size:11.5px;line-height:1.5;color:var(--sub);letter-spacing:.06em}
 
-/* 進行バー */
-.prog{display:flex;align-items:center;gap:12px;padding:14px 24px 0}
-.prog .bar{flex:1;display:flex;gap:4px}
-.prog i{flex:1;height:3px;border-radius:2px;background:#e1dfda;transition:background .25s}
-.prog i.on{background:var(--ink)}
-.prog p{margin:0;font-size:11.5px;color:var(--sub);letter-spacing:.08em;font-variant-numeric:tabular-nums}
+/* 進行バー(押すと前の工程に戻れる) */
+.prog{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;padding:14px 20px 0}
+.prog button{display:flex;flex-direction:column;gap:7px;min-height:44px;padding:4px 0;border:0;background:none;text-align:left;color:var(--mute);font-size:11.5px;font-weight:600;letter-spacing:.04em}
+.prog i{height:3px;border-radius:2px;background:#e1dfda;transition:background .25s}
+.prog span{display:flex;align-items:center;gap:6px;white-space:nowrap}
+.prog em{display:grid;place-items:center;flex:none;width:17px;height:17px;border-radius:50%;box-shadow:inset 0 0 0 1.5px currentColor;font-style:normal;font-size:10px;font-variant-numeric:tabular-nums}
+.prog .cur{color:var(--ink)}
+.prog .cur i,.prog .done i{background:var(--ink)}
+.prog .cur em{background:var(--ink);color:#fff;box-shadow:none}
+.prog .done{color:var(--ink);cursor:pointer}
+.prog .done em{background:#d6b46a;color:#fff;box-shadow:none;font-size:0}
+.prog .done em::before{content:"";width:7px;height:4px;margin-top:-2px;border:solid #fff;border-width:0 0 1.6px 1.6px;transform:rotate(-45deg)}
+.prog .done span{text-decoration:underline;text-decoration-color:#cfcdc7;text-underline-offset:3px}
+@media (hover:hover){.prog .done:hover span{text-decoration-color:var(--ink)}}
+.prog button:disabled{cursor:default}
 
 .view{padding:18px 20px 48px}
 h2{margin:0 0 6px;font-size:23px;line-height:1.45;font-weight:600;letter-spacing:.04em}
 h3{margin:28px 4px 10px;font-size:12px;font-weight:600;color:var(--sub);letter-spacing:.1em}
 .lead{margin:0 0 22px;color:var(--sub);font-size:14px;line-height:1.8}
-.back{display:inline-flex;align-items:center;gap:4px;min-height:40px;margin:-6px 0 6px -10px;padding:0 10px;border:0;border-radius:99px;background:none;color:var(--sub);font-size:13.5px}
-.back:hover{background:var(--soft)}
+.back{display:inline-flex;align-items:center;gap:4px;min-height:40px;margin:-2px 0 14px;padding:0 16px 0 10px;border:0;border-radius:99px;background:var(--card);box-shadow:0 0 0 1px var(--line),0 1px 3px rgba(0,0,0,.05);color:var(--ink);font-size:13.5px;font-weight:600}
+.back svg{flex:none}
+.back:hover{box-shadow:0 0 0 1.5px var(--ink)}
+.back:active{transform:scale(.97)}
 .card{background:var(--card);border-radius:var(--rl);box-shadow:0 0 0 1px var(--line),0 1px 2px rgba(0,0,0,.03)}
 
 /* ボタン */
@@ -59,6 +74,40 @@ input:focus{background:#fff;box-shadow:0 0 0 1.5px var(--ink);outline:none}
 .note{margin:12px 2px 0;font-size:12.5px;line-height:1.75;color:var(--sub)}
 .form .cta{margin-top:24px}
 #lRes{margin-top:8px}
+
+/* 登録済みのお車 */
+.sec{display:flex;align-items:center;justify-content:space-between;margin:22px 4px 10px}
+.sec:first-of-type{margin-top:6px}
+.link{min-height:32px;padding:0 4px;border:0;background:none;color:var(--sub);font-size:12.5px;font-weight:600;text-decoration:underline;text-underline-offset:3px}
+.cars{display:flex;flex-direction:column;gap:8px}
+.car-it{display:flex;align-items:center;gap:8px}
+.carbtn{flex:1;display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:62px;padding:10px 16px 10px 18px;border:0;border-radius:var(--rl);background:var(--card);box-shadow:0 0 0 1px var(--line);text-align:left;transition:box-shadow .15s,background .15s}
+.carbtn .ci{display:flex;flex-direction:column;min-width:0}
+.carbtn b{font-size:15.5px;font-weight:600;letter-spacing:.04em;line-height:1.45}
+.carbtn small{font-size:12px;color:var(--sub);line-height:1.5}
+.carbtn .rd{flex:none;width:20px;height:20px;border-radius:50%;box-shadow:inset 0 0 0 1.5px #cfcdc7;transition:box-shadow .15s}
+.carbtn.on{box-shadow:0 0 0 1.5px var(--ink)}
+.carbtn.on .rd{box-shadow:inset 0 0 0 6px var(--ink)}
+.carbtn.add{min-height:52px}
+.carbtn.add b{font-size:14px;color:var(--sub)}
+.carbtn.add.on b{color:var(--ink)}
+.cardel{flex:none;min-height:40px;padding:0 14px;border:0;border-radius:99px;background:#fbefec;color:var(--red);font-size:12.5px;font-weight:600}
+#carForm{margin-top:8px}
+.contact-sum{display:flex;flex-direction:column;padding:14px 18px}
+.contact-sum b{font-size:15px;font-weight:600}
+.contact-sum span{font-size:12.5px;color:var(--sub);overflow-wrap:anywhere}
+.pchips{display:flex;flex-wrap:wrap;gap:6px;margin:-2px 0 8px}
+.pchips button{min-height:32px;padding:0 12px;border:0;border-radius:99px;background:var(--soft);font-size:12.5px;font-weight:600}
+
+/* ホーム画面に追加の案内 */
+.install{display:flex;align-items:center;gap:14px;margin-top:16px;padding:14px 12px 14px 16px}
+.install img{flex:none;width:40px;height:40px;border-radius:10px}
+.install div{flex:1;min-width:0;font-size:12.5px;line-height:1.6;color:var(--sub)}
+.install div b{display:block;font-size:13.5px;color:var(--ink)}
+.install .btns{display:flex;align-items:center;gap:2px}
+.install .add{min-height:36px;padding:0 14px;border:0;border-radius:99px;background:var(--ink);color:#fff;font-size:12.5px;font-weight:600;white-space:nowrap}
+.install .x{width:32px;height:32px;border:0;border-radius:50%;background:none;color:var(--mute);font-size:18px;line-height:1}
+.ios-steps{margin:8px 0 0;padding-left:1.2em;font-size:12.5px}
 
 /* プルダウン(下から出るリスト) */
 .dd{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;height:52px;padding:0 15px;border:0;border-radius:var(--r);background:var(--soft);font-size:16px;font-weight:600;text-align:left}
@@ -117,6 +166,14 @@ input:focus{background:#fff;box-shadow:0 0 0 1.5px var(--ink);outline:none}
 .d:disabled{cursor:default}
 @media (hover:hover){.d:not(:disabled):hover .n{background:var(--soft)}}
 .d.sel .n,.d.sel:hover .n{background:var(--ink);color:#fff}
+.loading .d .n{color:#dcdbd6;animation:pulse 1.2s ease-in-out infinite}
+@keyframes pulse{50%{opacity:.4}}
+.blocked .d .n{color:#cfcec9!important;background:none!important}
+.blocked .d small{background:#dcdbd6!important}
+.cwarn{display:flex;gap:10px;margin:0 0 12px;padding:12px 14px;border-radius:14px;background:#fdf1dd;color:#7a4a00;font-size:12.5px;line-height:1.7}
+.cwarn::before{content:"!";flex:none;display:grid;place-items:center;width:18px;height:18px;margin-top:2px;border-radius:50%;background:#e0891c;color:#fff;font-size:11px;font-weight:700}
+.cwarn b{display:block;font-size:13.5px}
+.wbtn{display:flex;align-items:center;width:max-content;margin-top:8px;min-height:34px;padding:0 14px;border:0;border-radius:99px;background:#7a4a00;color:#fff;font-size:12.5px;font-weight:600}
 .legend{display:flex;flex-wrap:wrap;justify-content:center;gap:6px 20px;margin:12px 0 0;padding:14px 0 0;border-top:1px solid var(--line);font-size:12px;color:var(--sub)}
 .legend span{display:inline-flex;align-items:center;gap:7px}
 .legend i{display:inline-block;width:6px;height:6px;border-radius:50%}
@@ -126,11 +183,16 @@ input:focus{background:#fff;box-shadow:0 0 0 1.5px var(--ink);outline:none}
 .tl-card{padding:14px 16px 12px;border-radius:var(--rl);background:var(--ink);color:#fff;box-shadow:0 8px 24px rgba(0,0,0,.12)}
 .tl-head{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:12px}
 .tl-head b{font-size:22px;font-weight:600;letter-spacing:.06em;font-variant-numeric:tabular-nums;line-height:1.2}
-.tl-head b.ph{font-size:14px;font-weight:500;color:#8e8e93;letter-spacing:.06em}
+.tl-head b.ph{font-size:13px;font-weight:500;color:#a5a5aa;letter-spacing:.04em}
 .tl-head span{font-size:11.5px;color:#d6b46a;letter-spacing:.1em;white-space:nowrap}
-.track{position:relative;height:10px;border-radius:5px;background:rgba(255,255,255,.08)}
-.track .av{position:absolute;top:0;bottom:0;border-radius:5px;background:rgba(255,255,255,.2)}
+.trackwrap{padding:10px 0;margin:-10px 0;cursor:pointer;touch-action:pan-y;-webkit-user-select:none;user-select:none;outline:none}
+.trackwrap:focus-visible .track{box-shadow:0 0 0 2px #d6b46a}
+.track{position:relative;height:12px;border-radius:6px;background:rgba(255,255,255,.08)}
+.track .av{position:absolute;top:0;bottom:0;border-radius:6px;background:rgba(255,255,255,.2)}
 .track .pick{position:absolute;top:-3px;bottom:-3px;border-radius:7px;background:linear-gradient(90deg,#e2c27d,#b8954a);box-shadow:0 0 0 2px var(--ink),0 0 14px rgba(214,180,106,.55);transition:left .3s cubic-bezier(.2,.8,.2,1),width .3s cubic-bezier(.2,.8,.2,1),opacity .2s}
+.track .pick::after{content:"";position:absolute;top:50%;left:50%;width:14px;height:14px;margin:-7px 0 0 -7px;border-radius:50%;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.35);transition:transform .15s}
+.trackwrap.drag .pick{transition:left .12s ease-out,width .12s ease-out}
+.trackwrap.drag .pick::after{transform:scale(1.25)}
 .ticks{position:relative;height:16px;margin-top:6px;font-size:10px;color:#8e8e93;font-variant-numeric:tabular-nums}
 .ticks i{position:absolute;top:0;font-style:normal;transform:translateX(-50%)}
 .ticks i:first-child{transform:none}
@@ -192,7 +254,11 @@ body.hasbar .toast{bottom:calc(100px + env(safe-area-inset-bottom))}
 <body>
 <div class="app">
 <header class="top"><div><h1 id="shop">洗車予約</h1><p id="subline"></p></div></header>
-<div class="prog" id="prog" hidden><div class="bar"><i></i><i></i><i></i></div><p id="progLabel"></p></div>
+<nav class="prog" id="prog" hidden aria-label="予約の手順">
+  <button data-step="1"><i></i><span><em>1</em>お車の情報</span></button>
+  <button data-step="2"><i></i><span><em>2</em>日にち</span></button>
+  <button data-step="3"><i></i><span><em>3</em>時間</span></button>
+</nav>
 
 <main>
 <!-- ホーム -->
@@ -202,22 +268,34 @@ body.hasbar .toast{bottom:calc(100px + env(safe-area-inset-bottom))}
   <p class="lead" id="homeLead"></p>
   <button class="cta" id="goReserve">予約する</button>
   <div class="list">
-    <button class="rowbtn" id="goWait"><span>キャンセル待ちに登録する</span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>
     <button class="rowbtn" id="goLookup"><span>予約の確認・キャンセル</span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>
   </div>
   <dl class="rules" id="rules"></dl>
+  <div class="card install" id="install" hidden>
+    <img src="apple-touch-icon.png" alt="">
+    <div><b>ホーム画面に追加</b><span id="installTxt">アプリのようにすぐ開けて、お車の登録も残ります。</span><ol class="ios-steps" id="iosSteps" hidden><li>画面下の共有ボタン(□↑)を押す</li><li>「ホーム画面に追加」を選ぶ</li></ol></div>
+    <div class="btns"><button class="add" id="installGo">追加</button><button class="x" id="installX" aria-label="閉じる">×</button></div>
+  </div>
 </section>
 
 <!-- お車の情報 -->
 <section id="info" class="view form" hidden>
-  <button class="back" data-go="home">‹ もどる</button>
+  <button class="back" data-go="home"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>もどる</button>
   <h2>お車の情報</h2>
-  <div class="card fields">
+  <div id="garage" hidden>
+    <h3 class="sec">お車を選ぶ<button type="button" class="link" id="carEdit">編集</button></h3>
+    <div class="cars" id="carList" role="radiogroup" aria-label="登録済みのお車"></div>
+  </div>
+  <div class="card fields" id="carForm">
   <label id="fModelLbl">車種</label>
   <button type="button" class="dd" id="fModel" aria-haspopup="listbox" aria-expanded="false"><span id="fModelTxt"></span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
-  <p class="note" id="durNote" hidden></p>
   <label for="fPlate">車両ナンバー</label>
   <input type="text" id="fPlate" placeholder="鹿児島 330 あ 12-34" autocomplete="off">
+  </div>
+  <p class="note" id="durNote" hidden></p>
+  <h3 class="sec">ご連絡先<button type="button" class="link" id="contactEdit" hidden>変更</button></h3>
+  <div class="card contact-sum" id="contactSum" hidden></div>
+  <div class="card fields" id="contactForm">
   <label for="fName">お名前</label>
   <input type="text" id="fName" autocomplete="name">
   <label for="fPhone">電話番号</label>
@@ -231,9 +309,10 @@ body.hasbar .toast{bottom:calc(100px + env(safe-area-inset-bottom))}
 
 <!-- 日にち -->
 <section id="cal" class="view" hidden>
-  <button class="back" id="calBack">‹ お車の情報</button>
+  <button class="back" id="calBack"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>お車の情報</button>
   <h2>日にちを選ぶ</h2>
   <span class="car" id="calNote"></span>
+  <div class="cwarn" id="calWarn" hidden></div>
   <div class="card calcard">
   <div class="mnav"><button id="calPrev" aria-label="前の月">‹</button><b id="calLabel"></b><button id="calNext" aria-label="次の月">›</button></div>
   <div id="calBody"></div>
@@ -248,7 +327,7 @@ body.hasbar .toast{bottom:calc(100px + env(safe-area-inset-bottom))}
 
 <!-- 時間 -->
 <section id="slots" class="view" hidden>
-  <button class="back" id="slotBack">‹ 日にち</button>
+  <button class="back" id="slotBack"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>日にち</button>
   <h2 id="slotTitle"></h2>
   <p class="lead" id="slotSub"></p>
   <div id="slotList"></div>
@@ -269,12 +348,13 @@ body.hasbar .toast{bottom:calc(100px + env(safe-area-inset-bottom))}
 
 <!-- 確認・キャンセル -->
 <section id="lookup" class="view form" hidden>
-  <button class="back" data-go="home">‹ もどる</button>
+  <button class="back" data-go="home"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>もどる</button>
   <h2>予約の確認・キャンセル</h2>
   <div class="card fields">
   <label for="lMail">メールアドレス</label>
   <input type="email" id="lMail">
   <label for="lPlate">車両ナンバー</label>
+  <div class="pchips" id="lCars" hidden></div>
   <input type="text" id="lPlate" placeholder="鹿児島 330 あ 12-34">
   </div>
   <button class="cta" id="lGo">確認する</button>
@@ -283,7 +363,7 @@ body.hasbar .toast{bottom:calc(100px + env(safe-area-inset-bottom))}
 
 <!-- キャンセル待ち -->
 <section id="wait" class="view" hidden>
-  <button class="back" data-go="home">‹ もどる</button>
+  <button class="back" data-go="home"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>もどる</button>
   <h2>キャンセル待ち</h2>
   <p class="lead" id="waitLead" hidden></p>
   <h3>対象の選び方</h3>
@@ -341,13 +421,22 @@ function toast(msg, isErr) {
 function busy(btn, fn) {
   return async () => { btn.disabled = true; try { await fn(); } catch (e) { toast(e.message, true); } finally { btn.disabled = false; } };
 }
-const STEPS = { info: [1, 'お車の情報'], cal: [2, '日にちを選ぶ'], slots: [3, '時間を選ぶ'] };
+const STEPS = { info: 1, cal: 2, slots: 3 };
 function show(id) {
   document.querySelectorAll('.view').forEach(v => v.hidden = v.id !== id);
   const p = STEPS[id]; $('prog').hidden = !p;
-  if (p) { document.querySelectorAll('#prog i').forEach((e, i) => e.classList.toggle('on', i < p[0])); $('progLabel').textContent = p[0] + ' / 3'; }
+  if (p) document.querySelectorAll('#prog button').forEach(b => {
+    const n = +b.dataset.step;
+    b.classList.toggle('done', n < p); b.classList.toggle('cur', n === p); b.disabled = n >= p;
+    if (n === p) b.setAttribute('aria-current', 'step'); else b.removeAttribute('aria-current');
+  });
   setBar(null); window.scrollTo(0, 0);
 }
+/* 進行バーを押すと、その工程に戻る */
+document.querySelectorAll('#prog button').forEach(b => b.onclick = () => {
+  const n = +b.dataset.step;
+  if (n === 1) goInfo(afterInfo); else if (n === 2) openCal();
+});
 function setBar(o) {
   const b = $('bar');
   if (!o) { b.hidden = true; document.body.classList.remove('hasbar'); return; }
@@ -357,7 +446,12 @@ function setBar(o) {
 }
 
 let cfg, profile = load('wash_profile', {}), mine = load('wash_mine', []);
+/* この端末に登録したお車(複数台) */
+let cars = load('wash_cars', []);
+if (!cars.length && profile.plate && profile.model) { cars = [{ model: profile.model, plate: profile.plate }]; save('wash_cars', cars); }
 let large = false, curYm = null, monthCache = {}, pick = null;
+/* ナンバーの比較用(空白・ハイフンなどを無視) */
+const np = v => String(v || '').replace(/[\s\-‐ー－・]/g, '').toLowerCase();
 
 function months() {
   const out = [], a = cfg.min.split('-').map(Number), b = cfg.max.split('-').map(Number);
@@ -370,15 +464,31 @@ function durOf(name) { return isLarge(name) ? cfg.durLarge : cfg.durStd; }
 
 /* ---------- 初期化・ホーム ---------- */
 async function init() {
-  try { cfg = await api('config'); }
-  catch (e) { $('home').innerHTML = '<p class="err">読み込めませんでした。ページを開き直してください。<br>' + esc(e.message) + '</p>'; show('home'); return; }
+  const q = new URLSearchParams(location.search), hold = q.get('hold');
+  // 前回の設定があれば先に表示して、最新の設定は裏で読み込む
+  const cached = load('wash_cfg', null);
+  if (cached && cached.models && !hold) { cfg = cached; applyCfg(); renderHome(); show('home'); warmUp(); }
+  try { cfg = await api('config'); save('wash_cfg', cfg); }
+  catch (e) {
+    if (cached && !hold) return;
+    $('home').innerHTML = '<p class="err">読み込めませんでした。ページを開き直してください。<br>' + esc(e.message) + '</p>'; show('home'); return;
+  }
+  applyCfg();
+  if (hold) return holdView(hold);
+  if (!cached) { renderHome(); show('home'); } else if (!$('home').hidden) renderHome();
+  warmUp();
+}
+function applyCfg() {
   $('shop').textContent = cfg.name; document.title = cfg.name;
   const T = cfg.texts || {};
   setText('subline', T['ヘッダー']); setText('homeTitle', T['トップ見出し']); setText('homeLead', T['トップ']); $('goReserve').textContent = T['予約ボタン'] || '予約する'; setText('infoNote', T['お車の情報']);
   setText('waitLead', T['キャンセル待ち']); setText('doneNote', T['完了']);
-  const q = new URLSearchParams(location.search);
-  if (q.get('hold')) return holdView(q.get('hold'));
-  renderHome(); show('home');
+}
+/** 前回のお車がわかっていれば、カレンダーと予約済みの月を先に読み込んでおく */
+function warmUp() {
+  if (!profile.model || !cfg.models.some(m => m.name === profile.model)) return;
+  prefetch(isLarge(profile.model));
+  if (profile.plate && profile.email) refreshBooked();
 }
 /** 文章を入れる。空なら枠ごと隠す */
 function setText(id, t) { const e = $(id); e.textContent = t || ''; e.hidden = !t; }
@@ -393,13 +503,43 @@ function renderHome() {
 document.querySelectorAll('[data-go]').forEach(b => b.onclick = () => { if (b.dataset.go === 'home') renderHome(); show(b.dataset.go); });
 
 /* ---------- お車の情報 ---------- */
-let afterInfo = 'cal';
+let afterInfo = 'cal', selCar = -1, editCars = false, contactOpen = false;
+const firstModel = () => cfg.models[0] && cfg.models[0].name;
 function goInfo(next) {
   afterInfo = next;
-  setModel(cfg.models.some(m => m.name === profile.model) ? profile.model : (cfg.models[0] && cfg.models[0].name));
-  $('fPlate').value = profile.plate || ''; $('fName').value = profile.name || ''; $('fPhone').value = profile.phone || ''; $('fMail').value = profile.email || '';
-  updDur(); show('info');
+  const i = cars.findIndex(c => np(c.plate) === np(profile.plate));
+  selCar = cars.length ? (i >= 0 ? i : 0) : -1; editCars = false;
+  contactOpen = !(profile.name && profile.phone && profile.email);
+  $('fPlate').value = ''; $('fName').value = profile.name || ''; $('fPhone').value = profile.phone || ''; $('fMail').value = profile.email || '';
+  pickCar(selCar); drawContact(); show('info');
 }
+/** お車を選ぶ。-1 は「別のお車」(入力欄を出す) */
+function pickCar(i) {
+  selCar = i;
+  if (i >= 0) setModel(cars[i].model);
+  else setModel(cfg.models.some(m => m.name === profile.model) && !cars.length ? profile.model : firstModel());
+  drawGarage();
+}
+function drawGarage() {
+  $('garage').hidden = !cars.length; $('carForm').hidden = selCar >= 0;
+  $('carEdit').textContent = editCars ? '完了' : '編集';
+  $('carList').innerHTML = cars.map((c, i) => `<div class="car-it"><button type="button" class="carbtn ${i === selCar ? 'on' : ''}" role="radio" aria-checked="${i === selCar}" data-i="${i}"><span class="ci"><b>${esc(c.plate)}</b><small>${esc(c.model)}${isLarge(c.model) ? ' ・ 大型' : ''}</small></span><i class="rd"></i></button>${editCars ? `<button type="button" class="cardel" data-del="${i}" aria-label="${esc(c.plate)}を削除">削除</button>` : ''}</div>`).join('')
+    + `<button type="button" class="carbtn add ${selCar < 0 ? 'on' : ''}" role="radio" aria-checked="${selCar < 0}" data-i="-1"><span class="ci"><b>＋ 別のお車を登録</b></span><i class="rd"></i></button>`;
+  $('carList').querySelectorAll('[data-i]').forEach(b => b.onclick = () => { pickCar(+b.dataset.i); if (+b.dataset.i < 0) $('fPlate').focus(); });
+  $('carList').querySelectorAll('[data-del]').forEach(b => b.onclick = () => {
+    const k = +b.dataset.del; if (!confirm(cars[k].plate + ' をこの端末から削除しますか?')) return;
+    cars.splice(k, 1); save('wash_cars', cars);
+    if (!cars.length) editCars = false;
+    pickCar(selCar === k ? (cars.length ? 0 : -1) : selCar > k ? selCar - 1 : selCar);
+  });
+}
+$('carEdit').onclick = () => { editCars = !editCars; drawGarage(); };
+function drawContact() {
+  const has = !!(profile.name && profile.phone && profile.email), open = contactOpen || !has;
+  $('contactForm').hidden = !open; $('contactSum').hidden = open; $('contactEdit').hidden = open;
+  $('contactSum').innerHTML = has ? `<b>${esc(profile.name)} 様</b><span>${esc(profile.phone)} ・ ${esc(profile.email)}</span>` : '';
+}
+$('contactEdit').onclick = () => { contactOpen = true; drawContact(); $('fName').focus(); };
 function updDur() {
   const t = String((cfg.texts || {})['洗車時間'] || '').replace(/\{分\}/g, durOf(curModel));
   setText('durNote', t);
@@ -410,6 +550,7 @@ function setModel(name) {
   const m = cfg.models.find(m => m.name === curModel);
   $('fModelTxt').innerHTML = m ? esc(m.name) + (m.large ? '<span class="tag">大型</span>' : '') : '選んでください';
   updDur();
+  if (m) prefetch(!!m.large);
 }
 /* 下から出る選択リスト */
 $('fModel').onclick = () => {
@@ -426,21 +567,81 @@ $('fModel').onclick = () => {
   const on = sh.querySelector('.opt.on') || sh.querySelector('.opt'); if (on) { on.scrollIntoView({ block: 'center' }); on.focus(); }
 };
 $('goReserve').onclick = () => goInfo('cal');
-$('goWait').onclick = () => goInfo('wait');
-$('goLookup').onclick = () => { $('lMail').value = profile.email || ''; $('lPlate').value = profile.plate || ''; $('lRes').innerHTML = ''; show('lookup'); };
+/* ナンバーとメールが入ったら、予約済みの月をすぐ調べ始める */
+['fPlate', 'fMail'].forEach(id => $(id).addEventListener('change', () => {
+  const plate = selCar >= 0 ? cars[selCar].plate : $('fPlate').value.trim(), email = $('fMail').value.trim();
+  if (plate && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && bookedKey !== np(plate) + '|' + email.toLowerCase()) refreshBooked(plate, email);
+}));
+$('goLookup').onclick = () => {
+  $('lMail').value = profile.email || ''; $('lPlate').value = profile.plate || ''; $('lRes').innerHTML = '';
+  $('lCars').hidden = cars.length < 2;
+  $('lCars').innerHTML = cars.map((c, i) => `<button type="button" data-i="${i}">${esc(c.plate)}</button>`).join('');
+  $('lCars').querySelectorAll('[data-i]').forEach(b => b.onclick = () => { $('lPlate').value = cars[+b.dataset.i].plate; $('lRes').innerHTML = ''; });
+  show('lookup');
+};
 $('infoNext').onclick = () => {
-  const p = { model: curModel, plate: $('fPlate').value.trim(), name: $('fName').value.trim(), phone: $('fPhone').value.trim(), email: $('fMail').value.trim() };
-  if (!p.model || !p.plate || !p.name || !p.phone || !p.email) return toast('すべての項目を入力してください', true);
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(p.email)) return toast('メールアドレスを確認してください', true);
-  profile = p; save('wash_profile', p); large = isLarge(p.model); monthCache = {};
+  const car = selCar >= 0 ? cars[selCar] : { model: curModel, plate: $('fPlate').value.trim() };
+  if (selCar >= 0 && !cfg.models.some(m => m.name === car.model)) {
+    // 店の車種名が変わったときは選び直してもらう
+    pickCar(-1); $('fPlate').value = car.plate; return toast('車種を選び直してください', true);
+  }
+  const p = { model: car.model, plate: car.plate, name: $('fName').value.trim(), phone: $('fPhone').value.trim(), email: $('fMail').value.trim() };
+  if (!p.model || !p.plate || !p.name || !p.phone || !p.email) { if (!p.name || !p.phone || !p.email) { contactOpen = true; drawContact(); } return toast('すべての項目を入力してください', true); }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(p.email)) { contactOpen = true; drawContact(); return toast('メールアドレスを確認してください', true); }
+  if (selCar < 0) {
+    const j = cars.findIndex(c => np(c.plate) === np(p.plate));
+    if (j >= 0) cars[j].model = p.model; else cars.push({ model: p.model, plate: p.plate });
+    save('wash_cars', cars);
+  }
+  profile = p; save('wash_profile', p); large = isLarge(p.model);
+  if (bookedKey !== np(p.plate) + '|' + p.email.toLowerCase()) refreshBooked();
   if (afterInfo === 'wait') openWait(); else openCal();
 };
 
 /* ---------- カレンダー ---------- */
-async function getMonth(ym) {
-  const k = ym + (large ? 'L' : 'S');
-  if (!monthCache[k]) monthCache[k] = await api('month', { ym, large });
-  return monthCache[k];
+/* 月の空き状況。同じ月の読み込みはまとめ、1分以内なら読み直さない。
+   読み込んだ結果は端末にも残し、次に開いたときはまずそれを表示する */
+function fetchMonth(ym, lg) {
+  const k = ym + (lg ? 'L' : 'S'), e = monthCache[k];
+  if (e && Date.now() - e.t < 60000) return e.p;
+  const pr = api('month', { ym, large: lg }).then(d => {
+    const all = load('wash_mc', {}); Object.keys(all).forEach(x => { if (all[x].today !== cfg.today) delete all[x]; });
+    all[k] = { today: cfg.today, d }; save('wash_mc', all); return d;
+  });
+  pr.catch(() => { if (monthCache[k] && monthCache[k].p === pr) delete monthCache[k]; });
+  monthCache[k] = { t: Date.now(), p: pr };
+  return pr;
+}
+function cachedMonth(ym, lg) { const c = load('wash_mc', {})[ym + (lg ? 'L' : 'S')]; return c && c.today === cfg.today ? c.d : null; }
+function prefetch(lg) { if (cfg) months().forEach(ym => fetchMonth(ym, lg).catch(() => {})); }
+
+/* 予約済みの月(1台につき月1回まで)。端末の記録ですぐ判定し、サーバーの結果で上書きする */
+let booked = new Set(), bookedKey = '';
+function localBooked() { const k = np(profile.plate); return mine.filter(m => m.plate && np(m.plate) === k && m.date >= cfg.today).map(m => m.date.slice(0, 7)); }
+function refreshBooked(plate = profile.plate, email = profile.email) {
+  const key = np(plate) + '|' + String(email || '').toLowerCase(); bookedKey = key;
+  booked = new Set(localBooked()); markBooked();
+  if (!plate || !email) return;
+  api('lookup', { email, plate }).then(r => {
+    if (bookedKey !== key) return;
+    booked = new Set(r.res.map(x => x.date.slice(0, 7)));
+    // ほかの端末などでキャンセルされた予約は、端末の記録からも消す
+    const nos = new Set(r.res.map(x => String(x.no)));
+    const kept = mine.filter(m => !(m.plate && np(m.plate) === np(plate) && m.date >= cfg.today && !nos.has(String(m.no))));
+    if (kept.length !== mine.length) { mine = kept; save('wash_mine', mine); }
+    markBooked();
+  }).catch(() => {});
+}
+function markBooked() {
+  if ($('cal').hidden || !curYm) return;
+  const on = booked.has(curYm);
+  $('calWarn').hidden = !on;
+  const list = months(), next = list.find(m => m > curYm && !booked.has(m));
+  if (on) {
+    $('calWarn').innerHTML = `<div><b>${ymJa(curYm)}はご予約済みです</b>1台につき月1回までのため、別の月をお選びください。${next ? `<button class="wbtn" id="calWarnGo">${ymJa(next).replace(/^\d+年/, '')}を見る ›</button>` : ''}</div>`;
+    if (next) $('calWarnGo').onclick = () => openCal(next);
+  }
+  $('calBody').classList.toggle('blocked', on);
 }
 function monthNav(prefix, cur, onChange) {
   const list = months(), i = list.indexOf(cur);
@@ -461,18 +662,38 @@ function renderCal(el, ym, data, selected) {
   el.innerHTML = h + '</div>';
 }
 async function openCal(ym) {
-  const list = months(); curYm = ym || curYm || list[0]; if (!list.includes(curYm)) curYm = list[0];
+  const list = months();
+  // はじめて開くときは、予約済みでない最初の月から
+  curYm = ym || curYm || list.find(m => !booked.has(m)) || list[0];
+  if (!list.includes(curYm)) curYm = list[0];
   $('calNote').textContent = profile.model + ' ・ ' + profile.plate + ' ・ 約' + durOf(profile.model) + '分';
-  monthNav('cal', curYm, openCal); show('cal'); $('calBody').innerHTML = '<p class="empty">読み込み中…</p>';
-  try {
-    const data = await getMonth(curYm); renderCal($('calBody'), curYm, data);
-    $('calBody').querySelectorAll('.d').forEach(b => b.onclick = () => dayTap(b));
-  } catch (e) { $('calBody').innerHTML = '<p class="err">' + esc(e.message) + '</p>'; }
+  monthNav('cal', curYm, openCal); show('cal');
+  const k = curYm, lg = large, el = $('calBody');
+  let shown = null;
+  const draw = data => {
+    if (curYm !== k || $('cal').hidden) return;
+    const sig = JSON.stringify(data.days || {}); if (sig === shown) return; shown = sig;
+    renderCal(el, k, data); el.classList.remove('loading');
+    el.querySelectorAll('.d').forEach(b => b.onclick = () => dayTap(b));
+    markBooked();
+  };
+  const c = cachedMonth(k, lg);
+  if (c) draw(c); else { renderCal(el, k, { days: {} }); el.classList.add('loading'); markBooked(); }
+  try { draw(await fetchMonth(k, lg)); }
+  catch (e) { if (!shown && curYm === k && !$('cal').hidden) { el.classList.remove('loading'); el.innerHTML = '<p class="err">' + esc(e.message) + '</p>'; } }
+  const i = list.indexOf(k); [list[i + 1], list[i - 1]].forEach(m => { if (m) fetchMonth(m, lg).catch(() => {}); });
 }
 $('calBack').onclick = () => goInfo('cal');
 $('calWait').onclick = () => openWait();
 function dayTap(b) {
-  const d = b.dataset.d;
+  const d = b.dataset.d, ym = d.slice(0, 7);
+  if (booked.has(ym)) {
+    const list = months(), next = list.find(m => m > ym && !booked.has(m)) || list.find(m => !booked.has(m));
+    document.querySelectorAll('#calBody .d').forEach(x => x.classList.toggle('sel', x === b));
+    if (next) setBar({ main: (+ym.slice(5)) + '月はご予約済みです', sub: '1台につき月1回までです', label: ymJa(next).replace(/^\d+年/, '') + 'を見る', fn: async () => openCal(next) });
+    else toast(ymJa(ym) + 'はご予約済みです(1台につき月1回まで)', true);
+    return;
+  }
   if (b.dataset.s === 'full') {
     document.querySelectorAll('#calBody .d').forEach(x => x.classList.toggle('sel', x === b));
     setBar({ main: dShort(d) + 'は満席です', sub: 'キャンセルが出たら、メールでお知らせします', label: 'キャンセル待ち', fn: async () => openWait(d) });
@@ -497,22 +718,46 @@ async function openSlots(d) {
     const step = span > 360 ? 120 : 60, ticks = [];
     for (let m = lo; m < hi; m += step) ticks.push(`<i style="left:${pos(m)}">${m / 60}:00</i>`);
     const group = (title, arr) => arr.length ? `<h3 class="grp">${title}<small>${arr.length}枠</small></h3><div class="grid">${arr.map(s => `<button class="slot" data-s="${s.s}" data-e="${s.e}" aria-label="${s.s}から${s.e}まで"><b>${s.s}</b><small>〜${s.e}</small></button>`).join('')}</div>` : '';
-    $('slotList').innerHTML = `<div class="tl"><div class="tl-card"><div class="tl-head"><b class="ph" id="tlTime">時間を選んでください</b><span id="tlDur">約${durOf(profile.model)}分</span></div><div class="track">${av.map(v => `<div class="av" style="left:${pos(v[0])};width:${pos(lo + v[1] - v[0])}"></div>`).join('')}<div class="pick" id="tlPick" style="opacity:0"></div></div><div class="ticks">${ticks.join('')}</div></div></div>`
+    $('slotList').innerHTML = `<div class="tl"><div class="tl-card"><div class="tl-head"><b class="ph" id="tlTime">バーをなぞるか、下から選べます</b><span id="tlDur">約${durOf(profile.model)}分</span></div><div class="trackwrap" id="tlTrack" tabindex="0" role="slider" aria-label="開始時間" aria-valuemin="0" aria-valuemax="${list.length - 1}"><div class="track">${av.map(v => `<div class="av" style="left:${pos(v[0])};width:${pos(lo + v[1] - v[0])}"></div>`).join('')}<div class="pick" id="tlPick" style="opacity:0"></div></div></div><div class="ticks">${ticks.join('')}</div></div></div>`
       + group('午前', list.filter(s => s.s < '12:00')) + group('午後', list.filter(s => s.s >= '12:00'));
-    $('slotList').querySelectorAll('.slot').forEach(b => b.onclick = () => {
-      document.querySelectorAll('.slot').forEach(x => x.classList.toggle('on', x === b));
+    const track = $('tlTrack'), btns = [...$('slotList').querySelectorAll('.slot')];
+    let cur = null;
+    const choose = (b, drag) => {
+      if (!b || b === cur) return; cur = b;
+      btns.forEach(x => x.classList.toggle('on', x === b));
       pick.start = b.dataset.s; pick.end = b.dataset.e;
       const pk = $('tlPick'), a = toM(pick.start), e = toM(pick.end);
       pk.style.left = pos(a); pk.style.width = pos(lo + e - a); pk.style.opacity = 1;
       $('tlTime').className = ''; $('tlTime').textContent = pick.start + ' → ' + pick.end;
+      track.setAttribute('aria-valuenow', btns.indexOf(b)); track.setAttribute('aria-valuetext', pick.start + 'から' + pick.end + 'まで');
+      if (drag && navigator.vibrate) navigator.vibrate(4);
       setBar({ main: dShort(d) + ' ' + pick.start + '〜' + pick.end, sub: profile.model + ' / ' + profile.plate, label: 'この時間で予約', fn: doReserve });
-    });
+    };
+    btns.forEach(b => b.onclick = () => choose(b));
+    // 黒いバーをなぞって時間を選ぶ(指の位置にいちばん近い枠へ吸い付く)
+    const at = x => {
+      const r = track.querySelector('.track').getBoundingClientRect(), m = lo + Math.min(1, Math.max(0, (x - r.left) / r.width)) * span;
+      let best = null, bd = Infinity;
+      btns.forEach(b => { const c = (toM(b.dataset.s) + toM(b.dataset.e)) / 2, dd = Math.abs(c - m); if (dd < bd) { bd = dd; best = b; } });
+      return best;
+    };
+    let dragging = false;
+    track.onpointerdown = e => { dragging = true; try { track.setPointerCapture(e.pointerId); } catch (_) {} track.classList.add('drag'); choose(at(e.clientX), true); };
+    track.onpointermove = e => { if (dragging) choose(at(e.clientX), true); };
+    track.onpointerup = track.onpointercancel = () => { dragging = false; track.classList.remove('drag'); };
+    track.onkeydown = e => {
+      const k = { ArrowRight: 1, ArrowUp: 1, ArrowLeft: -1, ArrowDown: -1 }[e.key]; if (!k) return;
+      e.preventDefault(); choose(btns[cur ? btns.indexOf(cur) + k : 0]);
+    };
   } catch (e) { $('slotList').innerHTML = '<p class="err">' + esc(e.message) + '</p>'; }
 }
-$('slotBack').onclick = () => { monthCache = {}; openCal(); };
+$('slotBack').onclick = () => openCal();
 async function doReserve() {
-  const r = await api('reserve', { date: pick.date, start: pick.start, name: profile.name, phone: profile.phone, email: profile.email, plate: profile.plate, model: profile.model });
-  mine.push({ no: r.no, date: r.date, start: r.start, end: r.end, model: r.model }); save('wash_mine', mine); monthCache = {};
+  let r;
+  try { r = await api('reserve', { date: pick.date, start: pick.start, name: profile.name, phone: profile.phone, email: profile.email, plate: profile.plate, model: profile.model }); }
+  catch (e) { if (/月1回/.test(e.message)) booked.add(pick.date.slice(0, 7)); throw e; }
+  mine.push({ no: r.no, date: r.date, start: r.start, end: r.end, model: r.model, plate: profile.plate }); save('wash_mine', mine); monthCache = {};
+  booked.add(r.date.slice(0, 7));
   doneView(r, '予約が完了しました');
 }
 function doneView(r, title) {
@@ -534,6 +779,7 @@ $('lGo').onclick = busy($('lGo'), async () => {
     if (!confirm('この予約をキャンセルしますか?')) return;
     await api('cancel', { id: b.dataset.cr, email, plate });
     mine = mine.filter(m => !r.res.some(x => x.id === b.dataset.cr && x.no === m.no)); save('wash_mine', mine); monthCache = {};
+    if (cfg && profile.plate) refreshBooked();
     toast('キャンセルしました'); $('lGo').click();
   }));
   $('lRes').querySelectorAll('[data-cw]').forEach(b => b.onclick = busy(b, async () => {
@@ -544,7 +790,7 @@ $('lGo').onclick = busy($('lGo'), async () => {
 
 /* ---------- キャンセル待ち ---------- */
 let W = { mode: 'dates', months: new Set(), wd: new Set(), dates: new Set(), ym: null };
-const MODES = [['dates', '日にちを選ぶ'], ['weekdays', '曜日を選ぶ'], ['weekend', '土日すべて'], ['month', '月ぜんぶ']];
+const MODES = [['dates', '日にちで選ぶ'], ['weekdays', '曜日で選ぶ']];
 function openWait(pre) {
   if (!profile.plate) return goInfo('wait');
   large = isLarge(profile.model);
@@ -564,11 +810,16 @@ async function refreshWait() {
   waitBar();
   if (W.mode !== 'dates') return;
   monthNav('w', W.ym, ym => { W.ym = ym; refreshWait(); });
-  $('wCal').innerHTML = '<p class="empty">読み込み中…</p>';
-  try {
-    const data = await getMonth(W.ym); renderCal($('wCal'), W.ym, data, W.dates);
-    $('wCal').querySelectorAll('.d').forEach(b => b.onclick = () => { const d = b.dataset.d; W.dates.has(d) ? W.dates.delete(d) : W.dates.add(d); b.classList.toggle('sel'); waitBar(); });
-  } catch (e) { $('wCal').innerHTML = '<p class="err">' + esc(e.message) + '</p>'; }
+  const ym = W.ym, lg = large, el = $('wCal');
+  const draw = data => {
+    if (W.ym !== ym || W.mode !== 'dates' || $('wait').hidden) return;
+    renderCal(el, ym, data, W.dates); el.classList.remove('loading');
+    el.querySelectorAll('.d').forEach(b => b.onclick = () => { const d = b.dataset.d; W.dates.has(d) ? W.dates.delete(d) : W.dates.add(d); b.classList.toggle('sel'); waitBar(); });
+  };
+  const c = cachedMonth(ym, lg);
+  if (c) draw(c); else { renderCal(el, ym, { days: {} }); el.classList.add('loading'); }
+  try { draw(await fetchMonth(ym, lg)); }
+  catch (e) { if (!c && W.ym === ym) { el.classList.remove('loading'); el.innerHTML = '<p class="err">' + esc(e.message) + '</p>'; } }
 }
 function waitBar() {
   let ready, sub;
@@ -590,11 +841,31 @@ async function holdView(token) {
     $('holdBody').innerHTML = `<p class="lead">${h.until} までに、下のボタンで予約を確定してください。過ぎると次の方へご案内します。</p><dl class="facts"><div><dt>日時</dt><dd>${dJa(h.date)} ${h.start}〜${h.end}</dd></div><div><dt>お車</dt><dd>${esc(h.model)}</dd></div><div><dt>ナンバー</dt><dd>${esc(h.plate)}</dd></div><div><dt>お名前</dt><dd>${esc(h.name)} 様</dd></div></dl><button class="cta" id="hGo">予約を確定する</button>`;
     $('hGo').onclick = busy($('hGo'), async () => {
       const r = await api('holdConfirm', { token });
-      mine.push({ no: r.no, date: r.date, start: r.start, end: r.end, model: r.model }); save('wash_mine', mine);
+      mine.push({ no: r.no, date: r.date, start: r.start, end: r.end, model: r.model, plate: h.plate }); save('wash_mine', mine);
       history.replaceState(null, '', location.pathname); doneView(r, '予約が確定しました');
     });
   } catch (e) { $('holdBody').innerHTML = '<p class="err">' + esc(e.message) + '</p><button class="ghost" onclick="location.href=location.pathname">トップへ</button>'; }
 }
+
+/* ---------- ホーム画面に追加 ---------- */
+(function () {
+  const standalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone;
+  if (standalone || load('wash_install_x', false)) return;
+  const ios = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  let ev = null;
+  $('installX').onclick = () => { $('install').hidden = true; save('wash_install_x', true); };
+  if (ios) {
+    $('install').hidden = false;
+    $('installGo').textContent = '方法';
+    $('installGo').onclick = () => { $('iosSteps').hidden = !$('iosSteps').hidden; };
+  }
+  addEventListener('beforeinstallprompt', e => {
+    e.preventDefault(); ev = e; $('install').hidden = false;
+    $('installGo').onclick = async () => { ev.prompt(); const r = await ev.userChoice; if (r.outcome === 'accepted') $('install').hidden = true; ev = null; };
+  });
+  addEventListener('appinstalled', () => { $('install').hidden = true; });
+})();
+if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
 
 init();
 </script>

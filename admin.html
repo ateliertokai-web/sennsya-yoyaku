@@ -127,6 +127,26 @@ textarea:focus,input:focus{background:#fff;box-shadow:0 0 0 1.5px var(--ink);out
 .dd.cl{background:var(--ink);color:#fff}
 .dd.cl.past{background:#d6d5d1;color:#fff}
 
+/* 時間帯 */
+.hrow{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+.count-pill{font-size:12px;font-weight:600;color:var(--sub);white-space:nowrap}
+.tools{display:flex;gap:6px;margin:12px 0 4px}
+.tgrp{margin:14px 0 6px;font-size:11.5px;font-weight:600;color:var(--mute);letter-spacing:.08em}
+.tgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(68px,1fr));gap:6px}
+.tchip{position:relative;height:40px;border:0;border-radius:9px;background:var(--soft);color:var(--mute);font-size:14px;font-weight:600;font-variant-numeric:tabular-nums;transition:background .12s,color .12s}
+.tchip:hover{background:#e7e5e0;color:var(--ink)}
+.tchip.on{background:var(--ink);color:#fff}
+.tchip:disabled{background:none;color:#d3d2cd;cursor:default;box-shadow:inset 0 0 0 1px var(--line)}
+.tchip:disabled::after{content:"昼";position:absolute;top:2px;right:5px;font-size:9px}
+.sp{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}
+.sp:first-child{padding-top:4px}
+.sp .bd{flex:1;min-width:0}
+.sp b{font-size:14.5px;font-variant-numeric:tabular-nums}
+.sp .s2{font-size:12px;color:var(--sub);font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.spedit{margin:12px 0 4px;padding:16px;border-radius:12px;background:var(--bg)}
+.spedit input[type=date]{background:#fff;max-width:240px}
+.spedit .row2{display:flex;gap:8px;justify-content:flex-end;margin-top:14px}
+
 .savebar{position:sticky;bottom:0;z-index:4;display:flex;justify-content:flex-end;margin:24px -20px -80px;padding:12px 20px calc(12px + env(safe-area-inset-bottom));background:rgba(245,244,241,.9);backdrop-filter:saturate(1.6) blur(16px);-webkit-backdrop-filter:saturate(1.6) blur(16px);box-shadow:0 -1px 0 var(--line)}
 .savebar .btn{min-width:220px}
 @media (max-width:560px){.savebar .btn{width:100%}}
@@ -139,6 +159,7 @@ textarea:focus,input:focus{background:#fff;box-shadow:0 0 0 1.5px var(--ink);out
     <button class="tab on" data-t="res">予約</button>
     <button class="tab" data-t="wait">キャンセル待ち</button>
     <button class="tab" data-t="hol">休業日<i class="dot" id="holDot" hidden></i></button>
+    <button class="tab" data-t="time">時間帯</button>
     <button class="tab" data-t="set">設定</button>
     <button class="tab" data-t="txt">画面の文章</button>
 </nav>
@@ -167,6 +188,32 @@ textarea:focus,input:focus{background:#fff;box-shadow:0 0 0 1.5px var(--ink);out
   <div id="t-wait" class="pane" hidden>
     <p class="note hint" style="margin-top:0">登録が早い順です。「通知中」は空き枠を確保して案内メールを送った状態で、保留時間を過ぎると次の方へ移ります。</p>
     <div id="waitList"></div>
+  </div>
+
+  <div id="t-time" class="pane" hidden>
+    <div class="warn" id="timeOld" hidden>サーバー(Google Apps Script)のコードが古いため、この画面は使えません。新しい Code.gs を貼り付けて、デプロイし直してください。</div>
+    <div id="timeBody">
+    <div id="timeFields"></div>
+    <section class="card pad" style="margin-top:16px">
+      <div class="hrow"><h3>受付する開始時間</h3><span class="count-pill" id="tCount"></span></div>
+      <p class="note" style="margin:2px 0 0">押すと切り替わります。黒い時間だけ、お客様が開始時間として選べます。洗車時間ぶんの空きがない時間や、昼休憩にかかる時間は自動で受け付けません。</p>
+      <div class="tools"><button class="btn sub sm" id="tAll">すべて選ぶ</button><button class="btn sub sm" id="tNone">すべて外す</button></div>
+      <div id="tPick"></div>
+    </section>
+    <section class="card pad" style="margin-top:16px">
+      <h3>この日だけ変則</h3>
+      <p class="note" style="margin:2px 0 10px">特定の日だけ、開始時間を変えられます。「決定」を押すとすぐ保存されます。</p>
+      <div id="spList"></div>
+      <div class="spedit" id="spEdit" hidden>
+        <label for="spDate" style="margin-top:0">日付</label>
+        <input type="date" id="spDate">
+        <div id="spPick"></div>
+        <div class="row2"><button class="btn sub sm" id="spCancel">やめる</button><button class="btn sm" id="spOk">決定</button></div>
+      </div>
+      <button class="btn sub sm" id="spAdd" style="margin-top:12px">+ 変則の日を追加</button>
+    </section>
+    <div class="savebar"><button class="btn" id="saveTime">時間帯を保存する</button></div>
+    </div>
   </div>
 
   <div id="t-set" class="pane" hidden>
@@ -231,9 +278,9 @@ $('pw').addEventListener('keydown', e => { if (e.key === 'Enter') $('loginBtn').
 $('logout').onclick = () => { sessionStorage.removeItem('wash_admin_pw'); location.reload(); };
 document.querySelectorAll('.tab').forEach(b => b.onclick = () => {
   document.querySelectorAll('.tab').forEach(x => x.classList.toggle('on', x === b));
-  ['res', 'wait', 'hol', 'set', 'txt'].forEach(k => $('t-' + k).hidden = k !== b.dataset.t);
+  ['res', 'wait', 'hol', 'time', 'set', 'txt'].forEach(k => $('t-' + k).hidden = k !== b.dataset.t);
   if (b.dataset.t === 'wait') loadWait().catch(e => alert(e.message));
-  if (['hol', 'set', 'txt'].includes(b.dataset.t)) ensureG().then(drawAll).catch(e => alert(e.message));
+  if (['hol', 'time', 'set', 'txt'].includes(b.dataset.t)) ensureG().then(drawAll).catch(e => alert(e.message));
 });
 
 /* 予約 */
@@ -265,7 +312,7 @@ let dirty = false;
 async function ensureG() { if (!G) G = await api('adminGet'); return G; }
 async function reloadG() { G = await api('adminGet'); dirty = false; drawAll(); }
 const GROUPS = [
-  ['台数・時間', [['同時洗車台数', 'number'], ['開始', 'time'], ['最終開始(普通)', 'time'], ['最終開始(大型)', 'time'], ['昼休憩開始', 'time'], ['昼休憩終了', 'time'], ['洗車分(普通)', 'number'], ['洗車分(大型)', 'number'], ['刻み分', 'number']]],
+  ['台数・時間', [['同時洗車台数', 'number'], ['1日の上限台数', 'number'], ['開始', 'time'], ['最終開始(普通)', 'time'], ['最終開始(大型)', 'time'], ['昼休憩開始', 'time'], ['昼休憩終了', 'time'], ['洗車分(普通)', 'number'], ['洗車分(大型)', 'number'], ['刻み分', 'number']]],
   ['予約ルール', [['先行月数', 'number'], ['解禁時刻', 'time'], ['最短日数', 'number'], ['保留時間(分)', 'number']]],
   ['表示・メール', [['店舗名', 'text'], ['サイトURL', 'text'], ['問い合わせ先', 'text'], ['管理者メール', 'text']]]
 ];
@@ -273,14 +320,18 @@ const sv = k => G.settings.find(s => s.k === k);
 const tv = v => { const m = String(v).match(/^(\d{1,2}):(\d{2})/); return m ? m[1].padStart(2, '0') + ':' + m[2] : ''; };
 const ymJa = ym => { const a = ym.split('-'); return a[0] + '年' + (+a[1]) + '月'; };
 const pad = n => String(n).padStart(2, '0');
-function drawAll() { if (!G) return; drawSet(); drawTxt(); drawHol(); dot(); }
-function dot() { const n = G.need.filter(m => !G.confirmed.includes(m)).length; $('holDot').hidden = !n; }
-function drawSet() {
-  $('setList').innerHTML = GROUPS.map(g => `<section class="card pad"><h3>${g[0]}</h3><div class="fields${g[1].length > 6 ? ' three' : ''}">` + g[1].map(f => {
+function drawAll() { if (!G) return; drawSet(); drawTime(); drawTxt(); drawHol(); dot(); }
+/** 設定項目のカード(GROUPS の1グループぶん) */
+function fieldsCard(g) {
+  return `<section class="card pad"><h3>${g[0]}</h3><div class="fields${g[1].length > 6 ? ' three' : ''}">` + g[1].map(f => {
     const s = sv(f[0]); if (!s) return '';
     const val = f[1] === 'time' ? tv(s.v) : s.v;
     return `<div><label for="k-${esc(f[0])}">${esc(f[0])}${s.d ? ' <span class="note">' + esc(s.d) + '</span>' : ''}</label><input id="k-${esc(f[0])}" type="${f[1]}" ${f[1] === 'number' ? 'inputmode="numeric" min="0"' : ''} data-k="${esc(f[0])}" value="${esc(val)}"></div>`;
-  }).join('') + '</div></section>').join('');
+  }).join('') + '</div></section>';
+}
+function dot() { const n = G.need.filter(m => !G.confirmed.includes(m)).length; $('holDot').hidden = !n; }
+function drawSet() {
+  $('setList').innerHTML = GROUPS.slice(1).map(fieldsCard).join('');
   $('setList').querySelectorAll('[data-k]').forEach(e => e.oninput = () => { sv(e.dataset.k).v = e.value; dirty = true; });
   $('modelList').innerHTML = G.models.map((m, i) => `<div class="mrow"><input type="text" aria-label="車種名" data-mn="${i}" value="${esc(m.name)}"><label class="chk"><input type="checkbox" data-ml="${i}" ${m.large ? 'checked' : ''}>大型</label><button class="btn danger sm" data-md="${i}">削除</button></div>`).join('');
   $('modelList').querySelectorAll('[data-mn]').forEach(e => e.oninput = () => { G.models[e.dataset.mn].name = e.value; dirty = true; });
@@ -288,6 +339,79 @@ function drawSet() {
   $('modelList').querySelectorAll('[data-md]').forEach(e => e.onclick = () => { G.models.splice(+e.dataset.md, 1); dirty = true; drawSet(); });
 }
 $('addModel').onclick = () => { G.models.push({ name: '', large: false }); dirty = true; drawSet(); };
+
+/* 時間帯(開始時間の選択・1日の上限・日ごとの変則) */
+const toM = t => { const m = String(t).match(/(\d{1,2}):(\d{2})/); return m ? +m[1] * 60 + +m[2] : NaN; };
+const fmM = n => pad(Math.floor(n / 60)) + ':' + pad(n % 60);
+const listOf = v => String(v || '').split(/[,、\s]+/).filter(t => /^\d{1,2}:\d{2}$/.test(t)).map(t => fmM(toM(t)));
+/** 開始時間の候補: 開始〜最終開始を刻み分ごと(すでに選んである時刻も含める) */
+function candidates(extra) {
+  const v = k => (sv(k) || {}).v, step = Math.max(5, +v('刻み分') || 15), a = toM(v('開始')), b = Math.max(toM(v('最終開始(普通)')), toM(v('最終開始(大型)')));
+  const set = new Set(extra || []);
+  if (!isNaN(a) && !isNaN(b)) for (let m = a; m <= b && set.size < 200; m += step) set.add(fmM(m));
+  return [...set].sort();
+}
+/** 普通車の洗車時間で昼休憩にかかる時刻(受け付けないので押せなくする) */
+function lunchHit(t) { const v = k => (sv(k) || {}).v, s = toM(t), ls = toM(v('昼休憩開始')), le = toM(v('昼休憩終了')), d = +v('洗車分(普通)') || 0; return s < le && s + d > ls; }
+/** 押して選ぶ時刻の表。sel は選んでいる時刻の Set */
+function timeGrid(el, sel, onChange) {
+  const cands = candidates([...sel]);
+  const grp = (t, arr) => arr.length ? `<div class="tgrp">${t}</div><div class="tgrid">${arr.map(x => { const dis = lunchHit(x); return `<button type="button" class="tchip ${sel.has(x) && !dis ? 'on' : ''}" data-tm="${x}" ${dis ? 'disabled title="昼休憩にかかります"' : ''} aria-pressed="${sel.has(x)}">${x}</button>`; }).join('')}</div>` : '';
+  el.innerHTML = grp('午前', cands.filter(x => x < '12:00')) + grp('午後', cands.filter(x => x >= '12:00'));
+  el.querySelectorAll('[data-tm]').forEach(b => b.onclick = () => { const x = b.dataset.tm; sel.has(x) ? sel.delete(x) : sel.add(x); b.classList.toggle('on', sel.has(x)); b.setAttribute('aria-pressed', sel.has(x)); onChange(); });
+}
+const usable = sel => [...sel].filter(x => !lunchHit(x)).sort();
+let tSel = new Set(), spE = null;
+function drawTime() {
+  const old = !sv('開始時刻'); $('timeOld').hidden = !old; $('timeBody').hidden = old; if (old) return;
+  $('timeFields').innerHTML = fieldsCard(GROUPS[0]);
+  $('timeFields').querySelectorAll('[data-k]').forEach(e => e.oninput = () => { sv(e.dataset.k).v = e.value; dirty = true; drawPick(); if (spE) drawSpPick(); drawSp(); });
+  const cur = listOf(sv('開始時刻').v);
+  tSel = new Set(cur.length ? cur : candidates().filter(x => !lunchHit(x)));
+  drawPick(); drawSp();
+}
+function drawPick() {
+  timeGrid($('tPick'), tSel, () => { sv('開始時刻').v = usable(tSel).join(','); dirty = true; tCount(); });
+  tCount();
+}
+function tCount() {
+  const n = usable(tSel).length, cap = +sv('1日の上限台数').v || 0;
+  $('tCount').textContent = n + '枠' + (cap ? ' ・ 1日' + cap + '台まで' : '');
+}
+$('tAll').onclick = () => { tSel = new Set(candidates().filter(x => !lunchHit(x))); sv('開始時刻').v = usable(tSel).join(','); dirty = true; drawPick(); };
+$('tNone').onclick = () => { tSel = new Set(); sv('開始時刻').v = ''; dirty = true; drawPick(); };
+function drawSp() {
+  const list = G.special || [];
+  $('spList').innerHTML = list.length ? list.map((r, i) => `<div class="sp"><div class="bd"><b>${dJa(r.date)}</b><div class="s2">${r.times.join('・')}(${r.times.length}枠)</div></div><button class="btn sub sm" data-se="${i}">編集</button><button class="btn danger sm" data-sd="${i}">削除</button></div>`).join('') : '<p class="note" style="margin:0">変則の日はありません。</p>';
+  $('spList').querySelectorAll('[data-se]').forEach(b => b.onclick = () => openSp(+b.dataset.se));
+  $('spList').querySelectorAll('[data-sd]').forEach(b => b.onclick = busy(b, async () => {
+    if (!confirm(dJa(G.special[+b.dataset.sd].date) + ' の変則をやめて、通常の時間に戻しますか?')) return;
+    G.special.splice(+b.dataset.sd, 1); await saveSp();
+  }));
+}
+function openSp(i) {
+  const r = i >= 0 ? G.special[i] : null;
+  spE = { i, sel: new Set(r ? r.times : usable(tSel)) };
+  $('spDate').value = r ? r.date : ''; $('spDate').min = G.today;
+  $('spEdit').hidden = false; $('spAdd').hidden = true; drawSpPick();
+  if (!r) $('spDate').focus();
+}
+function drawSpPick() { timeGrid($('spPick'), spE.sel, () => {}); }
+$('spAdd').onclick = () => openSp(-1);
+$('spCancel').onclick = () => { spE = null; $('spEdit').hidden = true; $('spAdd').hidden = false; };
+$('spOk').onclick = busy($('spOk'), async () => {
+  const date = $('spDate').value, times = usable(spE.sel);
+  if (!date) return alert('日付を選んでください');
+  if (date < G.today) return alert('今日より前の日は設定できません');
+  if (!times.length) return alert('開始時間を1つ以上選んでください(受付しない日は「休業日」で設定してください)');
+  G.special = (G.special || []).filter((r, k) => k !== spE.i && r.date !== date).concat({ date, times }).sort((a, b) => a.date < b.date ? -1 : 1);
+  await saveSp(); $('spCancel').onclick();
+});
+async function saveSp() { await api('adminSave', { special: G.special || [] }); drawSp(); }
+$('saveTime').onclick = busy($('saveTime'), async () => {
+  if (!usable(tSel).length) return alert('受付する開始時間を1つ以上選んでください');
+  await saveAll();
+});
 
 /* 画面の文章 */
 const TXT_LABEL = { 'ヘッダー': '一番上(店名の下)', 'トップ見出し': 'トップ画面の見出し(洗車を予約する)', 'トップ': 'トップ画面の説明', '予約ボタン': 'トップ画面の予約ボタン', 'トップご案内': 'トップ画面の案内表', '洗車時間': '車種の下の洗車時間', 'お車の情報': 'お車の情報画面の注意書き', 'キャンセル待ち': 'キャンセル待ち画面の説明', '完了': '予約完了画面の注意書き' };
@@ -359,7 +483,7 @@ async function saveHol() {
 /* 設定・文章の保存 */
 async function saveAll() {
   const settings = {}; G.settings.forEach(s => settings[s.k] = s.v);
-  await api('adminSave', { settings, models: G.models, holidays: G.holidays, confirmed: G.confirmed });
+  await api('adminSave', { settings, models: G.models, holidays: G.holidays, confirmed: G.confirmed, special: G.special || [] });
   alert('保存しました'); await reloadG();
 }
 $('saveSet').onclick = busy($('saveSet'), saveAll);
