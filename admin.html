@@ -223,7 +223,7 @@ function drawSet() {
 $('addModel').onclick = () => { G.models.push({ name: '', large: false }); dirty = true; drawSet(); };
 
 /* 画面の文章 */
-const TXT_LABEL = { 'ヘッダー': '一番上(店名の下)', 'トップ': 'トップ画面の説明', 'トップご案内': 'トップ画面の案内表', '洗車時間': '車種の下の洗車時間', 'お車の情報': 'お車の情報画面の注意書き', 'キャンセル待ち': 'キャンセル待ち画面の説明', '完了': '予約完了画面の注意書き' };
+const TXT_LABEL = { 'ヘッダー': '一番上(店名の下)', 'トップ見出し': 'トップ画面の見出し(洗車を予約する)', 'トップ': 'トップ画面の説明', '予約ボタン': 'トップ画面の予約ボタン', 'トップご案内': 'トップ画面の案内表', '洗車時間': '車種の下の洗車時間', 'お車の情報': 'お車の情報画面の注意書き', 'キャンセル待ち': 'キャンセル待ち画面の説明', '完了': '予約完了画面の注意書き' };
 function drawTxt() {
   const rows = G.settings.filter(s => s.k.indexOf('文_') === 0);
   $('txtList').innerHTML = rows.map(s => { const n = s.k.slice(2); return `<label for="x-${esc(s.k)}">${esc(TXT_LABEL[n] || n)}<br><span class="note">${esc(s.d)}</span></label><textarea id="x-${esc(s.k)}" data-x="${esc(s.k)}" ${n === 'トップご案内' ? 'style="min-height:150px"' : ''}>${esc(s.v)}</textarea>`; }).join('') +

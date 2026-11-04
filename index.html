@@ -158,7 +158,7 @@ body.hasbar .toast{bottom:calc(104px + env(safe-area-inset-bottom))}
 <!-- ホーム -->
 <section id="home" class="view">
   <div id="mine" class="mine"></div>
-  <h2>洗車を予約する</h2>
+  <h2 id="homeTitle"></h2>
   <p class="lead" id="homeLead"></p>
   <button class="cta" id="goReserve">予約する</button>
   <div class="list">
@@ -326,7 +326,7 @@ async function init() {
   catch (e) { $('home').innerHTML = '<p class="err">読み込めませんでした。ページを開き直してください。<br>' + esc(e.message) + '</p>'; show('home'); return; }
   $('shop').textContent = cfg.name; document.title = cfg.name;
   const T = cfg.texts || {};
-  setText('subline', T['ヘッダー']); setText('homeLead', T['トップ']); setText('infoNote', T['お車の情報']);
+  setText('subline', T['ヘッダー']); setText('homeTitle', T['トップ見出し']); setText('homeLead', T['トップ']); $('goReserve').textContent = T['予約ボタン'] || '予約する'; setText('infoNote', T['お車の情報']);
   setText('waitLead', T['キャンセル待ち']); setText('doneNote', T['完了']);
   const q = new URLSearchParams(location.search);
   if (q.get('hold')) return holdView(q.get('hold'));
