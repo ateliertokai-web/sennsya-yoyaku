@@ -4,128 +4,192 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
-<meta name="theme-color" content="#14171b">
+<meta name="theme-color" content="#f5f4f1">
 <title>洗車予約 管理</title>
 <style>
-:root{--ink:#1b1a18;--sub:#5f5a50;--line:#e7e0d2;--bg:#d9bc8e;--paper:#fffdf9;--gold:#c9a961;--amber:#f2a444;--red:#cf432c;--mute:#a39b8b;--r:10px;--wood:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='116' height='140' viewBox='0 0 116 140'%3E%3Crect width='116' height='140' fill='%23d9bc8e'/%3E%3Cpolygon points='-38.00,0.00 -20.00,35.00 -38.00,70.00 38.00,70.00 20.00,35.00 38.00,0.00' fill='%23e2c89d'/%3E%3Cpolygon points='-38.00,70.00 -20.00,105.00 -38.00,140.00 38.00,140.00 20.00,105.00 38.00,70.00' fill='%23d5b787'/%3E%3Cpolygon points='20.00,-35.00 38.00,0.00 20.00,35.00 96.00,35.00 78.00,0.00 96.00,-35.00' fill='%23d9bb8b'/%3E%3Cpolygon points='20.00,35.00 38.00,70.00 20.00,105.00 96.00,105.00 78.00,70.00 96.00,35.00' fill='%23d2b384'/%3E%3Cpolygon points='20.00,105.00 38.00,140.00 20.00,175.00 96.00,175.00 78.00,140.00 96.00,105.00' fill='%23dcc093'/%3E%3Cpolygon points='78.00,0.00 96.00,35.00 78.00,70.00 154.00,70.00 136.00,35.00 154.00,0.00' fill='%23dcc093'/%3E%3Cpolygon points='78.00,70.00 96.00,105.00 78.00,140.00 154.00,140.00 136.00,105.00 154.00,70.00' fill='%23e0c598'/%3E%3Cpolygon points='136.00,-35.00 154.00,0.00 136.00,35.00 212.00,35.00 194.00,0.00 212.00,-35.00' fill='%23dcc093'/%3E%3Cpolygon points='136.00,35.00 154.00,70.00 136.00,105.00 212.00,105.00 194.00,70.00 212.00,35.00' fill='%23e2c89d'/%3E%3Cpolygon points='136.00,105.00 154.00,140.00 136.00,175.00 212.00,175.00 194.00,140.00 212.00,105.00' fill='%23e0c598'/%3E%3Cline x1='27.6' y1='0' x2='28.1' y2='140' stroke='%237a5530' stroke-opacity='0.11' stroke-width='0.4'/%3E%3Cline x1='55.0' y1='0' x2='54.4' y2='140' stroke='%237a5530' stroke-opacity='0.11' stroke-width='0.6'/%3E%3Cline x1='97.1' y1='0' x2='96.8' y2='140' stroke='%237a5530' stroke-opacity='0.08' stroke-width='0.3'/%3E%3Cline x1='83.2' y1='0' x2='83.2' y2='140' stroke='%237a5530' stroke-opacity='0.11' stroke-width='0.6'/%3E%3Cline x1='74.1' y1='0' x2='73.7' y2='140' stroke='%237a5530' stroke-opacity='0.07' stroke-width='0.6'/%3E%3Cline x1='107.4' y1='0' x2='107.6' y2='140' stroke='%237a5530' stroke-opacity='0.09' stroke-width='0.3'/%3E%3Cline x1='7.4' y1='0' x2='6.9' y2='140' stroke='%237a5530' stroke-opacity='0.13' stroke-width='0.6'/%3E%3Cline x1='90.5' y1='0' x2='90.5' y2='140' stroke='%237a5530' stroke-opacity='0.14' stroke-width='0.4'/%3E%3Cline x1='83.4' y1='0' x2='83.7' y2='140' stroke='%237a5530' stroke-opacity='0.15' stroke-width='0.6'/%3E%3Cline x1='49.5' y1='0' x2='49.5' y2='140' stroke='%237a5530' stroke-opacity='0.13' stroke-width='0.6'/%3E%3Cline x1='108.5' y1='0' x2='108.0' y2='140' stroke='%237a5530' stroke-opacity='0.15' stroke-width='0.3'/%3E%3Cline x1='57.4' y1='0' x2='57.3' y2='140' stroke='%237a5530' stroke-opacity='0.08' stroke-width='0.6'/%3E%3Cline x1='72.7' y1='0' x2='73.1' y2='140' stroke='%237a5530' stroke-opacity='0.08' stroke-width='0.6'/%3E%3Cline x1='66.6' y1='0' x2='66.7' y2='140' stroke='%237a5530' stroke-opacity='0.11' stroke-width='0.4'/%3E%3Cline x1='104.9' y1='0' x2='105.3' y2='140' stroke='%237a5530' stroke-opacity='0.13' stroke-width='0.3'/%3E%3Cline x1='115.0' y1='0' x2='115.2' y2='140' stroke='%237a5530' stroke-opacity='0.12' stroke-width='0.3'/%3E%3Cline x1='37.9' y1='0' x2='37.9' y2='140' stroke='%237a5530' stroke-opacity='0.11' stroke-width='0.6'/%3E%3Cline x1='82.8' y1='0' x2='82.5' y2='140' stroke='%237a5530' stroke-opacity='0.07' stroke-width='0.6'/%3E%3Cline x1='14.4' y1='0' x2='15.0' y2='140' stroke='%237a5530' stroke-opacity='0.10' stroke-width='0.6'/%3E%3Cline x1='10.3' y1='0' x2='10.7' y2='140' stroke='%237a5530' stroke-opacity='0.14' stroke-width='0.4'/%3E%3Cline x1='2.3' y1='0' x2='2.8' y2='140' stroke='%237a5530' stroke-opacity='0.10' stroke-width='0.4'/%3E%3Cline x1='5.1' y1='0' x2='5.0' y2='140' stroke='%237a5530' stroke-opacity='0.12' stroke-width='0.3'/%3E%3Cline x1='68.0' y1='0' x2='68.0' y2='140' stroke='%237a5530' stroke-opacity='0.11' stroke-width='0.4'/%3E%3Cline x1='115.8' y1='0' x2='115.4' y2='140' stroke='%237a5530' stroke-opacity='0.08' stroke-width='0.3'/%3E%3Cline x1='62.1' y1='0' x2='61.9' y2='140' stroke='%237a5530' stroke-opacity='0.15' stroke-width='0.4'/%3E%3Cline x1='30.6' y1='0' x2='30.3' y2='140' stroke='%237a5530' stroke-opacity='0.13' stroke-width='0.4'/%3E%3Cline x1='111.2' y1='0' x2='111.1' y2='140' stroke='%237a5530' stroke-opacity='0.15' stroke-width='0.4'/%3E%3Cline x1='100.9' y1='0' x2='101.1' y2='140' stroke='%237a5530' stroke-opacity='0.09' stroke-width='0.6'/%3E%3Cline x1='11.9' y1='0' x2='11.6' y2='140' stroke='%237a5530' stroke-opacity='0.16' stroke-width='0.6'/%3E%3Cline x1='73.6' y1='0' x2='73.5' y2='140' stroke='%237a5530' stroke-opacity='0.13' stroke-width='0.4'/%3E%3Cline x1='30.0' y1='0' x2='29.4' y2='140' stroke='%237a5530' stroke-opacity='0.08' stroke-width='0.4'/%3E%3Cline x1='48.2' y1='0' x2='48.0' y2='140' stroke='%237a5530' stroke-opacity='0.11' stroke-width='0.3'/%3E%3Cline x1='68.3' y1='0' x2='68.5' y2='140' stroke='%237a5530' stroke-opacity='0.06' stroke-width='0.6'/%3E%3Cline x1='54.1' y1='0' x2='54.2' y2='140' stroke='%237a5530' stroke-opacity='0.12' stroke-width='0.4'/%3E%3Cline x1='32.4' y1='0' x2='31.8' y2='140' stroke='%237a5530' stroke-opacity='0.10' stroke-width='0.6'/%3E%3Cline x1='78.4' y1='0' x2='78.6' y2='140' stroke='%237a5530' stroke-opacity='0.16' stroke-width='0.4'/%3E%3Cline x1='34.6' y1='0' x2='34.5' y2='140' stroke='%237a5530' stroke-opacity='0.12' stroke-width='0.3'/%3E%3Cline x1='36.3' y1='0' x2='36.0' y2='140' stroke='%237a5530' stroke-opacity='0.09' stroke-width='0.6'/%3E%3Cline x1='91.3' y1='0' x2='91.9' y2='140' stroke='%237a5530' stroke-opacity='0.06' stroke-width='0.3'/%3E%3Cline x1='79.3' y1='0' x2='79.0' y2='140' stroke='%237a5530' stroke-opacity='0.06' stroke-width='0.6'/%3E%3Cline x1='93.2' y1='0' x2='93.5' y2='140' stroke='%237a5530' stroke-opacity='0.08' stroke-width='0.3'/%3E%3Cline x1='75.3' y1='0' x2='75.1' y2='140' stroke='%237a5530' stroke-opacity='0.06' stroke-width='0.6'/%3E%3Cline x1='38.7' y1='0' x2='39.1' y2='140' stroke='%237a5530' stroke-opacity='0.14' stroke-width='0.4'/%3E%3Cline x1='111.4' y1='0' x2='111.6' y2='140' stroke='%237a5530' stroke-opacity='0.06' stroke-width='0.6'/%3E%3Cline x1='102.6' y1='0' x2='103.0' y2='140' stroke='%237a5530' stroke-opacity='0.10' stroke-width='0.3'/%3E%3Cline x1='3.9' y1='0' x2='4.3' y2='140' stroke='%237a5530' stroke-opacity='0.16' stroke-width='0.4'/%3E%3Cline x1='97.3' y1='0' x2='97.1' y2='140' stroke='%237a5530' stroke-opacity='0.07' stroke-width='0.4'/%3E%3Cline x1='96.0' y1='0' x2='95.9' y2='140' stroke='%237a5530' stroke-opacity='0.06' stroke-width='0.6'/%3E%3Cline x1='15.0' y1='0' x2='15.0' y2='140' stroke='%237a5530' stroke-opacity='0.08' stroke-width='0.4'/%3E%3Cline x1='73.6' y1='0' x2='73.5' y2='140' stroke='%237a5530' stroke-opacity='0.08' stroke-width='0.6'/%3E%3Cline x1='106.8' y1='0' x2='106.8' y2='140' stroke='%237a5530' stroke-opacity='0.07' stroke-width='0.3'/%3E%3Cline x1='96.6' y1='0' x2='96.5' y2='140' stroke='%237a5530' stroke-opacity='0.12' stroke-width='0.6'/%3E%3Cline x1='110.2' y1='0' x2='109.7' y2='140' stroke='%237a5530' stroke-opacity='0.15' stroke-width='0.3'/%3E%3Cline x1='53.0' y1='0' x2='53.0' y2='140' stroke='%237a5530' stroke-opacity='0.13' stroke-width='0.6'/%3E%3Cline x1='33.5' y1='0' x2='34.0' y2='140' stroke='%237a5530' stroke-opacity='0.09' stroke-width='0.3'/%3E%3Cline x1='99.5' y1='0' x2='99.9' y2='140' stroke='%237a5530' stroke-opacity='0.16' stroke-width='0.3'/%3E%3Cline x1='5.2' y1='0' x2='5.2' y2='140' stroke='%237a5530' stroke-opacity='0.15' stroke-width='0.6'/%3E%3Cline x1='23.0' y1='0' x2='23.1' y2='140' stroke='%237a5530' stroke-opacity='0.15' stroke-width='0.4'/%3E%3Cline x1='1.5' y1='0' x2='1.5' y2='140' stroke='%237a5530' stroke-opacity='0.13' stroke-width='0.3'/%3E%3Cline x1='27.7' y1='0' x2='27.6' y2='140' stroke='%237a5530' stroke-opacity='0.05' stroke-width='0.6'/%3E%3Cline x1='108.9' y1='0' x2='108.5' y2='140' stroke='%237a5530' stroke-opacity='0.12' stroke-width='0.4'/%3E%3Cline x1='112.8' y1='0' x2='112.6' y2='140' stroke='%237a5530' stroke-opacity='0.11' stroke-width='0.3'/%3E%3Cline x1='22.9' y1='0' x2='22.5' y2='140' stroke='%237a5530' stroke-opacity='0.11' stroke-width='0.3'/%3E%3Cline x1='91.8' y1='0' x2='92.2' y2='140' stroke='%237a5530' stroke-opacity='0.15' stroke-width='0.3'/%3E%3Cline x1='0.9' y1='0' x2='0.3' y2='140' stroke='%237a5530' stroke-opacity='0.12' stroke-width='0.4'/%3E%3Cline x1='31.5' y1='0' x2='31.5' y2='140' stroke='%237a5530' stroke-opacity='0.08' stroke-width='0.6'/%3E%3Cline x1='5.9' y1='0' x2='6.3' y2='140' stroke='%237a5530' stroke-opacity='0.09' stroke-width='0.3'/%3E%3Cline x1='89.9' y1='0' x2='89.4' y2='140' stroke='%237a5530' stroke-opacity='0.06' stroke-width='0.3'/%3E%3Cline x1='113.1' y1='0' x2='113.1' y2='140' stroke='%237a5530' stroke-opacity='0.14' stroke-width='0.3'/%3E%3Cline x1='56.8' y1='0' x2='56.7' y2='140' stroke='%237a5530' stroke-opacity='0.07' stroke-width='0.3'/%3E%3Cline x1='75.0' y1='0' x2='74.8' y2='140' stroke='%237a5530' stroke-opacity='0.11' stroke-width='0.4'/%3E%3Cline x1='114.6' y1='0' x2='114.7' y2='140' stroke='%237a5530' stroke-opacity='0.10' stroke-width='0.3'/%3E%3Cpolyline fill='none' stroke='%237a5a36' stroke-width='1.2' stroke-linejoin='bevel' points='-38.00,0.00 -20.00,35.00 -38.00,70.00'/%3E%3Cpolyline fill='none' stroke='%237a5a36' stroke-width='1.2' stroke-linejoin='bevel' points='38.00,0.00 20.00,35.00 38.00,70.00'/%3E%3Cline x1='-38.00' y1='0.00' x2='38.00' y2='0.00' stroke='%237a5a36' stroke-width='1.2'/%3E%3Cline x1='-38.00' y1='70.00' x2='38.00' y2='70.00' stroke='%237a5a36' stroke-width='1.2'/%3E%3Cpolyline fill='none' stroke='%237a5a36' stroke-width='1.2' stroke-linejoin='bevel' points='-38.00,70.00 -20.00,105.00 -38.00,140.00'/%3E%3Cpolyline fill='none' stroke='%237a5a36' stroke-width='1.2' stroke-linejoin='bevel' points='38.00,70.00 20.00,105.00 38.00,140.00'/%3E%3Cline x1='-38.00' y1='70.00' x2='38.00' y2='70.00' stroke='%237a5a36' stroke-width='1.2'/%3E%3Cline x1='-38.00' y1='140.00' x2='38.00' y2='140.00' stroke='%237a5a36' stroke-width='1.2'/%3E%3Cpolyline fill='none' stroke='%237a5a36' stroke-width='1.2' stroke-linejoin='bevel' points='20.00,-35.00 38.00,0.00 20.00,35.00'/%3E%3Cpolyline fill='none' stroke='%237a5a36' stroke-width='1.2' stroke-linejoin='bevel' points='96.00,-35.00 78.00,0.00 96.00,35.00'/%3E%3Cline x1='20.00' y1='-35.00' x2='96.00' y2='-35.00' stroke='%237a5a36' stroke-width='1.2'/%3E%3Cline x1='20.00' y1='35.00' x2='96.00' y2='35.00' stroke='%237a5a36' stroke-width='1.2'/%3E%3Cpolyline fill='none' stroke='%237a5a36' stroke-width='1.2' stroke-linejoin='bevel' points='20.00,35.00 38.00,70.00 20.00,105.00'/%3E%3Cpolyline fill='none' stroke='%237a5a36' stroke-width='1.2' stroke-linejoin='bevel' points='96.00,35.00 78.00,70.00 96.00,105.00'/%3E%3Cline x1='20.00' y1='35.00' x2='96.00' y2='35.00' stroke='%237a5a36' stroke-width='1.2'/%3E%3Cline x1='20.00' y1='105.00' x2='96.00' y2='105.00' stroke='%237a5a36' stroke-width='1.2'/%3E%3Cpolyline fill='none' stroke='%237a5a36' stroke-width='1.2' stroke-linejoin='bevel' points='20.00,105.00 38.00,140.00 20.00,175.00'/%3E%3Cpolyline fill='none' stroke='%237a5a36' stroke-width='1.2' stroke-linejoin='bevel' points='96.00,105.00 78.00,140.00 96.00,175.00'/%3E%3Cline x1='20.00' y1='105.00' x2='96.00' y2='105.00' stroke='%237a5a36' stroke-width='1.2'/%3E%3Cline x1='20.00' y1='175.00' x2='96.00' y2='175.00' stroke='%237a5a36' stroke-width='1.2'/%3E%3Cpolyline fill='none' stroke='%237a5a36' stroke-width='1.2' stroke-linejoin='bevel' points='78.00,0.00 96.00,35.00 78.00,70.00'/%3E%3Cpolyline fill='none' stroke='%237a5a36' stroke-width='1.2' stroke-linejoin='bevel' points='154.00,0.00 136.00,35.00 154.00,70.00'/%3E%3Cline x1='78.00' y1='0.00' x2='154.00' y2='0.00' stroke='%237a5a36' stroke-width='1.2'/%3E%3Cline x1='78.00' y1='70.00' x2='154.00' y2='70.00' stroke='%237a5a36' stroke-width='1.2'/%3E%3Cpolyline fill='none' stroke='%237a5a36' stroke-width='1.2' stroke-linejoin='bevel' points='78.00,70.00 96.00,105.00 78.00,140.00'/%3E%3Cpolyline fill='none' stroke='%237a5a36' stroke-width='1.2' stroke-linejoin='bevel' points='154.00,70.00 136.00,105.00 154.00,140.00'/%3E%3Cline x1='78.00' y1='70.00' x2='154.00' y2='70.00' stroke='%237a5a36' stroke-width='1.2'/%3E%3Cline x1='78.00' y1='140.00' x2='154.00' y2='140.00' stroke='%237a5a36' stroke-width='1.2'/%3E%3Cpolyline fill='none' stroke='%237a5a36' stroke-width='1.2' stroke-linejoin='bevel' points='136.00,-35.00 154.00,0.00 136.00,35.00'/%3E%3Cpolyline fill='none' stroke='%237a5a36' stroke-width='1.2' stroke-linejoin='bevel' points='212.00,-35.00 194.00,0.00 212.00,35.00'/%3E%3Cline x1='136.00' y1='-35.00' x2='212.00' y2='-35.00' stroke='%237a5a36' stroke-width='1.2'/%3E%3Cline x1='136.00' y1='35.00' x2='212.00' y2='35.00' stroke='%237a5a36' stroke-width='1.2'/%3E%3Cpolyline fill='none' stroke='%237a5a36' stroke-width='1.2' stroke-linejoin='bevel' points='136.00,35.00 154.00,70.00 136.00,105.00'/%3E%3Cpolyline fill='none' stroke='%237a5a36' stroke-width='1.2' stroke-linejoin='bevel' points='212.00,35.00 194.00,70.00 212.00,105.00'/%3E%3Cline x1='136.00' y1='35.00' x2='212.00' y2='35.00' stroke='%237a5a36' stroke-width='1.2'/%3E%3Cline x1='136.00' y1='105.00' x2='212.00' y2='105.00' stroke='%237a5a36' stroke-width='1.2'/%3E%3Cpolyline fill='none' stroke='%237a5a36' stroke-width='1.2' stroke-linejoin='bevel' points='136.00,105.00 154.00,140.00 136.00,175.00'/%3E%3Cpolyline fill='none' stroke='%237a5a36' stroke-width='1.2' stroke-linejoin='bevel' points='212.00,105.00 194.00,140.00 212.00,175.00'/%3E%3Cline x1='136.00' y1='105.00' x2='212.00' y2='105.00' stroke='%237a5a36' stroke-width='1.2'/%3E%3Cline x1='136.00' y1='175.00' x2='212.00' y2='175.00' stroke='%237a5a36' stroke-width='1.2'/%3E%3C/svg%3E");--spin:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='38' height='44' viewBox='0 0 38 44'%3E%3Crect width='38' height='44' fill='%23d9bc8e'/%3E%3Cpolygon points='-13.00,0.00 -6.00,11.00 -13.00,22.00 13.00,22.00 6.00,11.00 13.00,0.00' fill='%23e2c89d'/%3E%3Cpolygon points='-13.00,22.00 -6.00,33.00 -13.00,44.00 13.00,44.00 6.00,33.00 13.00,22.00' fill='%23d5b787'/%3E%3Cpolygon points='6.00,-11.00 13.00,0.00 6.00,11.00 32.00,11.00 25.00,0.00 32.00,-11.00' fill='%23d9bb8b'/%3E%3Cpolygon points='6.00,11.00 13.00,22.00 6.00,33.00 32.00,33.00 25.00,22.00 32.00,11.00' fill='%23d2b384'/%3E%3Cpolygon points='6.00,33.00 13.00,44.00 6.00,55.00 32.00,55.00 25.00,44.00 32.00,33.00' fill='%23dcc093'/%3E%3Cpolygon points='25.00,0.00 32.00,11.00 25.00,22.00 51.00,22.00 44.00,11.00 51.00,0.00' fill='%23dcc093'/%3E%3Cpolygon points='25.00,22.00 32.00,33.00 25.00,44.00 51.00,44.00 44.00,33.00 51.00,22.00' fill='%23e0c598'/%3E%3Cpolygon points='44.00,-11.00 51.00,0.00 44.00,11.00 70.00,11.00 63.00,0.00 70.00,-11.00' fill='%23dcc093'/%3E%3Cpolygon points='44.00,11.00 51.00,22.00 44.00,33.00 70.00,33.00 63.00,22.00 70.00,11.00' fill='%23e2c89d'/%3E%3Cpolygon points='44.00,33.00 51.00,44.00 44.00,55.00 70.00,55.00 63.00,44.00 70.00,33.00' fill='%23e0c598'/%3E%3Cline x1='9.0' y1='0' x2='9.5' y2='44' stroke='%237a5530' stroke-opacity='0.11' stroke-width='0.4'/%3E%3Cline x1='18.0' y1='0' x2='17.4' y2='44' stroke='%237a5530' stroke-opacity='0.11' stroke-width='0.6'/%3E%3Cline x1='31.8' y1='0' x2='31.5' y2='44' stroke='%237a5530' stroke-opacity='0.08' stroke-width='0.3'/%3E%3Cline x1='27.3' y1='0' x2='27.2' y2='44' stroke='%237a5530' stroke-opacity='0.11' stroke-width='0.6'/%3E%3Cline x1='24.3' y1='0' x2='23.9' y2='44' stroke='%237a5530' stroke-opacity='0.07' stroke-width='0.6'/%3E%3Cline x1='35.2' y1='0' x2='35.4' y2='44' stroke='%237a5530' stroke-opacity='0.09' stroke-width='0.3'/%3E%3Cline x1='2.4' y1='0' x2='1.9' y2='44' stroke='%237a5530' stroke-opacity='0.13' stroke-width='0.6'/%3E%3Cline x1='29.6' y1='0' x2='29.6' y2='44' stroke='%237a5530' stroke-opacity='0.14' stroke-width='0.4'/%3E%3Cline x1='27.3' y1='0' x2='27.7' y2='44' stroke='%237a5530' stroke-opacity='0.15' stroke-width='0.6'/%3E%3Cline x1='16.2' y1='0' x2='16.2' y2='44' stroke='%237a5530' stroke-opacity='0.13' stroke-width='0.6'/%3E%3Cline x1='35.6' y1='0' x2='35.0' y2='44' stroke='%237a5530' stroke-opacity='0.15' stroke-width='0.3'/%3E%3Cline x1='18.8' y1='0' x2='18.7' y2='44' stroke='%237a5530' stroke-opacity='0.08' stroke-width='0.6'/%3E%3Cline x1='23.8' y1='0' x2='24.2' y2='44' stroke='%237a5530' stroke-opacity='0.08' stroke-width='0.6'/%3E%3Cline x1='21.8' y1='0' x2='21.9' y2='44' stroke='%237a5530' stroke-opacity='0.11' stroke-width='0.4'/%3E%3Cline x1='34.4' y1='0' x2='34.8' y2='44' stroke='%237a5530' stroke-opacity='0.13' stroke-width='0.3'/%3E%3Cline x1='37.7' y1='0' x2='37.9' y2='44' stroke='%237a5530' stroke-opacity='0.12' stroke-width='0.3'/%3E%3Cline x1='12.4' y1='0' x2='12.5' y2='44' stroke='%237a5530' stroke-opacity='0.11' stroke-width='0.6'/%3E%3Cline x1='27.1' y1='0' x2='26.8' y2='44' stroke='%237a5530' stroke-opacity='0.07' stroke-width='0.6'/%3E%3Cline x1='4.7' y1='0' x2='5.3' y2='44' stroke='%237a5530' stroke-opacity='0.10' stroke-width='0.6'/%3E%3Cline x1='3.4' y1='0' x2='3.8' y2='44' stroke='%237a5530' stroke-opacity='0.14' stroke-width='0.4'/%3E%3Cline x1='0.8' y1='0' x2='1.2' y2='44' stroke='%237a5530' stroke-opacity='0.10' stroke-width='0.4'/%3E%3Cline x1='1.7' y1='0' x2='1.5' y2='44' stroke='%237a5530' stroke-opacity='0.12' stroke-width='0.3'/%3E%3Cline x1='22.3' y1='0' x2='22.3' y2='44' stroke='%237a5530' stroke-opacity='0.11' stroke-width='0.4'/%3E%3Cpolyline fill='none' stroke='%237a5a36' stroke-width='0.8' stroke-linejoin='bevel' points='-13.00,0.00 -6.00,11.00 -13.00,22.00'/%3E%3Cpolyline fill='none' stroke='%237a5a36' stroke-width='0.8' stroke-linejoin='bevel' points='13.00,0.00 6.00,11.00 13.00,22.00'/%3E%3Cline x1='-13.00' y1='0.00' x2='13.00' y2='0.00' stroke='%237a5a36' stroke-width='0.8'/%3E%3Cline x1='-13.00' y1='22.00' x2='13.00' y2='22.00' stroke='%237a5a36' stroke-width='0.8'/%3E%3Cpolyline fill='none' stroke='%237a5a36' stroke-width='0.8' stroke-linejoin='bevel' points='-13.00,22.00 -6.00,33.00 -13.00,44.00'/%3E%3Cpolyline fill='none' stroke='%237a5a36' stroke-width='0.8' stroke-linejoin='bevel' points='13.00,22.00 6.00,33.00 13.00,44.00'/%3E%3Cline x1='-13.00' y1='22.00' x2='13.00' y2='22.00' stroke='%237a5a36' stroke-width='0.8'/%3E%3Cline x1='-13.00' y1='44.00' x2='13.00' y2='44.00' stroke='%237a5a36' stroke-width='0.8'/%3E%3Cpolyline fill='none' stroke='%237a5a36' stroke-width='0.8' stroke-linejoin='bevel' points='6.00,-11.00 13.00,0.00 6.00,11.00'/%3E%3Cpolyline fill='none' stroke='%237a5a36' stroke-width='0.8' stroke-linejoin='bevel' points='32.00,-11.00 25.00,0.00 32.00,11.00'/%3E%3Cline x1='6.00' y1='-11.00' x2='32.00' y2='-11.00' stroke='%237a5a36' stroke-width='0.8'/%3E%3Cline x1='6.00' y1='11.00' x2='32.00' y2='11.00' stroke='%237a5a36' stroke-width='0.8'/%3E%3Cpolyline fill='none' stroke='%237a5a36' stroke-width='0.8' stroke-linejoin='bevel' points='6.00,11.00 13.00,22.00 6.00,33.00'/%3E%3Cpolyline fill='none' stroke='%237a5a36' stroke-width='0.8' stroke-linejoin='bevel' points='32.00,11.00 25.00,22.00 32.00,33.00'/%3E%3Cline x1='6.00' y1='11.00' x2='32.00' y2='11.00' stroke='%237a5a36' stroke-width='0.8'/%3E%3Cline x1='6.00' y1='33.00' x2='32.00' y2='33.00' stroke='%237a5a36' stroke-width='0.8'/%3E%3Cpolyline fill='none' stroke='%237a5a36' stroke-width='0.8' stroke-linejoin='bevel' points='6.00,33.00 13.00,44.00 6.00,55.00'/%3E%3Cpolyline fill='none' stroke='%237a5a36' stroke-width='0.8' stroke-linejoin='bevel' points='32.00,33.00 25.00,44.00 32.00,55.00'/%3E%3Cline x1='6.00' y1='33.00' x2='32.00' y2='33.00' stroke='%237a5a36' stroke-width='0.8'/%3E%3Cline x1='6.00' y1='55.00' x2='32.00' y2='55.00' stroke='%237a5a36' stroke-width='0.8'/%3E%3Cpolyline fill='none' stroke='%237a5a36' stroke-width='0.8' stroke-linejoin='bevel' points='25.00,0.00 32.00,11.00 25.00,22.00'/%3E%3Cpolyline fill='none' stroke='%237a5a36' stroke-width='0.8' stroke-linejoin='bevel' points='51.00,0.00 44.00,11.00 51.00,22.00'/%3E%3Cline x1='25.00' y1='0.00' x2='51.00' y2='0.00' stroke='%237a5a36' stroke-width='0.8'/%3E%3Cline x1='25.00' y1='22.00' x2='51.00' y2='22.00' stroke='%237a5a36' stroke-width='0.8'/%3E%3Cpolyline fill='none' stroke='%237a5a36' stroke-width='0.8' stroke-linejoin='bevel' points='25.00,22.00 32.00,33.00 25.00,44.00'/%3E%3Cpolyline fill='none' stroke='%237a5a36' stroke-width='0.8' stroke-linejoin='bevel' points='51.00,22.00 44.00,33.00 51.00,44.00'/%3E%3Cline x1='25.00' y1='22.00' x2='51.00' y2='22.00' stroke='%237a5a36' stroke-width='0.8'/%3E%3Cline x1='25.00' y1='44.00' x2='51.00' y2='44.00' stroke='%237a5a36' stroke-width='0.8'/%3E%3Cpolyline fill='none' stroke='%237a5a36' stroke-width='0.8' stroke-linejoin='bevel' points='44.00,-11.00 51.00,0.00 44.00,11.00'/%3E%3Cpolyline fill='none' stroke='%237a5a36' stroke-width='0.8' stroke-linejoin='bevel' points='70.00,-11.00 63.00,0.00 70.00,11.00'/%3E%3Cline x1='44.00' y1='-11.00' x2='70.00' y2='-11.00' stroke='%237a5a36' stroke-width='0.8'/%3E%3Cline x1='44.00' y1='11.00' x2='70.00' y2='11.00' stroke='%237a5a36' stroke-width='0.8'/%3E%3Cpolyline fill='none' stroke='%237a5a36' stroke-width='0.8' stroke-linejoin='bevel' points='44.00,11.00 51.00,22.00 44.00,33.00'/%3E%3Cpolyline fill='none' stroke='%237a5a36' stroke-width='0.8' stroke-linejoin='bevel' points='70.00,11.00 63.00,22.00 70.00,33.00'/%3E%3Cline x1='44.00' y1='11.00' x2='70.00' y2='11.00' stroke='%237a5a36' stroke-width='0.8'/%3E%3Cline x1='44.00' y1='33.00' x2='70.00' y2='33.00' stroke='%237a5a36' stroke-width='0.8'/%3E%3Cpolyline fill='none' stroke='%237a5a36' stroke-width='0.8' stroke-linejoin='bevel' points='44.00,33.00 51.00,44.00 44.00,55.00'/%3E%3Cpolyline fill='none' stroke='%237a5a36' stroke-width='0.8' stroke-linejoin='bevel' points='70.00,33.00 63.00,44.00 70.00,55.00'/%3E%3Cline x1='44.00' y1='33.00' x2='70.00' y2='33.00' stroke='%237a5a36' stroke-width='0.8'/%3E%3Cline x1='44.00' y1='55.00' x2='70.00' y2='55.00' stroke='%237a5a36' stroke-width='0.8'/%3E%3C/svg%3E")}
+:root{--ink:#1d1d1f;--sub:#6e6e73;--mute:#a1a1a6;--line:#e9e8e5;--bg:#f5f4f1;--card:#fff;--soft:#f2f1ee;--gold:#b8954a;--red:#c4412d;--r:10px;--rl:16px}
 *{box-sizing:border-box}
-body{margin:0;background:var(--wood) var(--bg);color:var(--ink);font:15px/1.6 "Hiragino Sans","Hiragino Kaku Gothic ProN","Noto Sans JP","Yu Gothic UI","Yu Gothic",system-ui,sans-serif}
-button{font:inherit;color:inherit;cursor:pointer}
-:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.65 "Hiragino Sans","Hiragino Kaku Gothic ProN","Noto Sans JP","Yu Gothic UI","Yu Gothic",system-ui,sans-serif;letter-spacing:.02em;-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;letter-spacing:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
 [hidden]{display:none!important}
-.top{background:#14171b;padding:calc(14px + env(safe-area-inset-top)) 20px 14px;display:flex;justify-content:space-between;align-items:center;gap:12px}
-.rail{height:44px;background:var(--spin) repeat-x;background-position:center}
-.top h1{margin:0;font-size:17px;font-weight:600;letter-spacing:.16em;color:var(--gold)}
-.top button{min-height:36px;padding:0 14px;border:1px solid #3a3f47;border-radius:99px;background:none;color:#c9ced6;font-size:13px}
-.wrap{max-width:780px;margin:0 auto;min-height:calc(100vh - 104px);background:var(--paper);box-shadow:0 0 0 1px #d6c7a6,0 8px 40px rgba(90,60,20,.18)}
-.pane{padding:18px 20px 60px}
-h3{margin:26px 0 6px;font-size:13px;font-weight:600;color:var(--sub);letter-spacing:.04em}
-h3:first-child{margin-top:0}
 
-.tabs{display:flex;border-bottom:1px solid var(--line);padding:0 12px;overflow-x:auto;background:#fff;position:sticky;top:0;z-index:3}
-.tab{flex:none;min-height:52px;padding:0 16px;border:0;border-bottom:3px solid transparent;background:none;font-weight:600;color:var(--sub);white-space:nowrap}
-.tab.on{color:var(--ink);border-bottom-color:var(--ink)}
+/* ヘッダー・タブ */
+.head{position:sticky;top:0;z-index:5;background:rgba(245,244,241,.9);backdrop-filter:saturate(1.6) blur(16px);-webkit-backdrop-filter:saturate(1.6) blur(16px);box-shadow:0 1px 0 var(--line)}
+.top{display:flex;justify-content:space-between;align-items:center;gap:12px;max-width:960px;margin:0 auto;padding:calc(14px + env(safe-area-inset-top)) 20px 8px}
+.top h1{display:flex;align-items:center;gap:10px;margin:0;font-size:15px;font-weight:600;letter-spacing:.12em}
+.top h1::before{content:"";width:5px;height:20px;border-radius:3px;background:linear-gradient(#d6b46a,#a8853d)}
+.top h1 small{font-size:11.5px;font-weight:500;color:var(--sub);letter-spacing:.08em}
+.top button{min-height:34px;padding:0 14px;border:0;border-radius:99px;background:none;color:var(--sub);font-size:13px}
+.top button:hover{background:#ebe9e4;color:var(--ink)}
+.tabs{display:flex;gap:2px;max-width:960px;margin:0 auto;padding:0 12px;overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{position:relative;flex:none;min-height:46px;padding:0 14px;border:0;background:none;font-size:14px;font-weight:600;color:var(--sub);white-space:nowrap}
+.tab:hover{color:var(--ink)}
+.tab.on{color:var(--ink)}
+.tab.on::after{content:"";position:absolute;left:14px;right:14px;bottom:0;height:2px;border-radius:2px;background:var(--ink)}
+.tab .dot{display:inline-block;width:6px;height:6px;margin-left:6px;border-radius:50%;background:var(--red);vertical-align:3px}
 
-label{display:block;margin:14px 0 5px;font-size:12.5px;font-weight:600;color:var(--sub)}
-label .note{font-weight:400}
-textarea{width:100%;min-height:92px;padding:10px 12px;border:1px solid #d8cdb8;border-radius:var(--r);background:#fff;color:var(--ink);font:inherit;font-size:16px;line-height:1.6;resize:vertical}
-textarea:focus{border-color:var(--ink);outline:2px solid var(--ink);outline-offset:-1px}
-input[type=text],input[type=password],input[type=date],input[type=time],input[type=number]{width:100%;height:46px;padding:0 12px;border:1px solid #d8cdb8;border-radius:var(--r);background:#fff;color:var(--ink);font:inherit;font-size:16px}
-input:focus{border-color:var(--ink);outline:2px solid var(--ink);outline-offset:-1px}
-.note{font-size:12.5px;color:var(--sub)}
+.wrap{max-width:960px;margin:0 auto}
+.pane{padding:22px 20px 80px}
+h3{margin:0 0 4px;font-size:15px;font-weight:600;letter-spacing:.06em}
+.card{background:var(--card);border-radius:var(--rl);box-shadow:0 0 0 1px var(--line),0 1px 2px rgba(0,0,0,.03)}
+.pad{padding:20px 20px 22px}
+.stack>*+*{margin-top:16px}
+
+/* フォーム */
+label{display:block;margin:16px 0 6px;font-size:12.5px;font-weight:600;color:var(--sub);letter-spacing:.04em}
+label .note{display:block;margin-top:1px;font-weight:400;font-size:11.5px;color:var(--mute)}
+textarea{display:block;width:100%;min-height:88px;padding:11px 14px;border:0;border-radius:var(--r);background:var(--soft);color:var(--ink);font:inherit;font-size:15px;line-height:1.7;resize:vertical;transition:box-shadow .15s,background .15s}
+input[type=text],input[type=password],input[type=date],input[type=time],input[type=number]{display:block;width:100%;height:44px;padding:0 14px;border:0;border-radius:var(--r);background:var(--soft);color:var(--ink);font:inherit;font-size:15px;transition:box-shadow .15s,background .15s}
+textarea:focus,input:focus{background:#fff;box-shadow:0 0 0 1.5px var(--ink);outline:none}
+.note{font-size:12.5px;line-height:1.75;color:var(--sub)}
 .err{color:var(--red)}
+.empty{padding:40px 0;text-align:center;color:var(--mute);font-size:14px}
 
-.btn{min-height:46px;padding:0 20px;border:0;border-radius:var(--r);background:var(--ink);color:#fff;font-weight:600;letter-spacing:.04em}
-.btn:disabled{background:#cfc8b8}
-.btn.sub{background:#fff;color:var(--ink);border:1px solid #d8cdb8}
-.btn.sm{min-height:38px;padding:0 14px;font-size:13px}
-.btn.danger{background:#fff;color:var(--red);border:1px solid #e4b8b0}
-.row{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap}
-.row>div{flex:1;min-width:130px}
-.row>div.fit{flex:none;min-width:0}
+.btn{min-height:44px;padding:0 20px;border:0;border-radius:99px;background:var(--ink);color:#fff;font-weight:600;letter-spacing:.06em;white-space:nowrap;transition:opacity .15s}
+.btn:hover{opacity:.88}
+.btn:disabled{background:#d6d5d1;opacity:1}
+.btn.sub{background:var(--card);color:var(--ink);box-shadow:inset 0 0 0 1px var(--line)}
+.btn.sub:hover{background:var(--soft);opacity:1}
+.btn.sm{min-height:34px;padding:0 14px;font-size:12.5px}
+.btn.danger{background:none;color:var(--sub);box-shadow:inset 0 0 0 1px var(--line)}
+.btn.danger:hover{background:#fbefec;color:var(--red);box-shadow:none;opacity:1}
 
-.it{display:flex;gap:14px;justify-content:space-between;align-items:center;padding:14px 0;border-bottom:1px solid var(--line)}
-.it .t{font-weight:600;font-variant-numeric:tabular-nums}
-.it .s{font-size:13px;color:var(--sub)}
-.tag{display:inline-block;margin-left:6px;padding:0 8px;border-radius:99px;background:#f3ead9;font-size:11.5px;font-weight:500;color:var(--sub);vertical-align:1px}
-.tag.l{background:#14171b;color:var(--gold)}
-.tag.w{background:#fde6c4;color:#8a4b00}
+/* ログイン */
+#login{max-width:380px;margin:12vh auto 0;padding:32px 28px 28px}
+@media (max-width:420px){#login{margin:8vh 16px 0}}
+@media (max-width:560px){.it{align-items:flex-start;gap:12px;padding:14px 14px 14px 16px}.it .tm{width:48px}.it .num{margin-top:2px}}
+#login h2{margin:0 0 4px;font-size:20px;font-weight:600;letter-spacing:.06em}
+#login .btn{width:100%;margin-top:18px;min-height:48px}
 
+/* 予約一覧 */
+.tool{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;padding:6px 16px 16px}
+.tool>div{flex:1;min-width:140px}
+.tool>div.fit{flex:none;min-width:0}
+.count{margin:22px 4px 0;font-size:12.5px;color:var(--sub)}
+.day{margin-top:22px}
+.day h4{display:flex;align-items:baseline;gap:10px;margin:0 4px 8px;font-size:14px;font-weight:600;letter-spacing:.04em;font-variant-numeric:tabular-nums}
+.day h4 span{font-size:12px;font-weight:500;color:var(--mute)}
+.it{display:flex;gap:16px;align-items:center;padding:14px 16px 14px 18px;border-bottom:1px solid var(--line)}
+.it:last-child{border-bottom:0}
+.it .tm{flex:none;width:58px;font-size:15px;font-weight:600;line-height:1.35;font-variant-numeric:tabular-nums}
+.it .tm small{display:block;font-size:11.5px;font-weight:500;color:var(--mute)}
+.it .num{flex:none;display:grid;place-items:center;width:28px;height:28px;border-radius:50%;background:var(--soft);font-size:12.5px;font-weight:600;color:var(--sub);font-variant-numeric:tabular-nums}
+.it .bd{flex:1;min-width:0}
+.it .t{font-weight:600}
+.it .s{font-size:13px}
+.it .s2{font-size:12px;color:var(--mute);overflow-wrap:anywhere}
+.tag{display:inline-block;margin-left:8px;padding:0 8px;border-radius:99px;background:var(--soft);font-size:11px;font-weight:600;line-height:1.75;color:var(--sub);vertical-align:2px}
+.tag.l{background:#f3ecdc;color:#8a6a2a}
+.tag.w{background:#fdecd2;color:#9a5300}
+
+/* 設定 */
+.fields{display:grid;grid-template-columns:1fr;column-gap:16px}
+.fields>div{display:flex;flex-direction:column;justify-content:flex-end}
+@media (min-width:720px){.fields{grid-template-columns:1fr 1fr}.fields.three{grid-template-columns:1fr 1fr 1fr}}
 .mrow{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center;margin-bottom:8px}
-.chk{display:flex;align-items:center;gap:6px;white-space:nowrap;font-size:14px;margin:0;color:var(--ink);font-weight:500}
-.chk input{width:20px;height:20px;accent-color:var(--ink)}
-.tab .dot{display:inline-block;width:8px;height:8px;margin-left:6px;border-radius:50%;background:var(--red);vertical-align:2px}
-.warn{margin:0 0 6px;padding:12px 14px;border-radius:var(--r);background:#fdf0d8;color:#7a4300;font-size:13.5px}
-.mon{margin:0 0 30px}
-.mon-h{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:6px}
-.mon-h b{font-size:17px;letter-spacing:.04em}
-.st{display:inline-block;margin-left:8px;padding:1px 10px;border-radius:99px;font-size:12px;font-weight:600;vertical-align:2px}
-.st.ok{background:#e3efe4;color:#2d6a3a}.st.no{background:#fde6c4;color:#8a4b00}
+.chk{display:flex;align-items:center;gap:7px;margin:0;white-space:nowrap;font-size:13.5px;font-weight:500;color:var(--ink)}
+.chk input{width:18px;height:18px;margin:0;accent-color:var(--ink)}
+#modelList{margin-top:14px}
+
+/* 休業日 */
+.warn{display:flex;gap:10px;margin:0 0 14px;padding:12px 16px;border-radius:12px;background:#fdf1dd;color:#7a4a00;font-size:13px;line-height:1.7}
+.warn::before{content:"!";flex:none;display:grid;place-items:center;width:18px;height:18px;margin-top:2px;border-radius:50%;background:#e0891c;color:#fff;font-size:11px;font-weight:700}
+.hint{margin:0 4px 18px}
+#holCal{display:grid;grid-template-columns:1fr;gap:16px}
+#holCal>.mon+.mon{display:none}
+@media (min-width:820px){#holCal{grid-template-columns:1fr 1fr}#holCal>.mon+.mon{display:block}}
+.months{display:flex;gap:6px;margin:0 -20px 16px;padding:2px 20px 6px;overflow-x:auto;scrollbar-width:none;scroll-snap-type:x proximity}
+.months::-webkit-scrollbar{display:none}
+.mchip{flex:none;display:flex;flex-direction:column;align-items:center;min-width:64px;padding:8px 10px 7px;border:0;border-radius:12px;background:var(--card);box-shadow:inset 0 0 0 1px var(--line);scroll-snap-align:start;transition:background .15s,color .15s}
+.mchip:hover{background:var(--soft)}
+.mchip small{font-size:10px;color:var(--mute);line-height:1.3;letter-spacing:.04em}
+.mchip b{font-size:15px;line-height:1.35;font-variant-numeric:tabular-nums}
+.mchip i{display:flex;align-items:center;gap:4px;margin-top:3px;font-style:normal;font-size:10.5px;color:var(--sub);font-variant-numeric:tabular-nums}
+.mchip i::before{content:"";width:5px;height:5px;border-radius:50%;background:#d47a12}
+.mchip i.ok::before{background:#2f8f63}
+.mchip.on{background:var(--ink);color:#fff;box-shadow:none}
+.mchip.on small,.mchip.on i{color:#a5a5aa}
+.mon{padding:16px 16px 18px}
+.mon-h{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 2px 12px}
+.mon-h b{font-size:16px;letter-spacing:.06em}
+.st{display:inline-flex;align-items:center;gap:5px;margin-left:10px;font-size:12px;font-weight:600;vertical-align:1px}
+.st::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+.st.ok{color:#2f8f63}.st.no{color:#d47a12}
 .mcal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
-.mcal .wd{padding:4px 0;text-align:center;font-size:12px;color:var(--mute)}
-.mcal .wd.sun{color:#c4573f}.mcal .wd.sat{color:#3d6fb4}
-.dd{height:44px;border:1px solid var(--line);border-radius:8px;background:#fff;font-size:15px;font-weight:600;font-variant-numeric:tabular-nums}
-.dd.past{color:#c9c1b0;font-weight:400}
-.dd.cl{background:var(--ink);border-color:var(--ink);color:#fff}
-.wdbar{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin:10px 0 0;font-size:12.5px;color:var(--sub)}
-.wdbar button{min-width:36px;height:34px;border:1px solid #d8cdb8;border-radius:99px;background:#fff;font-size:13px;font-weight:600}
-.savebar{position:sticky;bottom:0;padding:12px 20px calc(12px + env(safe-area-inset-bottom));background:#fff;border-top:1px solid var(--line);margin:24px -20px -60px}
-.savebar .btn{width:100%}
+.mcal .wd{height:30px;border:0;border-radius:8px;background:none;font-size:11.5px;font-weight:600;color:var(--mute)}
+.mcal .wd:hover{background:var(--soft);color:var(--ink)}
+.mcal .wd.sun{color:#c0503c}.mcal .wd.sat{color:#4a72b0}
+.dd{height:40px;border:0;border-radius:9px;background:var(--soft);font-size:14px;font-weight:600;font-variant-numeric:tabular-nums;transition:background .12s,color .12s}
+.dd:hover{background:#e7e5e0}
+.dd.past{background:none;color:#cfcec9;font-weight:400}
+.dd.cl{background:var(--ink);color:#fff}
+.dd.cl.past{background:#d6d5d1;color:#fff}
+
+.savebar{position:sticky;bottom:0;z-index:4;display:flex;justify-content:flex-end;margin:24px -20px -80px;padding:12px 20px calc(12px + env(safe-area-inset-bottom));background:rgba(245,244,241,.9);backdrop-filter:saturate(1.6) blur(16px);-webkit-backdrop-filter:saturate(1.6) blur(16px);box-shadow:0 -1px 0 var(--line)}
+.savebar .btn{min-width:220px}
+@media (max-width:560px){.savebar .btn{width:100%}}
 </style>
 </head>
 <body>
-<header class="top"><h1>洗車予約 管理</h1><button id="logout" hidden>ログアウト</button></header>
-<div class="rail"></div>
-<div class="wrap">
-
-<div class="pane" id="login">
-  <h3>管理者パスワード</h3>
-  <input type="password" id="pw" autocomplete="current-password">
-  <p><button class="btn" id="loginBtn" style="width:100%">ログイン</button></p>
-  <p class="err" id="loginErr"></p>
-</div>
-
-<div id="app" hidden>
-  <nav class="tabs">
+<div class="head">
+<header class="top"><h1>洗車予約 <small>管理</small></h1><button id="logout" hidden>ログアウト</button></header>
+<nav class="tabs" id="tabs" hidden>
     <button class="tab on" data-t="res">予約</button>
     <button class="tab" data-t="wait">キャンセル待ち</button>
     <button class="tab" data-t="hol">休業日<i class="dot" id="holDot" hidden></i></button>
     <button class="tab" data-t="set">設定</button>
     <button class="tab" data-t="txt">画面の文章</button>
-  </nav>
+</nav>
+</div>
+<div class="wrap">
+
+<div class="card" id="login">
+  <h2>ログイン</h2>
+  <label for="pw">管理者パスワード</label>
+  <input type="password" id="pw" autocomplete="current-password">
+  <button class="btn" id="loginBtn">ログイン</button>
+  <p class="err" id="loginErr"></p>
+</div>
+
+<div id="app" hidden>
 
   <div id="t-res" class="pane">
-    <div class="row">
-      <div><label for="from">から</label><input type="date" id="from"></div>
-      <div><label for="to">まで</label><input type="date" id="to"></div>
+    <div class="card tool">
+      <div><label for="from">期間</label><input type="date" id="from"></div>
+      <div><label for="to">〜</label><input type="date" id="to"></div>
       <div class="fit"><button class="btn" id="resGo">表示</button></div>
     </div>
-    <div id="resList" style="margin-top:8px"></div>
+    <div id="resList"></div>
   </div>
 
   <div id="t-wait" class="pane" hidden>
-    <p class="note" style="margin-top:0">登録が早い順です。「通知中」は、空き枠を確保して案内メールを送った状態です(保留時間を過ぎると次の方へ)。</p>
+    <p class="note hint" style="margin-top:0">登録が早い順です。「通知中」は空き枠を確保して案内メールを送った状態で、保留時間を過ぎると次の方へ移ります。</p>
     <div id="waitList"></div>
   </div>
 
   <div id="t-set" class="pane" hidden>
-    <div id="setList"></div>
-    <h3>車種</h3>
-    <p class="note" style="margin:0 0 10px">「大型」にチェックした車種は、洗車時間が長くなります。</p>
-    <div id="modelList"></div>
-    <button class="btn sub sm" id="addModel">車種を追加</button>
+    <div id="setList" class="stack"></div>
+    <section class="card pad" style="margin-top:16px">
+      <h3>車種</h3>
+      <p class="note" style="margin:0">「大型」にチェックした車種は、洗車時間が長くなります。</p>
+      <div id="modelList"></div>
+      <button class="btn sub sm" id="addModel">+ 車種を追加</button>
+    </section>
     <div class="savebar"><button class="btn" id="saveSet">設定を保存する</button></div>
   </div>
 
   <div id="t-hol" class="pane" hidden>
     <div class="warn" id="holWarn" hidden></div>
-    <p class="note" style="margin:8px 0 14px">お休みの日をタップすると黒くなります(もう一度で解除)。月末の火曜だけ営業、のように日ごとに決められます。お休みがない月も「この月を確定」を押してください。先1年ぶんまで設定できます。今月〜3か月先が未確定のあいだは、毎日管理者メールにお知らせが届きます。</p>
+    <p class="note hint">月を選んで日付をタップするとお休み/営業が切り替わります(自動保存)。曜日名をタップすると、その月の同じ曜日をまとめて切り替えます。お休みがない月も「この月を確定」を押してください。先1年ぶんまで設定でき、今月〜3か月先が未確定のあいだは毎日管理者メールにお知らせが届きます。</p>
+    <div class="months" id="holMonths" role="tablist" aria-label="月を選ぶ"></div>
     <div id="holCal"></div>
   </div>
 
   <div id="t-txt" class="pane" hidden>
-    <p class="note" style="margin:0 0 4px">お客様の画面に出る文章です。空にすると、その文章は表示されなくなります。</p>
-    <div id="txtList"></div>
+    <p class="note hint" style="margin-top:0">お客様の画面に出る文章です。空にすると、その文章は表示されなくなります。</p>
+    <div id="txtList" class="card pad" style="padding-top:4px"></div>
     <div class="savebar"><button class="btn" id="saveTxt">文章を保存する</button></div>
   </div>
 </div>
@@ -152,7 +216,7 @@ async function api(action, data) {
 function busy(btn, fn) { return async () => { btn.disabled = true; try { await fn(); } catch (e) { alert(e.message); } finally { btn.disabled = false; } }; }
 
 async function enter() {
-  $('login').hidden = true; $('app').hidden = false; $('logout').hidden = false;
+  $('login').hidden = true; $('app').hidden = false; $('logout').hidden = false; $('tabs').hidden = false;
   const t = new Date(), f = d => d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
   $('from').value = f(t); const e = new Date(t); e.setMonth(e.getMonth() + 3); $('to').value = f(e);
   await loadRes();
@@ -174,9 +238,10 @@ document.querySelectorAll('.tab').forEach(b => b.onclick = () => {
 
 /* 予約 */
 async function loadRes() {
-  $('resList').innerHTML = '<p class="note">読み込み中…</p>';
+  $('resList').innerHTML = '<p class="empty">読み込み中…</p>';
   const list = await api('adminRes', { from: $('from').value, to: $('to').value });
-  $('resList').innerHTML = list.length ? list.map(r => `<div class="it"><div><div class="t">${dJa(r.date)} ${r.start}〜${r.end}<span class="tag ${r.large ? 'l' : ''}">${r.large ? '大型' : '普通'}</span>${r.status === '保留' ? '<span class="tag w">案内中</span>' : ''}</div><div>${esc(r.name)} ・ ${esc(r.model)} ・ ${esc(r.plate)}</div><div class="s">${esc(r.phone)} ・ ${esc(r.email)} ・ No.${esc(r.no)}</div></div><button class="btn danger sm" data-c="${r.id}">取消</button></div>`).join('') : '<p class="note">この期間の予約はありません。</p>';
+  const byDay = {}; list.forEach(r => (byDay[r.date] = byDay[r.date] || []).push(r));
+  $('resList').innerHTML = list.length ? `<p class="count">${list.length}件の予約</p>` + Object.keys(byDay).map(d => `<section class="day"><h4>${dJa(d)}<span>${byDay[d].length}件</span></h4><div class="card">` + byDay[d].map(r => `<div class="it"><div class="tm">${r.start}<small>〜${r.end}</small></div><div class="bd"><div class="t">${esc(r.name)}<span class="tag ${r.large ? 'l' : ''}">${r.large ? '大型' : '普通'}</span>${r.status === '保留' ? '<span class="tag w">案内中</span>' : ''}</div><div class="s">${esc(r.model)} ・ ${esc(r.plate)}</div><div class="s2">${esc(r.phone)} ・ ${esc(r.email)} ・ No.${esc(r.no)}</div></div><button class="btn danger sm" data-c="${r.id}">取消</button></div>`).join('') + '</div></section>').join('') : '<p class="empty">この期間の予約はありません。</p>';
   $('resList').querySelectorAll('[data-c]').forEach(b => b.onclick = busy(b, async () => {
     if (!confirm('この予約を取り消しますか?\nお客様へキャンセルメールを送り、キャンセル待ちの方へ案内します。')) return;
     await api('adminCancel', { id: b.dataset.c }); await loadRes();
@@ -186,9 +251,9 @@ $('resGo').onclick = busy($('resGo'), loadRes);
 
 /* キャンセル待ち */
 async function loadWait() {
-  $('waitList').innerHTML = '<p class="note">読み込み中…</p>';
+  $('waitList').innerHTML = '<p class="empty">読み込み中…</p>';
   const list = await api('adminWaits');
-  $('waitList').innerHTML = list.length ? list.map((w, i) => `<div class="it"><div><div class="t">${i + 1}. ${esc(w.name)} ・ ${esc(w.model)} ・ ${esc(w.plate)}${w.state === '通知中' ? '<span class="tag w">通知中</span>' : ''}</div><div>${esc(w.summary)}(対象${w.count}日)</div><div class="s">登録 ${esc(w.created)} ・ ${esc(w.phone)} ・ ${esc(w.email)}</div></div><button class="btn danger sm" data-w="${w.id}">削除</button></div>`).join('') : '<p class="note">キャンセル待ちはありません。</p>';
+  $('waitList').innerHTML = list.length ? '<div class="card">' + list.map((w, i) => `<div class="it"><div class="num">${i + 1}</div><div class="bd"><div class="t">${esc(w.name)}${w.state === '通知中' ? '<span class="tag w">通知中</span>' : ''}</div><div class="s">${esc(w.summary)}(対象${w.count}日)</div><div class="s2">${esc(w.model)} ・ ${esc(w.plate)} ・ ${esc(w.phone)} ・ ${esc(w.email)} ・ 登録 ${esc(w.created)}</div></div><button class="btn danger sm" data-w="${w.id}">削除</button></div>`).join('') + '</div>' : '<p class="empty">キャンセル待ちはありません。</p>';
   $('waitList').querySelectorAll('[data-w]').forEach(b => b.onclick = busy(b, async () => {
     if (!confirm('このキャンセル待ちを削除しますか?')) return;
     await api('adminWaitStop', { id: b.dataset.w }); await loadWait();
@@ -211,11 +276,11 @@ const pad = n => String(n).padStart(2, '0');
 function drawAll() { if (!G) return; drawSet(); drawTxt(); drawHol(); dot(); }
 function dot() { const n = G.need.filter(m => !G.confirmed.includes(m)).length; $('holDot').hidden = !n; }
 function drawSet() {
-  $('setList').innerHTML = GROUPS.map(g => `<h3>${g[0]}</h3>` + g[1].map(f => {
+  $('setList').innerHTML = GROUPS.map(g => `<section class="card pad"><h3>${g[0]}</h3><div class="fields${g[1].length > 6 ? ' three' : ''}">` + g[1].map(f => {
     const s = sv(f[0]); if (!s) return '';
     const val = f[1] === 'time' ? tv(s.v) : s.v;
-    return `<label for="k-${esc(f[0])}">${esc(f[0])}${s.d ? ' <span class="note">' + esc(s.d) + '</span>' : ''}</label><input id="k-${esc(f[0])}" type="${f[1]}" ${f[1] === 'number' ? 'inputmode="numeric" min="0"' : ''} data-k="${esc(f[0])}" value="${esc(val)}">`;
-  }).join('')).join('');
+    return `<div><label for="k-${esc(f[0])}">${esc(f[0])}${s.d ? ' <span class="note">' + esc(s.d) + '</span>' : ''}</label><input id="k-${esc(f[0])}" type="${f[1]}" ${f[1] === 'number' ? 'inputmode="numeric" min="0"' : ''} data-k="${esc(f[0])}" value="${esc(val)}"></div>`;
+  }).join('') + '</div></section>').join('');
   $('setList').querySelectorAll('[data-k]').forEach(e => e.oninput = () => { sv(e.dataset.k).v = e.value; dirty = true; });
   $('modelList').innerHTML = G.models.map((m, i) => `<div class="mrow"><input type="text" aria-label="車種名" data-mn="${i}" value="${esc(m.name)}"><label class="chk"><input type="checkbox" data-ml="${i}" ${m.large ? 'checked' : ''}>大型</label><button class="btn danger sm" data-md="${i}">削除</button></div>`).join('');
   $('modelList').querySelectorAll('[data-mn]').forEach(e => e.oninput = () => { G.models[e.dataset.mn].name = e.value; dirty = true; });
@@ -228,24 +293,39 @@ $('addModel').onclick = () => { G.models.push({ name: '', large: false }); dirty
 const TXT_LABEL = { 'ヘッダー': '一番上(店名の下)', 'トップ見出し': 'トップ画面の見出し(洗車を予約する)', 'トップ': 'トップ画面の説明', '予約ボタン': 'トップ画面の予約ボタン', 'トップご案内': 'トップ画面の案内表', '洗車時間': '車種の下の洗車時間', 'お車の情報': 'お車の情報画面の注意書き', 'キャンセル待ち': 'キャンセル待ち画面の説明', '完了': '予約完了画面の注意書き' };
 function drawTxt() {
   const rows = G.settings.filter(s => s.k.indexOf('文_') === 0);
-  $('txtList').innerHTML = rows.map(s => { const n = s.k.slice(2); return `<label for="x-${esc(s.k)}">${esc(TXT_LABEL[n] || n)}<br><span class="note">${esc(s.d)}</span></label><textarea id="x-${esc(s.k)}" data-x="${esc(s.k)}" ${n === 'トップご案内' ? 'style="min-height:150px"' : ''}>${esc(s.v)}</textarea>`; }).join('') +
-    '<p class="note" style="margin-top:18px">案内表では {普通分} {大型分} {昼休憩} と書くと、現在の設定の数字に自動で入れ替わります。</p>';
+  $('txtList').innerHTML = rows.map(s => { const n = s.k.slice(2); return `<label for="x-${esc(s.k)}">${esc(TXT_LABEL[n] || n)}${s.d ? '<span class="note">' + esc(s.d) + '</span>' : ''}</label><textarea id="x-${esc(s.k)}" data-x="${esc(s.k)}" ${n === 'トップご案内' ? 'style="min-height:150px"' : ''}>${esc(s.v)}</textarea>`; }).join('') +
+    '<p class="note" style="margin:16px 0 0">案内表では {普通分} {大型分} {昼休憩} と書くと、現在の設定の数字に自動で入れ替わります。</p>';
   $('txtList').querySelectorAll('[data-x]').forEach(e => e.oninput = () => { sv(e.dataset.x).v = e.value; dirty = true; });
 }
 
 /* 休業日(ミニカレンダー) */
+/** 休業日を設定できる月: 今月から1年先まで(サーバーが返す月も含める) */
+let holYm = null;
+function holMonths() {
+  const set = new Set([].concat(G.months || [], G.need || [], G.confirmed || []));
+  const a = G.today.split('-').map(Number);
+  for (let i = 0; i <= 12; i++) { const d = new Date(a[0], a[1] - 1 + i, 1); set.add(d.getFullYear() + '-' + pad(d.getMonth() + 1)); }
+  const cur = G.today.slice(0, 7);
+  return [...set].filter(m => m >= cur).sort();
+}
 function drawHol() {
   const need = G.need, un = need.filter(m => !G.confirmed.includes(m));
   $('holWarn').hidden = !un.length;
   $('holWarn').textContent = un.length ? '未確定の月があります: ' + un.map(ymJa).join('、') + '。お休みを選んで「この月を確定」を押してください。' : '';
-  const closed = new Set(G.holidays.map(h => h.date));
-  $('holCal').innerHTML = (G.months || need).map(ym => {
+  const closed = new Set(G.holidays.map(h => h.date)), list = holMonths();
+  if (!list.includes(holYm)) holYm = un.find(m => list.includes(m)) || list[0];
+  const cnt = ym => G.holidays.filter(h => h.date.slice(0, 7) === ym).length;
+  $('holMonths').innerHTML = list.map(ym => { const a = ym.split('-'), ok = G.confirmed.includes(ym); return `<button class="mchip ${ym === holYm ? 'on' : ''}" role="tab" aria-selected="${ym === holYm}" data-ym="${ym}"><small>${a[0]}</small><b>${+a[1]}月</b><i class="${ok ? 'ok' : ''}">休${cnt(ym)}</i></button>`; }).join('');
+  $('holMonths').querySelectorAll('[data-ym]').forEach(b => b.onclick = () => { holYm = b.dataset.ym; drawHol(); });
+  const on = $('holMonths').querySelector('.on'); if (on) on.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+  const idx = list.indexOf(holYm);
+  $('holCal').innerHTML = list.slice(idx, idx + 2).map(ym => {
     const a = ym.split('-').map(Number), first = new Date(a[0], a[1] - 1, 1).getDay(), last = new Date(a[0], a[1], 0).getDate(), ok = G.confirmed.includes(ym);
-    let h = `<div class="mon"><div class="mon-h"><div><b>${ymJa(ym)}</b><span class="st ${ok ? 'ok' : 'no'}">${ok ? '確定済み' : '未確定'}</span></div><button class="btn ${ok ? 'sub' : ''} sm" data-cf="${ym}">${ok ? '確定を取り消す' : 'この月を確定'}</button></div><div class="mcal">`;
-    h += WD.map((w, i) => `<div class="wd ${i === 0 ? 'sun' : i === 6 ? 'sat' : ''}">${w}</div>`).join('');
+    let h = `<div class="card mon"><div class="mon-h"><div><b>${ymJa(ym)}</b><span class="st ${ok ? 'ok' : 'no'}">${ok ? '確定済み' : '未確定'}</span></div><button class="btn ${ok ? 'sub' : ''} sm" data-cf="${ym}">${ok ? '確定を取り消す' : 'この月を確定'}</button></div><div class="mcal">`;
+    h += WD.map((w, i) => `<button class="wd ${i === 0 ? 'sun' : i === 6 ? 'sat' : ''}" data-wk="${ym}|${i}" title="${w}曜日をまとめて切り替え" aria-label="${ymJa(ym)}の${w}曜日をまとめて切り替え">${w}</button>`).join('');
     for (let i = 0; i < first; i++) h += '<div></div>';
     for (let d = 1; d <= last; d++) { const ds = ym + '-' + pad(d); h += `<button class="dd ${closed.has(ds) ? 'cl' : ''} ${ds < G.today ? 'past' : ''}" data-d="${ds}" aria-pressed="${closed.has(ds)}" aria-label="${ds}">${d}</button>`; }
-    h += `</div><div class="wdbar">曜日まとめて:${WD.map((w, i) => `<button data-wk="${ym}|${i}">${w}</button>`).join('')}</div></div>`;
+    h += '</div></div>';
     return h;
   }).join('');
   $('holCal').querySelectorAll('[data-d]').forEach(b => b.onclick = () => { toggleDays([b.dataset.d]); });
