@@ -27,6 +27,8 @@ h3:first-child{margin-top:0}
 
 label{display:block;margin:14px 0 5px;font-size:12.5px;font-weight:600;color:var(--sub)}
 label .note{font-weight:400}
+textarea{width:100%;min-height:92px;padding:10px 12px;border:1px solid #cfd4da;border-radius:var(--r);background:#fff;color:var(--ink);font:inherit;font-size:16px;line-height:1.6;resize:vertical}
+textarea:focus{border-color:var(--ink);outline:2px solid var(--ink);outline-offset:-1px}
 input[type=text],input[type=password],input[type=date],input[type=time],input[type=number]{width:100%;height:46px;padding:0 12px;border:1px solid #cfd4da;border-radius:var(--r);background:#fff;color:var(--ink);font:inherit;font-size:16px}
 input:focus{border-color:var(--ink);outline:2px solid var(--ink);outline-offset:-1px}
 .note{font-size:12.5px;color:var(--sub)}
@@ -51,6 +53,21 @@ input:focus{border-color:var(--ink);outline:2px solid var(--ink);outline-offset:
 .mrow{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center;margin-bottom:8px}
 .chk{display:flex;align-items:center;gap:6px;white-space:nowrap;font-size:14px;margin:0;color:var(--ink);font-weight:500}
 .chk input{width:20px;height:20px;accent-color:var(--ink)}
+.tab .dot{display:inline-block;width:8px;height:8px;margin-left:6px;border-radius:50%;background:var(--red);vertical-align:2px}
+.warn{margin:0 0 6px;padding:12px 14px;border-radius:var(--r);background:#fdf0d8;color:#7a4300;font-size:13.5px}
+.mon{margin:0 0 30px}
+.mon-h{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:6px}
+.mon-h b{font-size:17px;letter-spacing:.04em}
+.st{display:inline-block;margin-left:8px;padding:1px 10px;border-radius:99px;font-size:12px;font-weight:600;vertical-align:2px}
+.st.ok{background:#e3efe4;color:#2d6a3a}.st.no{background:#fde6c4;color:#8a4b00}
+.mcal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.mcal .wd{padding:4px 0;text-align:center;font-size:12px;color:var(--mute)}
+.mcal .wd.sun{color:#c4573f}.mcal .wd.sat{color:#3d6fb4}
+.dd{height:44px;border:1px solid var(--line);border-radius:8px;background:#fff;font-size:15px;font-weight:600;font-variant-numeric:tabular-nums}
+.dd.past{color:#c3c8cf;font-weight:400}
+.dd.cl{background:var(--ink);border-color:var(--ink);color:#fff}
+.wdbar{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin:10px 0 0;font-size:12.5px;color:var(--sub)}
+.wdbar button{min-width:36px;height:34px;border:1px solid #cfd4da;border-radius:99px;background:#fff;font-size:13px;font-weight:600}
 .savebar{position:sticky;bottom:0;padding:12px 20px calc(12px + env(safe-area-inset-bottom));background:#fff;border-top:1px solid var(--line);margin:24px -20px -60px}
 .savebar .btn{width:100%}
 </style>
@@ -70,7 +87,9 @@ input:focus{border-color:var(--ink);outline:2px solid var(--ink);outline-offset:
   <nav class="tabs">
     <button class="tab on" data-t="res">予約</button>
     <button class="tab" data-t="wait">キャンセル待ち</button>
+    <button class="tab" data-t="hol">休業日<i class="dot" id="holDot" hidden></i></button>
     <button class="tab" data-t="set">設定</button>
+    <button class="tab" data-t="txt">画面の文章</button>
   </nav>
 
   <div id="t-res" class="pane">
@@ -93,10 +112,19 @@ input:focus{border-color:var(--ink);outline:2px solid var(--ink);outline-offset:
     <p class="note" style="margin:0 0 10px">「大型」にチェックした車種は、洗車時間が長くなります。</p>
     <div id="modelList"></div>
     <button class="btn sub sm" id="addModel">車種を追加</button>
-    <h3>休業日(臨時休業など)</h3>
-    <div id="holList"></div>
-    <div class="row" style="margin-top:6px"><div><label for="holDate">日付</label><input type="date" id="holDate"></div><div><label for="holNote">メモ</label><input type="text" id="holNote"></div><div class="fit"><button class="btn sub" id="addHol">追加</button></div></div>
     <div class="savebar"><button class="btn" id="saveSet">設定を保存する</button></div>
+  </div>
+
+  <div id="t-hol" class="pane" hidden>
+    <div class="warn" id="holWarn" hidden></div>
+    <p class="note" style="margin:8px 0 14px">お休みの日をタップすると黒くなります(もう一度で解除)。月末の火曜だけ営業、のように日ごとに決められます。お休みがない月も「この月を確定」を押してください。今月〜3か月先が未確定のあいだは、毎日管理者メールにお知らせが届きます。</p>
+    <div id="holCal"></div>
+  </div>
+
+  <div id="t-txt" class="pane" hidden>
+    <p class="note" style="margin:0 0 4px">お客様の画面に出る文章です。空にすると、その文章は表示されなくなります。</p>
+    <div id="txtList"></div>
+    <div class="savebar"><button class="btn" id="saveTxt">文章を保存する</button></div>
   </div>
 </div>
 </div>
@@ -126,6 +154,7 @@ async function enter() {
   const t = new Date(), f = d => d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
   $('from').value = f(t); const e = new Date(t); e.setMonth(e.getMonth() + 3); $('to').value = f(e);
   await loadRes();
+  ensureG().then(dot).catch(() => {});
 }
 $('loginBtn').onclick = busy($('loginBtn'), async () => {
   pw = $('pw').value; $('loginErr').textContent = '';
@@ -136,9 +165,9 @@ $('pw').addEventListener('keydown', e => { if (e.key === 'Enter') $('loginBtn').
 $('logout').onclick = () => { sessionStorage.removeItem('wash_admin_pw'); location.reload(); };
 document.querySelectorAll('.tab').forEach(b => b.onclick = () => {
   document.querySelectorAll('.tab').forEach(x => x.classList.toggle('on', x === b));
-  ['res', 'wait', 'set'].forEach(k => $('t-' + k).hidden = k !== b.dataset.t);
+  ['res', 'wait', 'hol', 'set', 'txt'].forEach(k => $('t-' + k).hidden = k !== b.dataset.t);
   if (b.dataset.t === 'wait') loadWait().catch(e => alert(e.message));
-  if (b.dataset.t === 'set') loadSet().catch(e => alert(e.message));
+  if (['hol', 'set', 'txt'].includes(b.dataset.t)) ensureG().then(drawAll).catch(e => alert(e.message));
 });
 
 /* 予約 */
@@ -164,36 +193,95 @@ async function loadWait() {
   }));
 }
 
-/* 設定 */
-async function loadSet() { G = await api('adminGet'); drawSet(); }
+/* 設定・休業日・文章(同じデータ G を使う) */
+let dirty = false;
+async function ensureG() { if (!G) G = await api('adminGet'); return G; }
+async function reloadG() { G = await api('adminGet'); dirty = false; drawAll(); }
 const GROUPS = [
   ['台数・時間', [['同時洗車台数', 'number'], ['開始', 'time'], ['最終開始(普通)', 'time'], ['最終開始(大型)', 'time'], ['昼休憩開始', 'time'], ['昼休憩終了', 'time'], ['洗車分(普通)', 'number'], ['洗車分(大型)', 'number'], ['刻み分', 'number']]],
-  ['予約ルール', [['先行月数', 'number'], ['解禁時刻', 'time'], ['最短日数', 'number'], ['定休曜日', 'text'], ['保留時間(分)', 'number']]],
-  ['表示・メール', [['店舗名', 'text'], ['サイトURL', 'text'], ['問い合わせ先', 'text']]]
+  ['予約ルール', [['先行月数', 'number'], ['解禁時刻', 'time'], ['最短日数', 'number'], ['保留時間(分)', 'number']]],
+  ['表示・メール', [['店舗名', 'text'], ['サイトURL', 'text'], ['問い合わせ先', 'text'], ['管理者メール', 'text']]]
 ];
 const sv = k => G.settings.find(s => s.k === k);
 const tv = v => { const m = String(v).match(/^(\d{1,2}):(\d{2})/); return m ? m[1].padStart(2, '0') + ':' + m[2] : ''; };
+const ymJa = ym => { const a = ym.split('-'); return a[0] + '年' + (+a[1]) + '月'; };
+const pad = n => String(n).padStart(2, '0');
+function drawAll() { if (!G) return; drawSet(); drawTxt(); drawHol(); dot(); }
+function dot() { const n = G.need.filter(m => !G.confirmed.includes(m)).length; $('holDot').hidden = !n; }
 function drawSet() {
   $('setList').innerHTML = GROUPS.map(g => `<h3>${g[0]}</h3>` + g[1].map(f => {
     const s = sv(f[0]); if (!s) return '';
     const val = f[1] === 'time' ? tv(s.v) : s.v;
     return `<label for="k-${esc(f[0])}">${esc(f[0])}${s.d ? ' <span class="note">' + esc(s.d) + '</span>' : ''}</label><input id="k-${esc(f[0])}" type="${f[1]}" ${f[1] === 'number' ? 'inputmode="numeric" min="0"' : ''} data-k="${esc(f[0])}" value="${esc(val)}">`;
   }).join('')).join('');
-  $('setList').querySelectorAll('[data-k]').forEach(e => e.oninput = () => { sv(e.dataset.k).v = e.value; });
+  $('setList').querySelectorAll('[data-k]').forEach(e => e.oninput = () => { sv(e.dataset.k).v = e.value; dirty = true; });
   $('modelList').innerHTML = G.models.map((m, i) => `<div class="mrow"><input type="text" aria-label="車種名" data-mn="${i}" value="${esc(m.name)}"><label class="chk"><input type="checkbox" data-ml="${i}" ${m.large ? 'checked' : ''}>大型</label><button class="btn danger sm" data-md="${i}">削除</button></div>`).join('');
-  $('holList').innerHTML = G.holidays.length ? G.holidays.map((h, i) => `<div class="it" style="padding:8px 0"><div>${esc(h.date)} <span class="s">${esc(h.note || '')}</span></div><button class="btn danger sm" data-hd="${i}">削除</button></div>`).join('') : '<p class="note" style="margin:0">登録はありません。</p>';
-  $('modelList').querySelectorAll('[data-mn]').forEach(e => e.oninput = () => G.models[e.dataset.mn].name = e.value);
-  $('modelList').querySelectorAll('[data-ml]').forEach(e => e.onchange = () => G.models[e.dataset.ml].large = e.checked);
-  $('modelList').querySelectorAll('[data-md]').forEach(e => e.onclick = () => { G.models.splice(+e.dataset.md, 1); drawSet(); });
-  $('holList').querySelectorAll('[data-hd]').forEach(e => e.onclick = () => { G.holidays.splice(+e.dataset.hd, 1); drawSet(); });
+  $('modelList').querySelectorAll('[data-mn]').forEach(e => e.oninput = () => { G.models[e.dataset.mn].name = e.value; dirty = true; });
+  $('modelList').querySelectorAll('[data-ml]').forEach(e => e.onchange = () => { G.models[e.dataset.ml].large = e.checked; dirty = true; });
+  $('modelList').querySelectorAll('[data-md]').forEach(e => e.onclick = () => { G.models.splice(+e.dataset.md, 1); dirty = true; drawSet(); });
 }
-$('addModel').onclick = () => { G.models.push({ name: '', large: false }); drawSet(); };
-$('addHol').onclick = () => { const d = $('holDate').value; if (!d) return alert('日付を選んでください'); G.holidays.push({ date: d, note: $('holNote').value }); $('holDate').value = ''; $('holNote').value = ''; drawSet(); };
-$('saveSet').onclick = busy($('saveSet'), async () => {
+$('addModel').onclick = () => { G.models.push({ name: '', large: false }); dirty = true; drawSet(); };
+
+/* 画面の文章 */
+const TXT_LABEL = { 'ヘッダー': '一番上(店名の下)', 'トップ': 'トップ画面の説明', 'トップご案内': 'トップ画面の案内表', '洗車時間': '車種の下の洗車時間', 'お車の情報': 'お車の情報画面の注意書き', 'キャンセル待ち': 'キャンセル待ち画面の説明', '完了': '予約完了画面の注意書き' };
+function drawTxt() {
+  const rows = G.settings.filter(s => s.k.indexOf('文_') === 0);
+  $('txtList').innerHTML = rows.map(s => { const n = s.k.slice(2); return `<label for="x-${esc(s.k)}">${esc(TXT_LABEL[n] || n)}<br><span class="note">${esc(s.d)}</span></label><textarea id="x-${esc(s.k)}" data-x="${esc(s.k)}" ${n === 'トップご案内' ? 'style="min-height:150px"' : ''}>${esc(s.v)}</textarea>`; }).join('') +
+    '<p class="note" style="margin-top:18px">案内表では {普通分} {大型分} {昼休憩} と書くと、現在の設定の数字に自動で入れ替わります。</p>';
+  $('txtList').querySelectorAll('[data-x]').forEach(e => e.oninput = () => { sv(e.dataset.x).v = e.value; dirty = true; });
+}
+
+/* 休業日(ミニカレンダー) */
+function drawHol() {
+  const need = G.need, un = need.filter(m => !G.confirmed.includes(m));
+  $('holWarn').hidden = !un.length;
+  $('holWarn').textContent = un.length ? '未確定の月があります: ' + un.map(ymJa).join('、') + '。お休みを選んで「この月を確定」を押してください。' : '';
+  const closed = new Set(G.holidays.map(h => h.date));
+  $('holCal').innerHTML = need.map(ym => {
+    const a = ym.split('-').map(Number), first = new Date(a[0], a[1] - 1, 1).getDay(), last = new Date(a[0], a[1], 0).getDate(), ok = G.confirmed.includes(ym);
+    let h = `<div class="mon"><div class="mon-h"><div><b>${ymJa(ym)}</b><span class="st ${ok ? 'ok' : 'no'}">${ok ? '確定済み' : '未確定'}</span></div><button class="btn ${ok ? 'sub' : ''} sm" data-cf="${ym}">${ok ? '確定を取り消す' : 'この月を確定'}</button></div><div class="mcal">`;
+    h += WD.map((w, i) => `<div class="wd ${i === 0 ? 'sun' : i === 6 ? 'sat' : ''}">${w}</div>`).join('');
+    for (let i = 0; i < first; i++) h += '<div></div>';
+    for (let d = 1; d <= last; d++) { const ds = ym + '-' + pad(d); h += `<button class="dd ${closed.has(ds) ? 'cl' : ''} ${ds < G.today ? 'past' : ''}" data-d="${ds}" aria-pressed="${closed.has(ds)}" aria-label="${ds}">${d}</button>`; }
+    h += `</div><div class="wdbar">曜日まとめて:${WD.map((w, i) => `<button data-wk="${ym}|${i}">${w}</button>`).join('')}</div></div>`;
+    return h;
+  }).join('');
+  $('holCal').querySelectorAll('[data-d]').forEach(b => b.onclick = () => { toggleDays([b.dataset.d]); });
+  $('holCal').querySelectorAll('[data-wk]').forEach(b => b.onclick = () => {
+    const [ym, w] = b.dataset.wk.split('|'), a = ym.split('-').map(Number), days = [];
+    for (let d = 1; d <= new Date(a[0], a[1], 0).getDate(); d++) { const ds = ym + '-' + pad(d); if (ds >= G.today && new Date(a[0], a[1] - 1, d).getDay() === +w) days.push(ds); }
+    toggleDays(days);
+  });
+  $('holCal').querySelectorAll('[data-cf]').forEach(b => b.onclick = busy(b, async () => {
+    const ym = b.dataset.cf;
+    G.confirmed = G.confirmed.includes(ym) ? G.confirmed.filter(m => m !== ym) : G.confirmed.concat(ym);
+    await saveHol();
+  }));
+}
+/** 指定した日を切り替える。全部休みなら営業に、そうでなければ全部休みにする */
+function toggleDays(days) {
+  const set = new Set(G.holidays.map(h => h.date)), allClosed = days.every(d => set.has(d));
+  if (allClosed) G.holidays = G.holidays.filter(h => !days.includes(h.date));
+  else days.forEach(d => { if (!set.has(d)) G.holidays.push({ date: d, note: '' }); });
+  dirty = true; drawHol(); saveHolSoon();
+}
+/* 休業日はタップのたびに自動で保存する */
+let ht;
+function saveHolSoon() { clearTimeout(ht); ht = setTimeout(() => saveHol().catch(e => alert(e.message)), 700); }
+async function saveHol() {
+  clearTimeout(ht);
+  await api('adminSave', { holidays: G.holidays, confirmed: G.confirmed });
+  drawHol(); dot();
+}
+
+/* 設定・文章の保存 */
+async function saveAll() {
   const settings = {}; G.settings.forEach(s => settings[s.k] = s.v);
-  await api('adminSave', { settings, models: G.models, holidays: G.holidays });
-  alert('保存しました'); await loadSet();
-});
+  await api('adminSave', { settings, models: G.models, holidays: G.holidays, confirmed: G.confirmed });
+  alert('保存しました'); await reloadG();
+}
+$('saveSet').onclick = busy($('saveSet'), saveAll);
+$('saveTxt').onclick = busy($('saveTxt'), saveAll);
 
 if (pw) api('adminGet').then(enter).catch(() => { sessionStorage.removeItem('wash_admin_pw'); pw = ''; });
 </script>

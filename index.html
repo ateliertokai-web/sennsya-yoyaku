@@ -47,10 +47,25 @@ h3{margin:22px 0 8px;font-size:13px;font-weight:600;color:var(--sub);letter-spac
 
 /* フォーム */
 label{display:block;margin:18px 0 6px;font-size:13px;font-weight:600;color:var(--sub)}
-input,select{width:100%;height:50px;padding:0 14px;border:1px solid #cfd4da;border-radius:var(--r);background:#fff;color:var(--ink);font:inherit}
-input:focus,select:focus{border-color:var(--ink);outline:2px solid var(--ink);outline-offset:-1px}
+input{width:100%;height:50px;padding:0 14px;border:1px solid #cfd4da;border-radius:var(--r);background:#fff;color:var(--ink);font:inherit}
+input:focus{border-color:var(--ink);outline:2px solid var(--ink);outline-offset:-1px}
 .note{margin:12px 0 0;font-size:12.5px;color:var(--sub)}
 .form .cta{margin-top:26px}
+
+/* プルダウン(下から出るリスト) */
+.dd{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;height:54px;padding:0 16px;border:1px solid #cfd4da;border-radius:var(--r);background:#fff;font-size:16px;font-weight:600;text-align:left}
+.dd svg{flex:none;color:var(--mute);transition:transform .15s}
+.dd[aria-expanded=true]{border-color:var(--ink);outline:2px solid var(--ink);outline-offset:-1px}
+.dd[aria-expanded=true] svg{transform:rotate(180deg)}
+.dd .tag{margin-left:8px;font-size:12px;font-weight:500;color:var(--sub)}
+.sheet-bg{position:fixed;inset:0;z-index:20;background:rgba(15,17,20,.45)}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:21;max-width:480px;margin:0 auto;max-height:72vh;overflow:auto;border-radius:16px 16px 0 0;background:#fff;padding:8px 0 calc(16px + env(safe-area-inset-bottom));overscroll-behavior:contain}
+.sheet h4{margin:14px 20px 4px;font-size:12px;font-weight:600;color:var(--mute);letter-spacing:.06em}
+.opt{display:flex;align-items:center;justify-content:space-between;width:100%;min-height:52px;padding:0 20px;border:0;background:none;font-size:17px;text-align:left}
+.opt.on{font-weight:600}
+.opt svg{color:var(--ink)}
+.opt:active,.opt:focus-visible{background:#f3f4f6;outline:none}
+@media (prefers-reduced-motion:no-preference){.sheet{animation:up .18s ease-out}}
 
 /* ルール一覧 */
 .rules{margin:28px 0 0;padding:0;border-top:1px solid var(--line)}
@@ -136,7 +151,7 @@ body.hasbar .toast{bottom:calc(104px + env(safe-area-inset-bottom))}
 </head>
 <body>
 <div class="app">
-<header class="top"><h1 id="shop">洗車予約</h1><p>お車1台につき、月1回までご予約いただけます</p></header>
+<header class="top"><h1 id="shop">洗車予約</h1><p id="subline"></p></header>
 <div class="prog" id="prog" hidden><div class="bar"><i></i><i></i><i></i></div><p id="progLabel"></p></div>
 
 <main>
@@ -144,7 +159,7 @@ body.hasbar .toast{bottom:calc(104px + env(safe-area-inset-bottom))}
 <section id="home" class="view">
   <div id="mine" class="mine"></div>
   <h2>洗車を予約する</h2>
-  <p class="lead">カレンダーで空いている日を選べます。</p>
+  <p class="lead" id="homeLead"></p>
   <button class="cta" id="goReserve">予約する</button>
   <div class="list">
     <button class="rowbtn" id="goWait"><span>キャンセル待ちに登録する</span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>
@@ -157,9 +172,9 @@ body.hasbar .toast{bottom:calc(104px + env(safe-area-inset-bottom))}
 <section id="info" class="view form" hidden>
   <button class="back" data-go="home">‹ もどる</button>
   <h2>お車の情報</h2>
-  <label for="fModel">車種</label>
-  <select id="fModel"></select>
-  <p class="note" id="durNote"></p>
+  <label id="fModelLbl">車種</label>
+  <button type="button" class="dd" id="fModel" aria-haspopup="listbox" aria-expanded="false"><span id="fModelTxt"></span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
+  <p class="note" id="durNote" hidden></p>
   <label for="fPlate">車両ナンバー</label>
   <input type="text" id="fPlate" placeholder="鹿児島 330 あ 12-34" autocomplete="off">
   <label for="fName">お名前</label>
@@ -168,7 +183,7 @@ body.hasbar .toast{bottom:calc(104px + env(safe-area-inset-bottom))}
   <input type="tel" id="fPhone" autocomplete="tel">
   <label for="fMail">メールアドレス</label>
   <input type="email" id="fMail" autocomplete="email">
-  <p class="note">予約の確認メールと、キャンセル待ちのご案内に使います。入力内容はこの端末に保存され、次回から自動で入ります。</p>
+  <p class="note" id="infoNote" hidden></p>
   <button class="cta" id="infoNext">日にちを選ぶ</button>
 </section>
 
@@ -204,7 +219,7 @@ body.hasbar .toast{bottom:calc(104px + env(safe-area-inset-bottom))}
     <div class="noV" id="doneNo"></div>
   </div>
   <dl class="facts" id="doneFacts"></dl>
-  <p class="note" style="margin:0 0 20px">確認メールをお送りしました。届かないときは迷惑メールフォルダをご確認ください。</p>
+  <p class="note" id="doneNote" style="margin:0 0 20px" hidden></p>
   <button class="cta" data-go="home">トップへ</button>
 </section>
 
@@ -224,7 +239,7 @@ body.hasbar .toast{bottom:calc(104px + env(safe-area-inset-bottom))}
 <section id="wait" class="view" hidden>
   <button class="back" data-go="home">‹ もどる</button>
   <h2>キャンセル待ち</h2>
-  <p class="lead">いま満席の日が対象です。空きが出たら、登録順にメールでご案内します。</p>
+  <p class="lead" id="waitLead" hidden></p>
   <h3>対象の選び方</h3>
   <div class="segs" id="wMode"></div>
   <div id="wMonthsBox"><h3>月</h3><div class="chips" id="wMonths"></div></div>
@@ -310,18 +325,20 @@ async function init() {
   try { cfg = await api('config'); }
   catch (e) { $('home').innerHTML = '<p class="err">読み込めませんでした。ページを開き直してください。<br>' + esc(e.message) + '</p>'; show('home'); return; }
   $('shop').textContent = cfg.name; document.title = cfg.name;
-  $('fModel').innerHTML = cfg.models.map(m => `<option value="${esc(m.name)}">${esc(m.name)}${m.large ? '(大型)' : ''}</option>`).join('');
+  const T = cfg.texts || {};
+  setText('subline', T['ヘッダー']); setText('homeLead', T['トップ']); setText('infoNote', T['お車の情報']);
+  setText('waitLead', T['キャンセル待ち']); setText('doneNote', T['完了']);
   const q = new URLSearchParams(location.search);
   if (q.get('hold')) return holdView(q.get('hold'));
   renderHome(); show('home');
 }
+/** 文章を入れる。空なら枠ごと隠す */
+function setText(id, t) { const e = $(id); e.textContent = t || ''; e.hidden = !t; }
 function renderHome() {
-  $('rules').innerHTML = [
-    ['洗車時間', '普通車 約' + cfg.durStd + '分 / 大型車 約' + cfg.durLarge + '分'],
-    ['昼休憩', cfg.lunch + '(この時間は受付していません)'],
-    ['予約できる日', '2か月先まで。毎日、1日ぶんずつ新しく開きます'],
-    ['月1回', 'お車1台につき、月に1回までです。別の月なら、同じ日にまとめて予約できます']
-  ].map(r => `<div><dt>${r[0]}</dt><dd>${r[1]}</dd></div>`).join('');
+  $('rules').innerHTML = String((cfg.texts || {})['トップご案内'] || '').split('\n').map(l => l.trim()).filter(Boolean).map(l => {
+    const i = l.search(/[:：]/);
+    return i < 0 ? `<div><dd>${esc(l)}</dd></div>` : `<div><dt>${esc(l.slice(0, i))}</dt><dd>${esc(l.slice(i + 1))}</dd></div>`;
+  }).join('');
   const up = mine.filter(r => r.date >= cfg.today).sort((a, b) => (a.date + a.start) < (b.date + b.start) ? -1 : 1);
   $('mine').innerHTML = up.length ? '<h3 style="margin-top:0">ご予約中</h3>' + up.map(r => `<div class="res"><div><div class="dt">${dJa(r.date)} ${r.start}〜${r.end}</div><div class="sub">${esc(r.model)}</div></div><div class="no">No.${esc(r.no)}</div></div>`).join('') + '<p class="note">変更・キャンセルは「予約の確認・キャンセル」から。</p>' : '';
 }
@@ -331,17 +348,40 @@ document.querySelectorAll('[data-go]').forEach(b => b.onclick = () => { if (b.da
 let afterInfo = 'cal';
 function goInfo(next) {
   afterInfo = next;
-  $('fModel').value = cfg.models.some(m => m.name === profile.model) ? profile.model : (cfg.models[0] && cfg.models[0].name);
+  setModel(cfg.models.some(m => m.name === profile.model) ? profile.model : (cfg.models[0] && cfg.models[0].name));
   $('fPlate').value = profile.plate || ''; $('fName').value = profile.name || ''; $('fPhone').value = profile.phone || ''; $('fMail').value = profile.email || '';
   updDur(); show('info');
 }
-function updDur() { $('durNote').textContent = '洗車時間は約' + durOf($('fModel').value) + '分です。'; }
-$('fModel').onchange = updDur;
+function updDur() {
+  const t = String((cfg.texts || {})['洗車時間'] || '').replace(/\{分\}/g, durOf(curModel));
+  setText('durNote', t);
+}
+let curModel = '';
+function setModel(name) {
+  curModel = name || '';
+  const m = cfg.models.find(m => m.name === curModel);
+  $('fModelTxt').innerHTML = m ? esc(m.name) + (m.large ? '<span class="tag">大型</span>' : '') : '選んでください';
+  updDur();
+}
+/* 下から出る選択リスト */
+$('fModel').onclick = () => {
+  const btn = $('fModel'), bg = document.createElement('div'), sh = document.createElement('div');
+  bg.className = 'sheet-bg'; sh.className = 'sheet'; sh.setAttribute('role', 'listbox'); sh.setAttribute('aria-label', '車種');
+  const opt = m => `<button class="opt ${m.name === curModel ? 'on' : ''}" role="option" aria-selected="${m.name === curModel}" data-v="${esc(m.name)}"><span>${esc(m.name)}</span>${m.name === curModel ? '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>' : ''}</button>`;
+  const std = cfg.models.filter(m => !m.large), big = cfg.models.filter(m => m.large);
+  sh.innerHTML = (big.length && std.length ? '<h4>普通車</h4>' : '') + std.map(opt).join('') + (big.length ? (std.length ? '<h4>大型車</h4>' : '') + big.map(opt).join('') : '');
+  const close = () => { bg.remove(); sh.remove(); btn.setAttribute('aria-expanded', 'false'); document.removeEventListener('keydown', key); btn.focus(); };
+  const key = e => { if (e.key === 'Escape') close(); };
+  bg.onclick = close; document.addEventListener('keydown', key);
+  sh.querySelectorAll('.opt').forEach(o => o.onclick = () => { setModel(o.dataset.v); close(); });
+  document.body.append(bg, sh); btn.setAttribute('aria-expanded', 'true');
+  const on = sh.querySelector('.opt.on') || sh.querySelector('.opt'); if (on) { on.scrollIntoView({ block: 'center' }); on.focus(); }
+};
 $('goReserve').onclick = () => goInfo('cal');
 $('goWait').onclick = () => goInfo('wait');
 $('goLookup').onclick = () => { $('lMail').value = profile.email || ''; $('lPlate').value = profile.plate || ''; $('lRes').innerHTML = ''; show('lookup'); };
 $('infoNext').onclick = () => {
-  const p = { model: $('fModel').value, plate: $('fPlate').value.trim(), name: $('fName').value.trim(), phone: $('fPhone').value.trim(), email: $('fMail').value.trim() };
+  const p = { model: curModel, plate: $('fPlate').value.trim(), name: $('fName').value.trim(), phone: $('fPhone').value.trim(), email: $('fMail').value.trim() };
   if (!p.model || !p.plate || !p.name || !p.phone || !p.email) return toast('すべての項目を入力してください', true);
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(p.email)) return toast('メールアドレスを確認してください', true);
   profile = p; save('wash_profile', p); large = isLarge(p.model); monthCache = {};
