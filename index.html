@@ -230,7 +230,6 @@ body.hasbar .toast{bottom:calc(100px + env(safe-area-inset-bottom))}
   <p class="lead" id="homeLead"></p>
   <button class="cta" id="goReserve">予約する</button>
   <div class="list">
-    <button class="rowbtn" id="goWait"><span>キャンセル待ちに登録する</span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>
     <button class="rowbtn" id="goLookup"><span>予約の確認・キャンセル</span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>
   </div>
   <dl class="rules" id="rules"></dl>
@@ -488,7 +487,6 @@ $('goReserve').onclick = () => goInfo('cal');
   const plate = $('fPlate').value.trim(), email = $('fMail').value.trim();
   if (plate && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && bookedKey !== np(plate) + '|' + email.toLowerCase()) refreshBooked(plate, email);
 }));
-$('goWait').onclick = () => goInfo('wait');
 $('goLookup').onclick = () => { $('lMail').value = profile.email || ''; $('lPlate').value = profile.plate || ''; $('lRes').innerHTML = ''; show('lookup'); };
 $('infoNext').onclick = () => {
   const p = { model: curModel, plate: $('fPlate').value.trim(), name: $('fName').value.trim(), phone: $('fPhone').value.trim(), email: $('fMail').value.trim() };
