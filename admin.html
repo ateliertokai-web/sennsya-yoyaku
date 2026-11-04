@@ -48,7 +48,7 @@ input,textarea{font-size:16px!important;max-width:100%}
 input[type=date],input[type=time]{-webkit-appearance:none;appearance:none;min-width:0;min-height:44px;line-height:44px;text-align:left}
 input[type=date]::-webkit-date-and-time-value,input[type=time]::-webkit-date-and-time-value{text-align:left;margin:0;min-height:0}
 input[type=date]::-webkit-calendar-picker-indicator,input[type=time]::-webkit-calendar-picker-indicator{margin-left:auto}
-.fields>div,.tool>div,.mrow>*{min-width:0}
+.fields>div,.mrow>*{min-width:0}
 textarea:focus,input:focus{background:#fff;box-shadow:0 0 0 1.5px var(--ink);outline:none}
 .note{font-size:12.5px;line-height:1.75;color:var(--sub)}
 .err{color:var(--red)}
@@ -71,8 +71,12 @@ textarea:focus,input:focus{background:#fff;box-shadow:0 0 0 1.5px var(--ink);out
 #login .btn{width:100%;margin-top:18px;min-height:48px}
 
 /* 予約一覧 */
-.tool{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto;gap:8px;align-items:end;padding:6px 16px 16px}
-@media (max-width:420px){.tool{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.tool>div.fit{grid-column:1/-1}.tool>div.fit .btn{width:100%}}
+.tool{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px 10px;align-items:center;padding:6px 16px 16px}
+.tool>label{grid-column:1/-1;margin-bottom:0}
+.range{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:6px;min-width:0}
+.range span{color:var(--sub);font-size:14px}
+.range input{padding:0 10px}
+@media (max-width:480px){.tool{grid-template-columns:minmax(0,1fr)}.tool .btn{width:100%}}
 .count{margin:22px 4px 0;font-size:12.5px;color:var(--sub)}
 .day{margin-top:22px}
 .day h4{display:flex;align-items:baseline;gap:10px;margin:0 4px 8px;font-size:14px;font-weight:600;letter-spacing:.04em;font-variant-numeric:tabular-nums}
@@ -184,9 +188,9 @@ textarea:focus,input:focus{background:#fff;box-shadow:0 0 0 1.5px var(--ink);out
 
   <div id="t-res" class="pane">
     <div class="card tool">
-      <div><label for="from">期間</label><input type="date" id="from"></div>
-      <div><label for="to">〜</label><input type="date" id="to"></div>
-      <div class="fit"><button class="btn" id="resGo">表示</button></div>
+      <label for="from">期間</label>
+      <div class="range"><input type="date" id="from"><span aria-hidden="true">〜</span><input type="date" id="to" aria-label="期間の終わり"></div>
+      <button class="btn" id="resGo">表示</button>
     </div>
     <div id="resList"></div>
   </div>
