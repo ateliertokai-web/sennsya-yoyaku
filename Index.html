@@ -1,0 +1,412 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="洗車予約">
+<meta name="theme-color" content="#1f2937">
+<title>洗車予約</title>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;background:#f4f5f7;color:#1f2937;line-height:1.5}
+header{background:#1f2937;color:#fff;padding:14px 16px;padding-top:calc(14px + env(safe-area-inset-top));text-align:center}
+header h1{margin:0;font-size:18px;letter-spacing:.08em}
+main{max-width:520px;margin:0 auto;padding:16px 14px 60px}
+.card{background:#fff;border-radius:14px;padding:16px;margin-bottom:14px;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+h2{font-size:17px;margin:0 0 10px}
+label{display:block;font-size:13px;font-weight:600;margin:12px 0 4px}
+input[type=text],input[type=tel],input[type=email],select{width:100%;padding:12px;font-size:16px;border:1px solid #cfd4dc;border-radius:10px;background:#fff}
+button{font:inherit;cursor:pointer}
+.btn{display:block;width:100%;padding:15px;margin-top:12px;border:0;border-radius:12px;background:#ff9800;color:#fff;font-size:17px;font-weight:700}
+.btn.sub{background:#fff;color:#1f2937;border:1px solid #cfd4dc;font-weight:600}
+.btn.dark{background:#1f2937}
+.btn.danger{background:#e53935}
+.btn:disabled{opacity:.5}
+.note{font-size:13px;color:#6b7280}
+.err{color:#c62828}
+.tabs{display:flex;gap:6px;margin-bottom:10px;overflow-x:auto}
+.tab{flex:1;min-width:90px;padding:10px;border:1px solid #cfd4dc;border-radius:10px;background:#fff;font-weight:600;font-size:14px}
+.tab.on{background:#1f2937;color:#fff;border-color:#1f2937}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.cal .wd{text-align:center;font-size:12px;font-weight:700;padding:4px 0;color:#6b7280}
+.cal .wd.sun{color:#e53935}.cal .wd.sat{color:#1e66d0}
+.day{aspect-ratio:1/1.05;border:0;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0;font-size:15px}
+.day b{font-size:16px;line-height:1.1}.day i{font-style:normal;font-size:13px;line-height:1.2}
+.day.free{background:#ff9800;color:#fff}
+.day.few{background:#e53935;color:#fff}
+.day.full{background:#cfd3d8;color:#5b6370}
+.day.out,.day.closed{background:#eceef1;color:#b3b8c1}
+.day.sel{outline:3px solid #1f2937;outline-offset:-3px}
+.legend{display:flex;flex-wrap:wrap;gap:10px;font-size:12px;margin-top:10px;color:#4b5563}
+.legend span::before{content:"";display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:4px;vertical-align:-1px;background:var(--c)}
+.slots{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.slot{padding:14px 6px;border:2px solid #ff9800;border-radius:12px;background:#fff;font-size:17px;font-weight:700;color:#e65100}
+.slot.on{background:#ff9800;color:#fff}
+.big{font-size:34px;font-weight:800;letter-spacing:.12em;text-align:center;color:#e65100;margin:6px 0}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.chip{padding:10px 14px;border:1px solid #cfd4dc;border-radius:999px;background:#fff;font-weight:600;font-size:14px}
+.chip.on{background:#ff9800;border-color:#ff9800;color:#fff}
+.item{border:1px solid #e5e7eb;border-radius:12px;padding:12px;margin-top:10px}
+.item .t{font-weight:700}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#111827;color:#fff;padding:12px 18px;border-radius:12px;font-size:14px;max-width:90%;z-index:9;opacity:0;transition:.25s;pointer-events:none}
+.toast.show{opacity:1}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<header><h1 id="shop">洗車予約</h1></header>
+<main>
+
+<!-- ホーム -->
+<section id="home" class="view">
+  <div id="mine"></div>
+  <div class="card">
+    <h2>洗車のご予約</h2>
+    <p class="note" id="homeNote">読み込み中…</p>
+    <button class="btn" id="goReserve">洗車を予約する</button>
+    <button class="btn sub" id="goWait">キャンセル待ちを登録する</button>
+    <button class="btn sub" id="goLookup">予約の確認・キャンセル</button>
+  </div>
+</section>
+
+<!-- お客様情報 -->
+<section id="info" class="view" hidden>
+  <div class="card">
+    <h2>お客様・お車の情報</h2>
+    <label>車種</label>
+    <select id="fModel"></select>
+    <p class="note" id="durNote"></p>
+    <label>車両ナンバー(予約は1台につき月1回です)</label>
+    <input type="text" id="fPlate" placeholder="例: 鹿児島 330 あ 12-34" autocomplete="off">
+    <label>お名前</label>
+    <input type="text" id="fName" autocomplete="name">
+    <label>電話番号</label>
+    <input type="tel" id="fPhone" autocomplete="tel">
+    <label>メールアドレス(確認メール・キャンセル待ちのご案内に使います)</label>
+    <input type="email" id="fMail" autocomplete="email">
+    <button class="btn" id="infoNext">次へ</button>
+    <button class="btn sub" data-go="home">戻る</button>
+    <p class="note">入力内容はこの端末にのみ保存され、次回から自動入力されます。</p>
+  </div>
+</section>
+
+<!-- カレンダー -->
+<section id="cal" class="view" hidden>
+  <div class="card">
+    <h2>日にちを選んでください</h2>
+    <p class="note" id="calNote"></p>
+    <div class="tabs" id="calTabs"></div>
+    <div id="calBody"></div>
+    <div class="legend">
+      <span style="--c:#ff9800">空きあり ○</span>
+      <span style="--c:#e53935">残りわずか △</span>
+      <span style="--c:#cfd3d8">満席 ×</span>
+      <span style="--c:#eceef1">受付前・休業</span>
+    </div>
+    <p class="note">満席の日は、タップするとキャンセル待ちを登録できます。</p>
+    <button class="btn sub" id="calWait">キャンセル待ちを登録する</button>
+    <button class="btn sub" id="calBack">お客様情報にもどる</button>
+  </div>
+</section>
+
+<!-- 時間 -->
+<section id="slots" class="view" hidden>
+  <div class="card">
+    <h2 id="slotTitle"></h2>
+    <div class="slots" id="slotList"></div>
+    <div id="confirm" hidden>
+      <div class="item">
+        <div class="t" id="confirmText"></div>
+        <div class="note" id="confirmSub"></div>
+      </div>
+      <button class="btn" id="doReserve">この内容で予約する</button>
+    </div>
+    <button class="btn sub" id="slotBack">日にちをえらびなおす</button>
+  </div>
+</section>
+
+<!-- 完了 -->
+<section id="done" class="view" hidden>
+  <div class="card">
+    <h2 id="doneTitle">ご予約を承りました</h2>
+    <div class="big" id="doneNo"></div>
+    <p style="text-align:center;font-weight:700" id="doneDt"></p>
+    <p class="note" id="doneNote"></p>
+    <button class="btn" data-go="home">トップへ</button>
+  </div>
+</section>
+
+<!-- 確認・キャンセル -->
+<section id="lookup" class="view" hidden>
+  <div class="card">
+    <h2>予約の確認・キャンセル</h2>
+    <label>メールアドレス</label>
+    <input type="email" id="lMail">
+    <label>車両ナンバー</label>
+    <input type="text" id="lPlate" placeholder="例: 鹿児島 330 あ 12-34">
+    <button class="btn" id="lGo">確認する</button>
+    <div id="lRes"></div>
+    <button class="btn sub" data-go="home">戻る</button>
+  </div>
+</section>
+
+<!-- キャンセル待ち -->
+<section id="wait" class="view" hidden>
+  <div class="card">
+    <h2>キャンセル待ち</h2>
+    <p class="note">いま満席の日が対象です(空きのある日は予約画面から直接お取りください)。空きが出たら、登録順にメールでご案内します。案内メールのリンクから期限内に確定すると予約完了です(期限を過ぎると次の方へ)。すでにご予約のある月は対象外です。</p>
+    <label>対象の選び方</label>
+    <div class="row" id="wMode"></div>
+    <div id="wMonthsBox">
+      <label>月</label>
+      <div class="row" id="wMonths"></div>
+    </div>
+    <div id="wWdBox" hidden>
+      <label>曜日</label>
+      <div class="row" id="wWd"></div>
+    </div>
+    <div id="wDatesBox" hidden>
+      <label>日にち(タップで選択・複数OK)</label>
+      <div class="tabs" id="wTabs"></div>
+      <div id="wCal"></div>
+      <p class="note" id="wPicked"></p>
+    </div>
+    <button class="btn" id="wGo">この条件で登録する</button>
+    <button class="btn sub" id="wBack">戻る</button>
+  </div>
+</section>
+
+<!-- 空き案内からの確定 -->
+<section id="hold" class="view" hidden>
+  <div class="card">
+    <h2>空きが出ました</h2>
+    <div id="holdBody"><p class="note">読み込み中…</p></div>
+  </div>
+</section>
+
+</main>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ★ GASをウェブアプリとして公開したURLに書き換えてください */
+const API = 'https://script.google.com/macros/s/AKfycbzHj9e15-2k4kkNa63ctM0P2KBXVbKfzGJGvhBNKXl0Er2u5_75qR7Kmev8Z0TzTdcg/exec';
+
+const $ = id => document.getElementById(id);
+const WD = ['日','月','火','水','木','金','土'];
+const pad = n => String(n).padStart(2,'0');
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const load = (k, d) => { try { return JSON.parse(localStorage.getItem(k)) || d; } catch (e) { return d; } };
+const save = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
+const dJa = d => { const a = d.split('-'); return (+a[1]) + '月' + (+a[2]) + '日(' + WD[new Date(+a[0], a[1]-1, +a[2]).getDay()] + ')'; };
+const ymJa = ym => { const a = ym.split('-'); return a[0] + '年' + (+a[1]) + '月'; };
+
+async function api(action, data) {
+  let r;
+  try {
+    r = await fetch(API, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(Object.assign({ action }, data || {})) });
+  } catch (e) { throw new Error('通信できませんでした。電波の良い場所でもう一度お試しください。'); }
+  const j = await r.json();
+  if (!j.ok) throw new Error(j.error);
+  return j.data;
+}
+let tt;
+function toast(msg) { const t = $('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(tt); tt = setTimeout(() => t.classList.remove('show'), 2600); }
+function show(id) { document.querySelectorAll('.view').forEach(v => v.hidden = v.id !== id); window.scrollTo(0, 0); }
+function busy(btn, fn) {
+  return async () => { btn.disabled = true; try { await fn(); } catch (e) { alert(e.message); } finally { btn.disabled = false; } };
+}
+
+let cfg, profile = load('wash_profile', {}), mine = load('wash_mine', []);
+let large = false, curYm = null, monthCache = {}, pick = null;
+
+function months() {
+  const out = [], a = cfg.min.split('-').map(Number), b = cfg.max.split('-').map(Number);
+  let y = a[0], m = a[1];
+  while (y < b[0] || (y === b[0] && m <= b[1])) { out.push(y + '-' + pad(m)); m++; if (m > 12) { m = 1; y++; } }
+  return out;
+}
+function isLarge(name) { const m = cfg.models.find(m => m.name === name); return !!(m && m.large); }
+
+/* ---------- 初期化 ---------- */
+async function init() {
+  try { cfg = await api('config'); }
+  catch (e) { $('homeNote').innerHTML = '<span class="err">読み込みに失敗しました。ページを開き直してください。<br>' + esc(e.message) + '</span>'; show('home'); return; }
+  $('shop').textContent = cfg.name; document.title = cfg.name;
+  $('fModel').innerHTML = cfg.models.map(m => `<option value="${esc(m.name)}">${esc(m.name)}${m.large ? '(大型・' + cfg.durLarge + '分)' : ''}</option>`).join('');
+  const q = new URLSearchParams(location.search);
+  if (q.get('hold')) return holdView(q.get('hold'));
+  renderHome(); show('home');
+}
+function renderHome() {
+  $('homeNote').textContent = '毎日、2か月先の日が1日ずつ予約できるようになります。洗車は1台につき月1回までです(別の月なら同じ日にまとめて予約できます)。普通車は約' + cfg.durStd + '分、大型車は約' + cfg.durLarge + '分、昼休憩(' + cfg.lunch + ')は受付していません。';
+  const up = mine.filter(r => r.date >= cfg.today).sort((a, b) => (a.date + a.start) < (b.date + b.start) ? -1 : 1);
+  $('mine').innerHTML = up.length ? '<div class="card"><h2>ご予約中</h2>' + up.map(r => `<div class="item"><div class="t">${dJa(r.date)} ${r.start}〜${r.end}</div><div class="note">${esc(r.model)} / 予約番号 ${esc(r.no)}</div></div>`).join('') + '<p class="note">変更・キャンセルは「予約の確認・キャンセル」から。</p></div>' : '';
+}
+document.querySelectorAll('[data-go]').forEach(b => b.onclick = () => { if (b.dataset.go === 'home') renderHome(); show(b.dataset.go); });
+
+/* ---------- お客様情報 ---------- */
+let afterInfo = 'cal';
+function goInfo(next) {
+  afterInfo = next;
+  $('fModel').value = cfg.models.some(m => m.name === profile.model) ? profile.model : cfg.models[0] && cfg.models[0].name;
+  $('fPlate').value = profile.plate || ''; $('fName').value = profile.name || ''; $('fPhone').value = profile.phone || ''; $('fMail').value = profile.email || '';
+  updDur(); show('info');
+}
+function updDur() { $('durNote').textContent = '洗車時間: 約' + (isLarge($('fModel').value) ? cfg.durLarge : cfg.durStd) + '分'; }
+$('fModel').onchange = updDur;
+$('goReserve').onclick = () => goInfo('cal');
+$('goWait').onclick = () => goInfo('wait');
+$('goLookup').onclick = () => { $('lMail').value = profile.email || ''; $('lPlate').value = profile.plate || ''; $('lRes').innerHTML = ''; show('lookup'); };
+$('infoNext').onclick = () => {
+  const p = { model: $('fModel').value, plate: $('fPlate').value.trim(), name: $('fName').value.trim(), phone: $('fPhone').value.trim(), email: $('fMail').value.trim() };
+  if (!p.model || !p.plate || !p.name || !p.phone || !p.email) return alert('すべて入力してください');
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(p.email)) return alert('メールアドレスを確認してください');
+  profile = p; save('wash_profile', p); large = isLarge(p.model); monthCache = {};
+  if (afterInfo === 'wait') openWait(); else openCal();
+};
+
+/* ---------- カレンダー ---------- */
+async function getMonth(ym) {
+  const k = ym + (large ? 'L' : 'S');
+  if (!monthCache[k]) monthCache[k] = await api('month', { ym, large });
+  return monthCache[k];
+}
+function tabsHtml(list, cur) { return list.map(ym => `<button class="tab ${ym === cur ? 'on' : ''}" data-ym="${ym}">${ymJa(ym)}</button>`).join(''); }
+function renderCal(el, ym, data, selected, allowClosed) {
+  const a = ym.split('-').map(Number), first = new Date(a[0], a[1]-1, 1).getDay(), last = new Date(a[0], a[1], 0).getDate();
+  let h = '<div class="cal">' + WD.map((w, i) => `<div class="wd ${i === 0 ? 'sun' : i === 6 ? 'sat' : ''}">${w}</div>`).join('');
+  for (let i = 0; i < first; i++) h += '<div></div>';
+  for (let d = 1; d <= last; d++) {
+    const ds = ym + '-' + pad(d), v = (data.days || {})[ds] || { s: 'out' };
+    const sym = { free: '○', few: '△', full: '×', closed: '休' }[v.s] || '';
+    const dis = v.s === 'out' || v.s === 'closed';
+    h += `<button class="day ${v.s} ${selected && selected.has(ds) ? 'sel' : ''}" data-d="${ds}" data-s="${v.s}" ${dis ? 'disabled' : ''}><b>${d}</b><i>${sym}</i></button>`;
+  }
+  el.innerHTML = h + '</div>';
+}
+async function openCal(ym) {
+  const list = months(); curYm = ym || curYm || list[0]; if (!list.includes(curYm)) curYm = list[0];
+  $('calNote').textContent = (large ? '大型車(約' + cfg.durLarge + '分)' : '普通車(約' + cfg.durStd + '分)') + ' / ' + profile.model + ' ' + profile.plate;
+  $('calTabs').innerHTML = tabsHtml(list, curYm);
+  $('calTabs').querySelectorAll('.tab').forEach(b => b.onclick = () => openCal(b.dataset.ym));
+  show('cal'); $('calBody').innerHTML = '<p class="note">読み込み中…</p>';
+  try {
+    const data = await getMonth(curYm); renderCal($('calBody'), curYm, data);
+    $('calBody').querySelectorAll('.day').forEach(b => b.onclick = () => dayTap(b.dataset.d, b.dataset.s));
+  } catch (e) { $('calBody').innerHTML = '<p class="err">' + esc(e.message) + '</p>'; }
+}
+$('calBack').onclick = () => goInfo('cal');
+$('calWait').onclick = () => openWait();
+function dayTap(d, s) {
+  if (s === 'full') { if (confirm(dJa(d) + 'は満席です。キャンセル待ちを登録しますか?')) openWait(d); return; }
+  openSlots(d);
+}
+
+/* ---------- 時間 ---------- */
+async function openSlots(d) {
+  pick = { date: d }; $('confirm').hidden = true;
+  $('slotTitle').textContent = dJa(d) + ' の時間を選んでください'; $('slotList').innerHTML = '<p class="note">読み込み中…</p>'; show('slots');
+  try {
+    const r = await api('slots', { date: d, large });
+    if (!r.starts.length) { $('slotList').innerHTML = '<p class="note">この日は空きがありません。</p>'; return; }
+    $('slotList').innerHTML = r.starts.map(s => `<button class="slot" data-s="${s.s}" data-e="${s.e}">${s.s}〜${s.e}</button>`).join('');
+    $('slotList').querySelectorAll('.slot').forEach(b => b.onclick = () => {
+      document.querySelectorAll('.slot').forEach(x => x.classList.remove('on')); b.classList.add('on');
+      pick.start = b.dataset.s; pick.end = b.dataset.e;
+      $('confirmText').textContent = dJa(d) + ' ' + pick.start + '〜' + pick.end;
+      $('confirmSub').textContent = profile.model + ' / ' + profile.plate + ' / ' + profile.name + ' 様';
+      $('confirm').hidden = false; $('confirm').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    });
+  } catch (e) { $('slotList').innerHTML = '<p class="err">' + esc(e.message) + '</p>'; }
+}
+$('slotBack').onclick = () => { monthCache = {}; openCal(); };
+$('doReserve').onclick = busy($('doReserve'), async () => {
+  const r = await api('reserve', { date: pick.date, start: pick.start, name: profile.name, phone: profile.phone, email: profile.email, plate: profile.plate, model: profile.model });
+  mine.push({ no: r.no, date: r.date, start: r.start, end: r.end, model: r.model }); save('wash_mine', mine); monthCache = {};
+  doneView(r, 'ご予約を承りました');
+});
+function doneView(r, title) {
+  $('doneTitle').textContent = title; $('doneNo').textContent = r.no;
+  $('doneDt').textContent = dJa(r.date) + ' ' + r.start + '〜' + r.end;
+  $('doneNote').textContent = '予約番号の控えとして、確認メールをお送りしました(届かない場合は迷惑メールフォルダもご確認ください)。';
+  show('done');
+}
+
+/* ---------- 確認・キャンセル ---------- */
+$('lGo').onclick = busy($('lGo'), async () => {
+  const email = $('lMail').value.trim(), plate = $('lPlate').value.trim();
+  const r = await api('lookup', { email, plate });
+  profile.email = email; profile.plate = plate; save('wash_profile', profile);
+  let h = '';
+  h += r.res.length ? '<h2 style="margin-top:16px">ご予約</h2>' + r.res.map(x => `<div class="item"><div class="t">${dJa(x.date)} ${x.start}〜${x.end}</div><div class="note">${esc(x.model)} / 予約番号 ${esc(x.no)}</div><button class="btn danger" data-cr="${x.id}">キャンセルする</button></div>`).join('') : '<p class="note">ご予約はありません。</p>';
+  if (r.waits.length) h += '<h2 style="margin-top:16px">キャンセル待ち</h2>' + r.waits.map(x => `<div class="item"><div class="t">${esc(x.summary)}</div><div class="note">${x.state === '通知中' ? '空きのご案内メールを送信済みです。メールのリンクから確定してください' : '登録順にご案内待ち'}</div><button class="btn danger" data-cw="${x.id}">取り消す</button></div>`).join('');
+  $('lRes').innerHTML = h;
+  $('lRes').querySelectorAll('[data-cr]').forEach(b => b.onclick = busy(b, async () => {
+    if (!confirm('このご予約をキャンセルしますか?')) return;
+    await api('cancel', { id: b.dataset.cr, email, plate });
+    mine = mine.filter(m => !r.res.some(x => x.id === b.dataset.cr && x.no === m.no)); save('wash_mine', mine); monthCache = {};
+    toast('キャンセルしました'); $('lGo').click();
+  }));
+  $('lRes').querySelectorAll('[data-cw]').forEach(b => b.onclick = busy(b, async () => {
+    if (!confirm('このキャンセル待ちを取り消しますか?')) return;
+    await api('waitStop', { id: b.dataset.cw, email, plate }); toast('取り消しました'); $('lGo').click();
+  }));
+});
+
+/* ---------- キャンセル待ち ---------- */
+let W = { mode: 'dates', months: new Set(), wd: new Set(), dates: new Set(), ym: null };
+const MODES = [['dates', '日にちを選ぶ'], ['weekdays', '曜日を選ぶ'], ['weekend', '土日'], ['month', '月全体']];
+function openWait(preDate) {
+  if (!profile.plate) return goInfo('wait');
+  large = isLarge(profile.model);
+  W = { mode: preDate ? 'dates' : (W.mode || 'dates'), months: new Set(), wd: new Set(), dates: new Set(preDate ? [preDate] : []), ym: preDate ? preDate.slice(0, 7) : months()[0] };
+  const list = months();
+  $('wMode').innerHTML = MODES.map(m => `<button class="chip ${W.mode === m[0] ? 'on' : ''}" data-m="${m[0]}">${m[1]}</button>`).join('');
+  $('wMode').querySelectorAll('.chip').forEach(b => b.onclick = () => { W.mode = b.dataset.m; openWaitRefresh(); });
+  $('wMonths').innerHTML = list.map(ym => `<button class="chip" data-ym="${ym}">${ymJa(ym)}</button>`).join('');
+  $('wMonths').querySelectorAll('.chip').forEach(b => b.onclick = () => { const k = b.dataset.ym; W.months.has(k) ? W.months.delete(k) : W.months.add(k); b.classList.toggle('on'); });
+  $('wWd').innerHTML = WD.map((w, i) => `<button class="chip" data-w="${i}">${w}</button>`).join('');
+  $('wWd').querySelectorAll('.chip').forEach(b => b.onclick = () => { const k = +b.dataset.w; W.wd.has(k) ? W.wd.delete(k) : W.wd.add(k); b.classList.toggle('on'); });
+  openWaitRefresh(); show('wait');
+}
+async function openWaitRefresh() {
+  $('wMode').querySelectorAll('.chip').forEach(b => b.classList.toggle('on', b.dataset.m === W.mode));
+  $('wMonthsBox').hidden = W.mode === 'dates'; $('wWdBox').hidden = W.mode !== 'weekdays'; $('wDatesBox').hidden = W.mode !== 'dates';
+  if (W.mode !== 'dates') return;
+  const list = months();
+  $('wTabs').innerHTML = tabsHtml(list, W.ym);
+  $('wTabs').querySelectorAll('.tab').forEach(b => b.onclick = () => { W.ym = b.dataset.ym; openWaitRefresh(); });
+  $('wCal').innerHTML = '<p class="note">読み込み中…</p>';
+  try {
+    const data = await getMonth(W.ym); renderCal($('wCal'), W.ym, data, W.dates);
+    $('wCal').querySelectorAll('.day').forEach(b => b.onclick = () => { const d = b.dataset.d; W.dates.has(d) ? W.dates.delete(d) : W.dates.add(d); b.classList.toggle('sel'); pickedTxt(); });
+  } catch (e) { $('wCal').innerHTML = '<p class="err">' + esc(e.message) + '</p>'; }
+  pickedTxt();
+}
+function pickedTxt() { $('wPicked').textContent = W.dates.size ? '選択中: ' + [...W.dates].sort().map(dJa).join('、') : ''; }
+$('wBack').onclick = () => { renderHome(); show('home'); };
+$('wGo').onclick = busy($('wGo'), async () => {
+  const r = await api('waitAdd', { name: profile.name, phone: profile.phone, email: profile.email, plate: profile.plate, model: profile.model, mode: W.mode, ym: [...W.months], wd: [...W.wd], dates: [...W.dates] });
+  alert('キャンセル待ちを登録しました(満席の ' + r.days + '日が対象)。' + (r.skipped ? '\n空きのある ' + r.skipped + '日は対象外です(予約画面から直接お取りいただけます)。' : '') + '\n空きが出ましたら、登録順にメールでご案内します。');
+  renderHome(); show('home');
+});
+
+/* ---------- 空き案内メールからの確定 ---------- */
+async function holdView(token) {
+  show('hold');
+  try {
+    const h = await api('holdInfo', { token });
+    $('holdBody').innerHTML = `<div class="item"><div class="t">${dJa(h.date)} ${h.start}〜${h.end}</div><div class="note">${esc(h.model)} / ${esc(h.plate)} / ${esc(h.name)} 様</div></div><p class="note">${h.until} までにボタンを押してください。過ぎると次の方へご案内します。</p><button class="btn" id="hGo">予約を確定する</button>`;
+    $('hGo').onclick = busy($('hGo'), async () => {
+      const r = await api('holdConfirm', { token });
+      mine.push({ no: r.no, date: r.date, start: r.start, end: r.end, model: r.model }); save('wash_mine', mine);
+      history.replaceState(null, '', location.pathname); doneView(r, '予約が確定しました');
+    });
+  } catch (e) { $('holdBody').innerHTML = '<p class="err">' + esc(e.message) + '</p><button class="btn sub" onclick="location.href=location.pathname">トップへ</button>'; }
+}
+
+init();
+</script>
+</body>
+</html>
