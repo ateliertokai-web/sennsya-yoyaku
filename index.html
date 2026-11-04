@@ -407,7 +407,7 @@ const dShort = d => { const a = d.split('-'); return (+a[1]) + '/' + (+a[2]) + '
 async function api(action, data) {
   let r;
   try {
-    r = await fetch(API, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(Object.assign({ action }, data || {})) });
+    r = await fetch(API, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(Object.assign({ action }, action === 'config' ? { site: location.origin + location.pathname } : {}, data || {})) });
   } catch (e) { throw new Error('通信できませんでした。電波の良い場所で、もう一度お試しください。'); }
   const j = await r.json();
   if (!j.ok) throw new Error(j.error);
