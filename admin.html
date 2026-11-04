@@ -42,6 +42,13 @@ label{display:block;margin:16px 0 6px;font-size:12.5px;font-weight:600;color:var
 label .note{display:block;margin-top:1px;font-weight:400;font-size:11.5px;color:var(--mute)}
 textarea{display:block;width:100%;min-height:88px;padding:11px 14px;border:0;border-radius:var(--r);background:var(--soft);color:var(--ink);font:inherit;font-size:15px;line-height:1.7;resize:vertical;transition:box-shadow .15s,background .15s}
 input[type=text],input[type=password],input[type=date],input[type=time],input[type=number]{display:block;width:100%;height:44px;padding:0 14px;border:0;border-radius:var(--r);background:var(--soft);color:var(--ink);font:inherit;font-size:15px;transition:box-shadow .15s,background .15s}
+/* iPhone(Safari)対策: 日付・時刻欄が独自の幅と高さで描かれて枠からはみ出すのを防ぐ。
+   文字は16px未満だと入力時に画面が拡大されるので16pxにする */
+input,textarea{font-size:16px!important;max-width:100%}
+input[type=date],input[type=time]{-webkit-appearance:none;appearance:none;min-width:0;min-height:44px;line-height:44px;text-align:left}
+input[type=date]::-webkit-date-and-time-value,input[type=time]::-webkit-date-and-time-value{text-align:left;margin:0;min-height:0}
+input[type=date]::-webkit-calendar-picker-indicator,input[type=time]::-webkit-calendar-picker-indicator{margin-left:auto}
+.fields>div,.tool>div,.mrow>*{min-width:0}
 textarea:focus,input:focus{background:#fff;box-shadow:0 0 0 1.5px var(--ink);outline:none}
 .note{font-size:12.5px;line-height:1.75;color:var(--sub)}
 .err{color:var(--red)}
@@ -64,9 +71,8 @@ textarea:focus,input:focus{background:#fff;box-shadow:0 0 0 1.5px var(--ink);out
 #login .btn{width:100%;margin-top:18px;min-height:48px}
 
 /* 予約一覧 */
-.tool{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;padding:6px 16px 16px}
-.tool>div{flex:1;min-width:140px}
-.tool>div.fit{flex:none;min-width:0}
+.tool{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto;gap:8px;align-items:end;padding:6px 16px 16px}
+@media (max-width:420px){.tool{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.tool>div.fit{grid-column:1/-1}.tool>div.fit .btn{width:100%}}
 .count{margin:22px 4px 0;font-size:12.5px;color:var(--sub)}
 .day{margin-top:22px}
 .day h4{display:flex;align-items:baseline;gap:10px;margin:0 4px 8px;font-size:14px;font-weight:600;letter-spacing:.04em;font-variant-numeric:tabular-nums}
