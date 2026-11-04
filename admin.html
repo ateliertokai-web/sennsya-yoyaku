@@ -158,6 +158,15 @@ textarea:focus,input:focus{background:#fff;box-shadow:0 0 0 1.5px var(--ink);out
 .spedit input[type=date]{background:#fff;max-width:240px}
 .spedit .row2{display:flex;gap:8px;justify-content:flex-end;margin-top:14px}
 
+/* メールの文章 */
+.sech{margin:26px 4px 10px;font-size:13px;color:var(--sub);letter-spacing:.1em}
+.sech:first-child{margin-top:0}
+.mail h3{margin-bottom:2px}
+.mail textarea{min-height:200px}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 0}
+.tags button{min-height:30px;padding:0 11px;border:0;border-radius:99px;background:#f3ecdc;color:#7a5a1e;font-size:12px;font-weight:600}
+.tags button:hover{background:#ece0c4}
+
 .savebar{position:sticky;bottom:0;z-index:4;display:flex;justify-content:flex-end;margin:24px -20px -80px;padding:12px 20px calc(12px + env(safe-area-inset-bottom));background:rgba(245,244,241,.9);backdrop-filter:saturate(1.6) blur(16px);-webkit-backdrop-filter:saturate(1.6) blur(16px);box-shadow:0 -1px 0 var(--line)}
 .savebar .btn{min-width:220px}
 @media (max-width:560px){.savebar .btn{width:100%}}
@@ -172,7 +181,7 @@ textarea:focus,input:focus{background:#fff;box-shadow:0 0 0 1.5px var(--ink);out
     <button class="tab" data-t="hol">休業日<i class="dot" id="holDot" hidden></i></button>
     <button class="tab" data-t="time">時間帯</button>
     <button class="tab" data-t="set">設定</button>
-    <button class="tab" data-t="txt">画面の文章</button>
+    <button class="tab" data-t="txt">文章・メール</button>
 </nav>
 </div>
 <div class="wrap">
@@ -247,8 +256,14 @@ textarea:focus,input:focus{background:#fff;box-shadow:0 0 0 1.5px var(--ink);out
   </div>
 
   <div id="t-txt" class="pane" hidden>
+    <h3 class="sech">画面の文章</h3>
     <p class="note hint" style="margin-top:0">お客様の画面に出る文章です。空にすると、その文章は表示されなくなります。</p>
     <div id="txtList" class="card pad" style="padding-top:4px"></div>
+    <div id="mailBox" hidden>
+      <h3 class="sech">メールの文章</h3>
+      <p class="note hint" style="margin-top:0">お客様に届くメールです。下のタグを押すと、カーソルの位置に差し込み項目が入ります(送るときに、お名前や日時などに置き換わります)。件名の前には自動で【店名】が付きます。本文を空にすると、最初の文章に戻ります。</p>
+      <div id="mailList" class="stack"></div>
+    </div>
     <div class="savebar"><button class="btn" id="saveTxt">文章を保存する</button></div>
   </div>
 </div>
@@ -436,6 +451,34 @@ function drawTxt() {
   $('txtList').innerHTML = rows.map(s => { const n = s.k.slice(2); return `<label for="x-${esc(s.k)}">${esc(TXT_LABEL[n] || n)}${s.d ? '<span class="note">' + esc(s.d) + '</span>' : ''}</label><textarea id="x-${esc(s.k)}" data-x="${esc(s.k)}" ${n === 'トップご案内' ? 'style="min-height:150px"' : ''}>${esc(s.v)}</textarea>`; }).join('') +
     '<p class="note" style="margin:16px 0 0">案内表では {普通分} {大型分} {昼休憩} と書くと、現在の設定の数字に自動で入れ替わります。</p>';
   $('txtList').querySelectorAll('[data-x]').forEach(e => e.oninput = () => { sv(e.dataset.x).v = e.value; dirty = true; });
+  drawMail();
+}
+/* メールの文章: [設定のキー(メ_〜), 見出し, いつ届くか, 使える差し込み項目] */
+const MAILS = [
+  ['予約確認', '予約の確認', '予約を受け付けたとき', ['氏名', '日時', '予約番号', 'お車', 'ナンバー', '店名']],
+  ['キャンセル', 'キャンセルの確認', 'お客様・管理画面で予約をキャンセルしたとき', ['氏名', '日時', '予約番号', 'お車', 'ナンバー', '店名']],
+  ['待ち受付', 'キャンセル待ちの受付', 'キャンセル待ちを登録したとき', ['氏名', '対象', '日数', 'お車', 'ナンバー', '店名']],
+  ['空き案内', '空きのご案内', 'キャンセル待ちの方に空きが出たとき({リンク}は必須)', ['氏名', '日時', '期限', 'リンク', 'お車', 'ナンバー', '店名']],
+  ['署名', 'すべてのメールの最後', 'どのメールにも最後に付きます(空欄で付けない)', ['問い合わせ先', '店名']]
+];
+function drawMail() {
+  const has = !!sv('メ_予約確認'); $('mailBox').hidden = !has; if (!has) return;
+  $('mailList').innerHTML = MAILS.map(m => {
+    const subj = sv('メ_' + m[0] + '件名'), body = sv('メ_' + m[0]);
+    return `<section class="card pad mail"><h3>${m[1]}</h3><p class="note" style="margin:0">${esc(m[2])}</p>`
+      + (subj ? `<label for="m-${m[0]}-s">件名</label><input type="text" id="m-${m[0]}-s" data-x="メ_${m[0]}件名" value="${esc(subj.v)}">` : '')
+      + `<label for="m-${m[0]}">本文</label><textarea id="m-${m[0]}" data-x="メ_${m[0]}" ${m[0] === '署名' ? 'style="min-height:100px"' : ''}>${esc(body.v)}</textarea>`
+      + `<div class="tags" data-for="m-${m[0]}">${m[3].map(t => `<button type="button" data-tag="${t}">{${t}}</button>`).join('')}</div></section>`;
+  }).join('');
+  let last = null; // 最後に触った入力欄(件名か本文)に差し込む
+  $('mailList').querySelectorAll('[data-x]').forEach(e => { e.oninput = () => { sv(e.dataset.x).v = e.value; dirty = true; }; e.onfocus = () => last = e; });
+  $('mailList').querySelectorAll('.tags').forEach(box => box.querySelectorAll('[data-tag]').forEach(b => b.onmousedown = ev => ev.preventDefault()));
+  $('mailList').querySelectorAll('.tags').forEach(box => box.querySelectorAll('[data-tag]').forEach(b => b.onclick = () => {
+    const sec = box.closest('.mail'), el = last && sec.contains(last) ? last : $(box.dataset.for), ins = '{' + b.dataset.tag + '}';
+    const a = el.selectionStart ?? el.value.length, z = el.selectionEnd ?? a;
+    el.value = el.value.slice(0, a) + ins + el.value.slice(z); el.focus(); el.setSelectionRange(a + ins.length, a + ins.length);
+    el.oninput();
+  }));
 }
 
 /* 休業日(ミニカレンダー) */
