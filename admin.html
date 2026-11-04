@@ -87,6 +87,7 @@ textarea:focus,input:focus{background:#fff;box-shadow:0 0 0 1.5px var(--ink);out
 .it .tm small{display:block;font-size:11.5px;font-weight:500;color:var(--mute)}
 .it .num{flex:none;display:grid;place-items:center;width:28px;height:28px;border-radius:50%;background:var(--soft);font-size:12.5px;font-weight:600;color:var(--sub);font-variant-numeric:tabular-nums}
 .it .bd{flex:1;min-width:0}
+.it>.btn+.btn{margin-left:-8px}
 .it .t{font-weight:600}
 .it .s{font-size:13px}
 .it .s2{font-size:12px;color:var(--mute);overflow-wrap:anywhere}
@@ -197,6 +198,7 @@ textarea:focus,input:focus{background:#fff;box-shadow:0 0 0 1.5px var(--ink);out
 
   <div id="t-wait" class="pane" hidden>
     <p class="note hint" style="margin-top:0">登録が早い順です。「通知中」は空き枠を確保して案内メールを送った状態で、保留時間を過ぎると次の方へ移ります。</p>
+    <div class="warn" id="siteWarn" hidden>「設定」タブの「サイトURL」が空欄です。キャンセル待ちの案内メールに確定用のリンクが入りません。お客様画面のURLを入れて保存してください。</div>
     <div id="waitList"></div>
   </div>
 
@@ -298,7 +300,11 @@ async function loadRes() {
   $('resList').innerHTML = '<p class="empty">読み込み中…</p>';
   const list = await api('adminRes', { from: $('from').value, to: $('to').value });
   const byDay = {}; list.forEach(r => (byDay[r.date] = byDay[r.date] || []).push(r));
-  $('resList').innerHTML = list.length ? `<p class="count">${list.length}件の予約</p>` + Object.keys(byDay).map(d => `<section class="day"><h4>${dJa(d)}<span>${byDay[d].length}件</span></h4><div class="card">` + byDay[d].map(r => `<div class="it"><div class="tm">${r.start}<small>〜${r.end}</small></div><div class="bd"><div class="t">${esc(r.name)}<span class="tag ${r.large ? 'l' : ''}">${r.large ? '大型' : '普通'}</span>${r.status === '保留' ? '<span class="tag w">案内中</span>' : ''}</div><div class="s">${esc(r.model)} ・ ${esc(r.plate)}</div><div class="s2">${esc(r.phone)} ・ ${esc(r.email)} ・ No.${esc(r.no)}</div></div><button class="btn danger sm" data-c="${r.id}">取消</button></div>`).join('') + '</div></section>').join('') : '<p class="empty">この期間の予約はありません。</p>';
+  $('resList').innerHTML = list.length ? `<p class="count">${list.length}件の予約</p>` + Object.keys(byDay).map(d => `<section class="day"><h4>${dJa(d)}<span>${byDay[d].length}件</span></h4><div class="card">` + byDay[d].map(r => `<div class="it"><div class="tm">${r.start}<small>〜${r.end}</small></div><div class="bd"><div class="t">${esc(r.name)}<span class="tag ${r.large ? 'l' : ''}">${r.large ? '大型' : '普通'}</span>${r.status === '保留' ? '<span class="tag w">案内中</span>' : ''}</div><div class="s">${esc(r.model)} ・ ${esc(r.plate)}</div><div class="s2">${esc(r.phone)} ・ ${esc(r.email)} ・ No.${esc(r.no)}</div></div>${r.status === '保留' ? `<button class="btn sub sm" data-rs="${r.id}">再送</button>` : ''}<button class="btn danger sm" data-c="${r.id}">取消</button></div>`).join('') + '</div></section>').join('') : '<p class="empty">この期間の予約はありません。</p>';
+  $('resList').querySelectorAll('[data-rs]').forEach(b => b.onclick = busy(b, async () => {
+    if (!confirm('このお客様へ「空きが出ました」の案内メールをもう一度送りますか?')) return;
+    await api('adminResend', { id: b.dataset.rs }); alert('送りました');
+  }));
   $('resList').querySelectorAll('[data-c]').forEach(b => b.onclick = busy(b, async () => {
     if (!confirm('この予約を取り消しますか?\nお客様へキャンセルメールを送り、キャンセル待ちの方へ案内します。')) return;
     await api('adminCancel', { id: b.dataset.c }); await loadRes();
@@ -339,7 +345,7 @@ function fieldsCard(g) {
     return `<div><label for="k-${esc(f[0])}">${esc(f[0])}${s.d ? ' <span class="note">' + esc(s.d) + '</span>' : ''}</label><input id="k-${esc(f[0])}" type="${f[1]}" ${f[1] === 'number' ? 'inputmode="numeric" min="0"' : ''} data-k="${esc(f[0])}" value="${esc(val)}"></div>`;
   }).join('') + '</div></section>';
 }
-function dot() { const n = G.need.filter(m => !G.confirmed.includes(m)).length; $('holDot').hidden = !n; }
+function dot() { const n = G.need.filter(m => !G.confirmed.includes(m)).length; $('holDot').hidden = !n; $('siteWarn').hidden = G.siteUrl !== ''; }
 function drawSet() {
   $('setList').innerHTML = GROUPS.slice(1).map(fieldsCard).join('');
   $('setList').querySelectorAll('[data-k]').forEach(e => e.oninput = () => { sv(e.dataset.k).v = e.value; dirty = true; });
