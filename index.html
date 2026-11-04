@@ -689,7 +689,7 @@ $('lGo').onclick = busy($('lGo'), async () => {
 
 /* ---------- キャンセル待ち ---------- */
 let W = { mode: 'dates', months: new Set(), wd: new Set(), dates: new Set(), ym: null };
-const MODES = [['dates', '日にちを選ぶ'], ['weekdays', '曜日を選ぶ'], ['weekend', '土日すべて'], ['month', '月ぜんぶ']];
+const MODES = [['dates', '日にちで選ぶ'], ['weekdays', '曜日で選ぶ']];
 function openWait(pre) {
   if (!profile.plate) return goInfo('wait');
   large = isLarge(profile.model);
