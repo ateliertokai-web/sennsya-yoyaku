@@ -153,6 +153,14 @@ body.hashome .app{padding-bottom:calc(330px + env(safe-area-inset-bottom))}
 .mt.on small{color:#d6b46a}
 .mt.on::after{content:"";position:absolute;top:8px;right:8px;width:6px;height:6px;border-radius:50%;background:#d6b46a}
 @media (max-width:340px){.mgrid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+/* 担当スタッフ */
+.sgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.sgrp{margin:14px 2px 8px;font-size:11.5px;font-weight:600;color:var(--mute);letter-spacing:.1em}
+.sgrp:first-child{margin-top:0}
+.mt.sf{min-height:54px}
+.mt.sf b{font-size:15px;letter-spacing:.06em}
+.mt.none b{font-size:13.5px;color:var(--sub);font-weight:600}
+.mt.none.on b{color:#fff}
 
 /* ルール一覧 */
 .rules{margin:16px 0 0;padding:6px 20px;background:var(--card);border-radius:var(--rl);box-shadow:0 0 0 1px var(--line)}
@@ -312,6 +320,10 @@ body.hasbar .toast{bottom:calc(100px + env(safe-area-inset-bottom))}
   <input type="text" id="fPlate" placeholder="鹿児島 330 あ 12-34" autocomplete="off">
   </div>
   <p class="note" id="durNote" hidden></p>
+  <div id="staffSec" hidden>
+    <h3 class="sec">担当スタッフ</h3>
+    <div class="card fields" style="padding-top:16px"><div id="fStaff" role="radiogroup" aria-label="担当スタッフ"></div></div>
+  </div>
   <h3 class="sec">ご連絡先<button type="button" class="link" id="contactEdit" hidden>変更</button></h3>
   <div class="card contact-sum" id="contactSum" hidden></div>
   <div class="card fields" id="contactForm">
@@ -550,7 +562,9 @@ function goInfo(next) {
   selCar = cars.length ? (i >= 0 ? i : 0) : -1; editCars = false;
   contactOpen = !(profile.name && profile.phone && profile.email);
   $('fPlate').value = ''; $('fName').value = profile.name || ''; $('fPhone').value = profile.phone || ''; $('fMail').value = profile.email || '';
-  pickCar(selCar); drawContact(); show('info');
+  pickCar(selCar); drawContact(); const sl = cfg.staff || [];
+  curStaff = sl.find(x => x.name === profile.staff && (x.store || '') === (profile.staffStore || '')) || null; drawStaff();
+  show('info');
 }
 /** お車を選ぶ。-1 は「別のお車」(入力欄を出す) */
 function pickCar(i) {
@@ -583,7 +597,20 @@ function updDur() {
   const t = String((cfg.texts || {})['洗車時間'] || '').replace(/\{分\}/g, durOf(curModel));
   setText('durNote', t);
 }
-let curModel = '';
+let curModel = '', curStaff = null; // curStaff = { store, name }(null は指定なし)
+/** 担当スタッフを選ぶタイル(店舗が2つ以上なら店舗ごとに分ける) */
+function drawStaff() {
+  const list = (cfg.staff || []).filter(x => x.name);
+  $('staffSec').hidden = !list.length; if (!list.length) { curStaff = null; return; }
+  const stores = [...new Set(list.map(x => x.store || ''))], multi = stores.length > 1;
+  const isOn = x => !!curStaff && curStaff.name === x.name && (curStaff.store || '') === (x.store || '');
+  const tile = (x, i) => `<button type="button" class="mt sf ${isOn(x) ? 'on' : ''}" role="radio" aria-checked="${isOn(x)}" data-si="${i}"><b>${esc(x.name)}</b></button>`;
+  let h = `<div class="sgrid"><button type="button" class="mt sf none ${curStaff ? '' : 'on'}" role="radio" aria-checked="${!curStaff}" data-si="-1"><b>指定なし</b></button>` + (multi ? '</div>' : '');
+  if (multi) stores.forEach(st => { h += `<div class="sgrp">${esc(st || 'その他')}</div><div class="sgrid">` + list.map((x, i) => (x.store || '') === st ? tile(x, i) : '').join('') + '</div>'; });
+  else h += list.map(tile).join('') + '</div>';
+  $('fStaff').innerHTML = h;
+  $('fStaff').querySelectorAll('[data-si]').forEach(b => b.onclick = () => { const i = +b.dataset.si; curStaff = i < 0 ? null : list[i]; drawStaff(); });
+}
 function setModel(name) {
   curModel = name || '';
   const m = cfg.models.find(m => m.name === curModel);
@@ -625,7 +652,7 @@ $('infoNext').onclick = () => {
     // 店の車種名が変わったときは選び直してもらう
     pickCar(-1); $('fPlate').value = car.plate; return toast('車種を選び直してください', true);
   }
-  const p = { model: car.model, plate: car.plate, name: $('fName').value.trim(), phone: $('fPhone').value.trim(), email: $('fMail').value.trim() };
+  const p = { model: car.model, plate: car.plate, name: $('fName').value.trim(), phone: $('fPhone').value.trim(), email: $('fMail').value.trim(), staff: curStaff ? curStaff.name : '', staffStore: curStaff ? (curStaff.store || '') : '' };
   if (!p.model || !p.plate || !p.name || !p.phone || !p.email) { if (!p.name || !p.phone || !p.email) { contactOpen = true; drawContact(); } return toast('すべての項目を入力してください', true); }
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(p.email)) { contactOpen = true; drawContact(); return toast('メールアドレスを確認してください', true); }
   if (selCar < 0) {
@@ -794,7 +821,7 @@ async function openSlots(d) {
 $('slotBack').onclick = () => openCal();
 async function doReserve() {
   let r;
-  try { r = await api('reserve', { date: pick.date, start: pick.start, name: profile.name, phone: profile.phone, email: profile.email, plate: profile.plate, model: profile.model }); }
+  try { r = await api('reserve', { staff: profile.staff || '', staffStore: profile.staffStore || '', date: pick.date, start: pick.start, name: profile.name, phone: profile.phone, email: profile.email, plate: profile.plate, model: profile.model }); }
   catch (e) { if (/月1回/.test(e.message)) booked.add(pick.date.slice(0, 7)); throw e; }
   mine.push({ no: r.no, date: r.date, start: r.start, end: r.end, model: r.model, plate: profile.plate }); save('wash_mine', mine); monthCache = {};
   booked.add(r.date.slice(0, 7));
@@ -802,7 +829,7 @@ async function doReserve() {
 }
 function doneView(r, title) {
   $('doneTitle').textContent = title; $('doneNo').textContent = r.no;
-  $('doneFacts').innerHTML = [['日時', dJa(r.date) + ' ' + r.start + '〜' + r.end], ['お車', r.model]].map(f => `<div><dt>${f[0]}</dt><dd>${esc(f[1])}</dd></div>`).join('');
+  $('doneFacts').innerHTML = [['日時', dJa(r.date) + ' ' + r.start + '〜' + r.end], ['お車', r.model]].concat(r.staff ? [['担当', r.staff]] : []).map(f => `<div><dt>${f[0]}</dt><dd>${esc(f[1])}</dd></div>`).join('');
   show('done');
 }
 
@@ -867,7 +894,7 @@ function waitBar() {
   else if (W.mode === 'weekdays') { ready = W.months.size > 0 && W.wd.size > 0; sub = ready ? [...W.months].sort().map(ymJa).join('・') + ' / ' + [...W.wd].sort().map(i => WD[i]).join('・') + '曜日' : '月と曜日を選んでください'; }
   else { ready = W.months.size > 0; sub = ready ? [...W.months].sort().map(ymJa).join('・') + (W.mode === 'weekend' ? ' の土日' : ' ぜんぶ') : '月を選んでください'; }
   setBar({ main: 'キャンセル待ち', sub, label: '登録する', disabled: !ready, fn: async () => {
-    const r = await api('waitAdd', { name: profile.name, phone: profile.phone, email: profile.email, plate: profile.plate, model: profile.model, mode: W.mode, ym: [...W.months], wd: [...W.wd], dates: [...W.dates] });
+    const r = await api('waitAdd', { staff: profile.staff || '', staffStore: profile.staffStore || '', name: profile.name, phone: profile.phone, email: profile.email, plate: profile.plate, model: profile.model, mode: W.mode, ym: [...W.months], wd: [...W.wd], dates: [...W.dates] });
     renderHome(); show('home');
     toast('登録しました(満席の' + r.days + '日が対象)。空きが出たらメールでお知らせします。');
   } });
@@ -878,7 +905,7 @@ async function holdView(token) {
   show('hold');
   try {
     const h = await api('holdInfo', { token });
-    $('holdBody').innerHTML = `<p class="lead">${h.until} までに、下のボタンで予約を確定してください。過ぎると次の方へご案内します。</p><dl class="facts"><div><dt>日時</dt><dd>${dJa(h.date)} ${h.start}〜${h.end}</dd></div><div><dt>お車</dt><dd>${esc(h.model)}</dd></div><div><dt>ナンバー</dt><dd>${esc(h.plate)}</dd></div><div><dt>お名前</dt><dd>${esc(h.name)} 様</dd></div></dl><button class="cta" id="hGo">予約を確定する</button>`;
+    $('holdBody').innerHTML = `<p class="lead">${h.until} までに、下のボタンで予約を確定してください。過ぎると次の方へご案内します。</p><dl class="facts"><div><dt>日時</dt><dd>${dJa(h.date)} ${h.start}〜${h.end}</dd></div><div><dt>お車</dt><dd>${esc(h.model)}</dd></div>${h.staff ? `<div><dt>担当</dt><dd>${esc(h.staff)}</dd></div>` : ''}<div><dt>ナンバー</dt><dd>${esc(h.plate)}</dd></div><div><dt>お名前</dt><dd>${esc(h.name)} 様</dd></div></dl><button class="cta" id="hGo">予約を確定する</button>`;
     $('hGo').onclick = busy($('hGo'), async () => {
       const r = await api('holdConfirm', { token });
       mine.push({ no: r.no, date: r.date, start: r.start, end: r.end, model: r.model, plate: h.plate }); save('wash_mine', mine);
