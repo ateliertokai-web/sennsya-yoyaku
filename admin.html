@@ -251,6 +251,13 @@ textarea:focus,input:focus{background:#fff;box-shadow:0 0 0 1.5px var(--ink);out
       <div id="modelList"></div>
       <button class="btn sub sm" id="addModel">+ 車種を追加</button>
     </section>
+    <section class="card pad" id="staffBox" style="margin-top:16px" hidden>
+      <div class="hrow"><h3>従業員画面</h3><a class="btn sub sm" href="staff.html" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;text-decoration:none">開く</a></div>
+      <p class="note" style="margin:2px 0 0">その日の予約(時間・車種・ナンバー・お名前)だけを見られる画面です。電話番号やメールアドレスは表示されず、設定の変更もできません。従業員用パスワードが未設定のあいだは、管理者パスワードで開けます。</p>
+      <label for="staffPw">従業員用パスワード <span class="note" id="staffState"></span></label>
+      <div style="display:flex;gap:8px"><input type="text" id="staffPw" autocomplete="off" placeholder="4文字以上"><button class="btn sm" id="staffSave" style="min-height:44px">設定</button></div>
+      <button class="btn danger sm" id="staffClear" style="margin-top:10px" hidden>従業員用パスワードを外す</button>
+    </section>
     <div class="savebar"><button class="btn" id="saveSet">設定を保存する</button></div>
   </div>
 
@@ -357,7 +364,7 @@ const sv = k => G.settings.find(s => s.k === k);
 const tv = v => { const m = String(v).match(/^(\d{1,2}):(\d{2})/); return m ? m[1].padStart(2, '0') + ':' + m[2] : ''; };
 const ymJa = ym => { const a = ym.split('-'); return a[0] + '年' + (+a[1]) + '月'; };
 const pad = n => String(n).padStart(2, '0');
-function drawAll() { if (!G) return; drawSet(); drawTime(); drawTxt(); drawHol(); dot(); }
+function drawAll() { if (!G) return; drawSet(); drawStaff(); drawTime(); drawTxt(); drawHol(); dot(); }
 /** 設定項目のカード(GROUPS の1グループぶん) */
 function fieldsCard(g) {
   return `<section class="card pad"><h3>${g[0]}</h3><div class="fields${g[1].length > 6 ? ' three' : ''}">` + g[1].map(f => {
@@ -425,6 +432,19 @@ function sortable(row) {
     const g = $('modelList').querySelectorAll('.grip')[Math.max(0, Math.min(G.models.length - 1, i + d))]; if (g) g.focus();
   };
 }
+/* 従業員画面のパスワード(すぐ保存) */
+function drawStaff() {
+  const has = G.staffPw !== undefined; $('staffBox').hidden = !has; if (!has) return;
+  $('staffState').textContent = G.staffPw ? '(設定済み)' : '(未設定)'; $('staffClear').hidden = !G.staffPw; $('staffPw').value = '';
+}
+$('staffSave').onclick = busy($('staffSave'), async () => {
+  const v = $('staffPw').value.trim(); if (v.length < 4) return alert('4文字以上で入力してください');
+  await api('adminSave', { staffPw: v }); G.staffPw = true; drawStaff(); alert('従業員用パスワードを設定しました');
+});
+$('staffClear').onclick = busy($('staffClear'), async () => {
+  if (!confirm('従業員用パスワードを外しますか?(外すと、従業員画面は管理者パスワードでのみ開けます)')) return;
+  await api('adminSave', { staffPw: '' }); G.staffPw = false; drawStaff();
+});
 $('addModel').onclick = () => { G.models.push({ name: '', large: false }); dirty = true; drawSet(); };
 
 /* 時間帯(開始時間の選択・1日の上限・日ごとの変則) */
