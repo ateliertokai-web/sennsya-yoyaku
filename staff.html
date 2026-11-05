@@ -77,31 +77,48 @@ button{font:inherit;color:inherit;letter-spacing:inherit;cursor:pointer}
 @media (max-width:420px){.top h1 small,.pbtn .wide{display:none}.tbtn{padding:0 9px}}
 .sheet{display:none}
 
-/* 印刷(A4縦・白黒でも読みやすく) */
-@page{size:A4 portrait;margin:12mm 12mm 14mm}
+/* 印刷: A4横のタイムスケジュール(白黒でも読みやすく) */
+@page{size:A4 landscape;margin:9mm 10mm 10mm}
 @media print{
-  body{background:#fff;font-size:11pt;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  body{background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact}
   body>*:not(.sheet){display:none!important}
-  .sheet{display:block;color:#000}
-  .sh-h{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;padding-bottom:6px;border-bottom:2px solid #000}
-  .sh-h h1{margin:0;font-size:18pt;font-weight:700;letter-spacing:.04em}
-  .sh-h h1 small{margin-left:10px;font-size:11pt;font-weight:600}
-  .sh-h p{margin:0;font-size:9pt;text-align:right;line-height:1.5}
-  .sh-sum{margin:8px 0 10px;font-size:10.5pt}
+  .sheet{display:block;color:#000;font-size:9pt}
+  .sh-h{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;padding-bottom:5px;border-bottom:2px solid #000}
+  .sh-h h1{margin:0;font-size:17pt;font-weight:700;letter-spacing:.04em}
+  .sh-h h1 small{margin-left:10px;font-size:12pt;font-weight:600}
+  .sh-h p{margin:0;font-size:8.5pt;text-align:right;line-height:1.5}
+  .sh-sum{margin:6px 0 8px;font-size:10pt}
   .sh-sum b{font-size:13pt}
-  table{width:100%;border-collapse:collapse;table-layout:fixed}
-  th{padding:5px 6px;border-bottom:1.5px solid #000;font-size:9pt;font-weight:600;text-align:left}
-  td{padding:9px 6px;border-bottom:.6pt solid #999;font-size:11pt;vertical-align:middle;overflow-wrap:anywhere}
-  tr{break-inside:avoid}
-  .c-tm{width:17%}.c-md{width:13%}.c-pl{width:25%}.c-nm{width:21%}.c-st{width:14%}.c-ck{width:10%;text-align:center}
-  td.c-tm b{font-size:13pt}
-  td.c-tm small{display:block;font-size:8.5pt;color:#444}
-  td.c-md b{font-size:12pt;letter-spacing:.04em}
-  td.c-md i{display:block;font-size:8pt;font-style:normal;color:#444}
-  .box{display:inline-block;width:14px;height:14px;border:1.2pt solid #000;border-radius:2px}
-  tr.sh-brk td{padding:4px 6px;background:#eee;font-size:9pt;font-weight:600;text-align:center;border-bottom:.6pt solid #999}
-  .sh-empty{padding:30px 0;text-align:center;font-size:12pt}
-  .sh-f{margin-top:10px;font-size:8.5pt;color:#444;text-align:right}
+  .tl{display:grid;grid-template-columns:16mm 1fr;border:1pt solid #000}
+  .tl-lab{display:flex;align-items:center;justify-content:center;border-top:.6pt solid #000;border-right:1pt solid #000;font-size:9pt;font-weight:700;background:#f2f2f2}
+  .tl-lab.hd{border-top:0;background:#fff;font-weight:600;font-size:8pt}
+  .tl-hd{position:relative;height:7mm;border-right:0}
+  .tl-hd span{position:absolute;bottom:1.2mm;transform:translateX(-50%);font-size:8.5pt;font-weight:700;font-variant-numeric:tabular-nums}
+  .tl-hd span.q{font-size:6.5pt;font-weight:400;color:#555}
+  .tl-hd span.first{transform:none;left:1mm!important}
+  .tl-hd span.last{transform:translateX(-100%);margin-left:-1mm}
+  .lane{position:relative;border-top:.6pt solid #000}
+  .grid{position:absolute;inset:0;background-repeat:repeat-x}
+  .tick{position:absolute;top:0;bottom:0;border-left:.4pt dotted #bbb}
+  .tick.h{border-left:.6pt solid #888}
+  .lunch{position:absolute;top:0;bottom:0;background:repeating-linear-gradient(135deg,#e6e6e6 0 2mm,#f6f6f6 2mm 4mm);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;font-size:8pt;font-weight:700;color:#555;line-height:1.4}
+  .lunch small{font-size:6.5pt;font-weight:400}
+  .blk{position:absolute;top:1.6mm;bottom:1.6mm;padding:1.4mm 1.6mm;border:1.2pt solid #000;border-radius:1.5mm;background:#fff;overflow:hidden;line-height:1.3}
+  .blk .t{font-size:8pt;font-weight:700;font-variant-numeric:tabular-nums}
+  .blk .n{margin-top:.6mm;font-size:10pt;font-weight:700;overflow-wrap:anywhere}
+  .blk .m{font-size:9pt;font-weight:700;letter-spacing:.04em}
+  .blk .p{font-size:7.5pt;overflow-wrap:anywhere}
+  .blk .s{margin-top:.6mm;font-size:7.5pt;color:#333}
+  .blk .s::before{content:"担当 ";color:#777}
+  .blk.lg{border-width:2pt}
+  .blk.hold{border-style:dashed}
+  .gap{position:absolute;top:1.6mm;bottom:1.6mm;border:.8pt dashed #999;border-radius:1.5mm;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;color:#666;font-size:7pt;line-height:1.35;font-variant-numeric:tabular-nums}
+  .gap b{font-size:8pt;color:#444}
+  .sh-leg{display:flex;gap:6mm;margin-top:3mm;font-size:7.5pt;color:#444}
+  .sh-leg i{display:inline-block;width:6mm;height:3mm;margin-right:1.5mm;vertical-align:-.4mm;border:1.2pt solid #000;border-radius:1mm}
+  .sh-leg i.lg{border-width:2pt}.sh-leg i.hold{border-style:dashed}.sh-leg i.gap{position:static;border:.8pt dashed #999}
+  .sh-empty{padding:24mm 0;text-align:center;font-size:12pt}
+  .sh-f{margin-top:2mm;font-size:7.5pt;color:#444;text-align:right}
 }
 
 /* ログイン */
@@ -199,19 +216,53 @@ function drawHead() {
   $('dpick').value = cur;
 }
 
-/** 印刷用の表を作る(画面の一覧と同じ内容) */
+/** 印刷用のタイムスケジュールを作る(横軸が時間、段が同時に洗車できる台数) */
 function drawSheet(d) {
   const dt = toD(d.date), title = (dt.getMonth() + 1) + '月' + dt.getDate() + '日(' + WD[dt.getDay()] + ')';
   const n = d.list.length, big = d.list.filter(x => x.large).length, now = new Date();
+  const fm = m => Math.floor(m / 60) + ':' + pad(m % 60);
   const lunchS = toM(d.lunch[0]), lunchE = toM(d.lunch[1]);
-  let rows = '', lunchShown = false;
-  d.list.forEach(r => {
-    if (!lunchShown && lunchE > lunchS && toM(r.start) >= lunchE && d.list.some(x => toM(x.start) < lunchS)) { rows += `<tr class="sh-brk"><td colspan="6">昼休憩 ${d.lunch[0]}〜${d.lunch[1]}</td></tr>`; lunchShown = true; }
-    rows += `<tr><td class="c-tm"><b>${r.start}</b><small>〜${r.end}</small></td><td class="c-md"><b>${esc(r.model)}</b>${r.large || r.hold ? `<i>${[r.large ? '大型' : '', r.hold ? '案内中(未確定)' : ''].filter(Boolean).join(' ・ ')}</i>` : ''}</td><td class="c-pl">${esc(r.plate)}</td><td class="c-nm">${esc(r.name)} 様</td><td class="c-st">${esc(r.staff || '')}</td><td class="c-ck"><span class="box"></span></td></tr>`;
+  // 表示する時間の幅: 基本は 9:00〜18:00。はみ出す予約があれば広げる
+  const from = Math.min(540, ...d.list.map(r => Math.floor(toM(r.start) / 60) * 60));
+  const to = Math.max(1080, ...d.list.map(r => Math.ceil(toM(r.end) / 60) * 60));
+  const pct = m => ((m - from) / (to - from) * 100).toFixed(3) + '%';
+  // 予約を段に振り分ける(重ならないように、空いている一番上の段へ)
+  const lanes = [];
+  d.list.slice().sort((a, b) => toM(a.start) - toM(b.start)).forEach(r => {
+    let k = lanes.findIndex(l => l.end <= toM(r.start)); if (k < 0) { lanes.push({ end: 0, items: [] }); k = lanes.length - 1; }
+    lanes[k].items.push(r); lanes[k].end = toM(r.end);
   });
-  $('sheet').innerHTML = `<div class="sh-h"><h1>洗車予約一覧<small>${dt.getFullYear()}年${title}</small></h1><p>${esc(d.name || '')}<br>${now.getMonth() + 1}/${now.getDate()} ${pad(now.getHours())}:${pad(now.getMinutes())} 時点</p></div>`
-    + (n ? `<p class="sh-sum">全 <b>${n}</b> 台(普通 ${n - big} ・ 大型 ${big})</p><table><thead><tr><th class="c-tm">時間</th><th class="c-md">車種</th><th class="c-pl">ナンバー</th><th class="c-nm">お客様名</th><th class="c-st">担当</th><th class="c-ck">済</th></tr></thead><tbody>${rows}</tbody></table>`
-      : `<p class="sh-empty">${d.closed ? '休業日です' : 'この日の予約はありません'}</p>`)
+  while (lanes.length < Math.max(1, d.cap || 1)) lanes.push({ end: 0, items: [] });
+  const laneH = Math.max(30, Math.min(62, Math.floor(140 / lanes.length)));
+  // 目盛り
+  let ticks = '', head = '';
+  for (let m = from; m <= to; m += 15) {
+    const h = m % 60 === 0;
+    if (m > from && m < to) ticks += `<div class="tick ${h ? 'h' : ''}" style="left:${pct(m)}"></div>`;
+    if (h) head += `<span class="${m === from ? 'first' : m === to ? 'last' : ''}" style="left:${pct(m)}">${m / 60}:00</span>`; else if (m % 30 === 0) head += `<span class="q" style="left:${pct(m)}">${fm(m)}</span>`;
+  }
+  const lunch = lunchE > lunchS ? `<div class="lunch" style="left:${pct(lunchS)};width:calc(${pct(lunchE)} - ${pct(lunchS)})">昼休憩<small>${d.lunch[0]}〜${d.lunch[1]}</small></div>` : '';
+  // 空き時間(昼休憩を除く)
+  const gapsOf = items => {
+    const busy = items.map(r => [toM(r.start), toM(r.end)]).concat(lunchE > lunchS ? [[lunchS, lunchE]] : []).sort((a, b) => a[0] - b[0]);
+    const out = []; let t = from;
+    busy.forEach(([s0, e0]) => { if (s0 > t) out.push([t, s0]); t = Math.max(t, e0); });
+    if (t < to) out.push([t, to]);
+    return out.filter(([s0, e0]) => e0 - s0 >= 5);
+  };
+  const gapHtml = ([s0, e0]) => { const w = e0 - s0; return `<div class="gap" style="left:calc(${pct(s0)} + .6mm);width:calc(${pct(e0)} - ${pct(s0)} - 1.2mm)">${w >= 30 ? `<b>空き</b>${fm(s0)}〜${fm(e0)}` : w >= 15 ? '空き' : ''}</div>`; };
+  const blk = r => `<div class="blk ${r.large ? 'lg' : ''} ${r.hold ? 'hold' : ''}" style="left:calc(${pct(toM(r.start))} + .6mm);width:calc(${pct(toM(r.end))} - ${pct(toM(r.start))} - 1.2mm)">`
+    + `<div class="t">${r.start}〜${r.end}</div><div class="n">${esc(r.name)} 様</div><div class="m">${esc(r.model)}${r.large ? ' (大型)' : ''}</div><div class="p">${esc(r.plate)}</div>`
+    + (r.staff ? `<div class="s">${esc(r.staff)}</div>` : '') + (r.hold ? '<div class="s" style="font-weight:700">案内中(未確定)</div>' : '') + '</div>';
+  let body = `<div class="tl-lab hd">時間</div><div class="tl-hd">${head}</div>`;
+  lanes.forEach((l, k) => {
+    body += `<div class="tl-lab" style="height:${laneH}mm">${lanes.length > 1 ? (k + 1) + '台目' : '予約'}</div>`
+      + `<div class="lane" style="height:${laneH}mm"><div class="grid">${ticks}</div>${lunch}${gapsOf(l.items).map(gapHtml).join('')}${l.items.map(blk).join('')}</div>`;
+  });
+  $('sheet').innerHTML = `<div class="sh-h"><h1>洗車タイムスケジュール<small>${dt.getFullYear()}年${title}</small></h1><p>${esc(d.name || '')}<br>${now.getMonth() + 1}/${now.getDate()} ${pad(now.getHours())}:${pad(now.getMinutes())} 時点</p></div>`
+    + (d.closed ? '<p class="sh-empty">休業日です</p>'
+      : `<p class="sh-sum">全 <b>${n}</b> 台(普通 ${n - big} ・ 大型 ${big})</p><div class="tl">${body}</div>`
+        + '<div class="sh-leg"><span><i></i>予約</span><span><i class="lg"></i>大型車</span><span><i class="hold"></i>キャンセル待ちで案内中(未確定)</span><span><i class="gap"></i>空き時間</span></div>')
     + '<p class="sh-f">お客様の個人情報を含みます。取り扱いにご注意ください。</p>';
   sheetDate = d.date;
 }
