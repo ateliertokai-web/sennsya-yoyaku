@@ -99,9 +99,16 @@ textarea:focus,input:focus{background:#fff;box-shadow:0 0 0 1.5px var(--ink);out
 .fields{display:grid;grid-template-columns:1fr;column-gap:16px}
 .fields>div{display:flex;flex-direction:column;justify-content:flex-end}
 @media (min-width:720px){.fields{grid-template-columns:1fr 1fr}.fields.three{grid-template-columns:1fr 1fr 1fr}}
-.mrow.srow{grid-template-columns:auto minmax(0,1fr) auto}
-.sfs{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:6px}
-@media (max-width:560px){.sfs{grid-template-columns:1fr}.sfs input[data-ss]{height:36px;font-size:14px!important;color:var(--sub)}}
+.mrow.srow{grid-template-columns:auto minmax(0,1fr) auto;margin-bottom:6px}
+.store{margin:0 0 12px;padding:12px 12px 10px;border-radius:14px;background:var(--bg)}
+.store-h{display:flex;align-items:center;gap:8px;margin:0 0 10px}
+.store-h input{flex:1;height:40px!important;background:#fff!important;font-weight:600}
+.store-h input:focus{box-shadow:0 0 0 1.5px var(--ink)}
+.store-h .btn{flex:none}
+.store .addin{margin-top:4px}
+.store .mrow{background:#fff}
+.newstore{display:flex;gap:8px;margin-top:4px}
+.newstore input{flex:1}
 .mrow{display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;gap:8px;align-items:center;margin-bottom:8px;padding:4px;border-radius:12px;background:var(--card);transition:box-shadow .15s,transform .15s}
 .grip{display:grid;place-items:center;width:36px;height:44px;border:0;border-radius:8px;background:none;color:var(--mute);cursor:grab;touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 .grip:hover{background:var(--soft);color:var(--ink)}
@@ -256,9 +263,9 @@ textarea:focus,input:focus{background:#fff;box-shadow:0 0 0 1.5px var(--ink);out
     </section>
     <section class="card pad" id="staffCard" style="margin-top:16px" hidden>
       <h3>担当スタッフ</h3>
-      <p class="note" style="margin:0">お客様が予約のときに選べる担当スタッフです。店舗が2つ以上あると、お客様の画面では店舗ごとに分けて表示します。つまみを長押しして上下に動かすと、並び順を変えられます。</p>
+      <p class="note" style="margin:0">お客様が予約のときに選べる担当スタッフです。店舗ごとにまとめて登録します(お客様の画面でも店舗ごとに分けて表示します)。つまみを長押しして上下に動かすと、店舗の中での並び順を変えられます。</p>
       <div id="staffList" style="margin-top:14px"></div>
-      <button class="btn sub sm" id="addStaff">+ スタッフを追加</button>
+      <div class="newstore"><input type="text" id="newStore" placeholder="新しい店舗名(例: レクサス鹿児島東開)" aria-label="新しい店舗名"><button class="btn sub sm" id="addStore" style="min-height:44px">+ 店舗を追加</button></div>
     </section>
     <section class="card pad" id="staffBox" style="margin-top:16px" hidden>
       <div class="hrow"><h3>従業員画面</h3><a class="btn sub sm" href="staff.html" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;text-decoration:none">開く</a></div>
@@ -391,65 +398,90 @@ function drawSet() {
   $('modelList').querySelectorAll('[data-ml]').forEach(e => e.onchange = () => { G.models[e.dataset.ml].large = e.checked; dirty = true; });
   $('modelList').querySelectorAll('[data-md]').forEach(e => e.onclick = () => { G.models.splice(+e.dataset.md, 1); dirty = true; drawSet(); });
   $('modelList').querySelectorAll('.mrow').forEach(r => sortable(r, 'models'));
-  // 担当スタッフ(店舗・名前)
+  // 担当スタッフ: 店舗ごとにまとめて表示(データは [{store, name}] の並び。同じ店舗は続けて並べる)
   const has = Array.isArray(G.staff); $('staffCard').hidden = !has;
   if (has) {
-    $('staffList').innerHTML = G.staff.length ? G.staff.map((m, i) => `<div class="mrow srow" data-i="${i}">${gripHtml(m.name || 'スタッフ')}<div class="sfs"><input type="text" aria-label="店舗名" placeholder="店舗名" data-ss="${i}" value="${esc(m.store)}"><input type="text" aria-label="スタッフ名" placeholder="スタッフ名" data-sn="${i}" value="${esc(m.name)}"></div><button class="btn danger sm" data-sd="${i}">削除</button></div>`).join('') : '<p class="note" style="margin:10px 0 4px">まだ登録がありません。登録すると、お客様が予約のときに担当スタッフを選べるようになります。</p>';
-    $('staffList').querySelectorAll('[data-ss]').forEach(e => e.oninput = () => { G.staff[e.dataset.ss].store = e.value; dirty = true; });
+    const stores = [...new Set(G.staff.map(m => m.store))];
+    G.staff = stores.flatMap(st => G.staff.filter(m => m.store === st));
+    $('staffList').innerHTML = stores.length ? stores.map((st, g) => {
+      const items = G.staff.map((m, i) => [m, i]).filter(([m]) => m.store === st);
+      return `<div class="store" data-g="${g}"><div class="store-h"><input type="text" aria-label="店舗名" placeholder="店舗名" data-sg="${g}" value="${esc(st)}"><button class="btn danger sm" data-sdel="${g}">店舗を削除</button></div>`
+        + `<div class="srows" id="sg-${g}">` + items.map(([m, i]) => `<div class="mrow srow" data-i="${i}">${gripHtml(m.name || 'スタッフ')}<input type="text" aria-label="スタッフ名" placeholder="スタッフ名" data-sn="${i}" value="${esc(m.name)}"><button class="btn danger sm" data-sd="${i}">削除</button></div>`).join('') + '</div>'
+        + `<button class="btn sub sm addin" data-sadd="${g}">+ スタッフを追加</button></div>`;
+    }).join('') : '<p class="note" style="margin:0 0 12px">まだ登録がありません。下で店舗を追加してから、スタッフを追加してください。</p>';
+    const idxOf = g => G.staff.map((m, i) => m.store === stores[g] ? i : -1).filter(i => i >= 0);
+    $('staffList').querySelectorAll('[data-sg]').forEach(e => e.oninput = () => {
+      const g = +e.dataset.sg, idx = idxOf(g); idx.forEach(i => G.staff[i].store = e.value); stores[g] = e.value; dirty = true;
+    });
     $('staffList').querySelectorAll('[data-sn]').forEach(e => e.oninput = () => { G.staff[e.dataset.sn].name = e.value; dirty = true; });
     $('staffList').querySelectorAll('[data-sd]').forEach(e => e.onclick = () => { G.staff.splice(+e.dataset.sd, 1); dirty = true; drawSet(); });
-    $('staffList').querySelectorAll('.mrow').forEach(r => sortable(r, 'staff'));
+    $('staffList').querySelectorAll('[data-sdel]').forEach(e => e.onclick = () => {
+      const g = +e.dataset.sdel; if (!confirm('「' + (stores[g] || '店舗名なし') + '」とそのスタッフを、まとめて削除しますか?')) return;
+      const del = new Set(idxOf(g)); G.staff = G.staff.filter((m, i) => !del.has(i)); dirty = true; drawSet();
+    });
+    $('staffList').querySelectorAll('[data-sadd]').forEach(e => e.onclick = () => {
+      const g = +e.dataset.sadd, idx = idxOf(g), at = (idx.length ? idx[idx.length - 1] : G.staff.length - 1) + 1;
+      G.staff.splice(at, 0, { store: stores[g], name: '' }); dirty = true; drawSet();
+      const el = $('staffList').querySelector(`[data-sn="${at}"]`); if (el) el.focus();
+    });
+    $('staffList').querySelectorAll('.srow').forEach(r => sortable(r, 'staff'));
   }
 }
 const gripHtml = label => `<button type="button" class="grip" aria-label="${esc(label)}の並べ替え(上下キーで移動)"><svg width="14" height="20" viewBox="0 0 14 20" fill="currentColor" aria-hidden="true"><circle cx="4" cy="4" r="1.6"/><circle cx="10" cy="4" r="1.6"/><circle cx="4" cy="10" r="1.6"/><circle cx="10" cy="10" r="1.6"/><circle cx="4" cy="16" r="1.6"/><circle cx="10" cy="16" r="1.6"/></svg></button>`;
 /* 車種・担当スタッフの並べ替え: つまみを長押し(マウスはそのまま)で浮かせて上下に動かす。key は G の中の配列名 */
-function moveItem(key, from, to) {
-  const a = G[key];
-  if (to < 0 || to >= a.length || from === to) return;
-  const [m] = a.splice(from, 1); a.splice(to, 0, m); dirty = true;
-}
 function sortable(row, key) {
   const grip = row.querySelector('.grip'), list = row.parentNode;
-  let timer = null, lifted = false, startY = 0, sx = 0, pid = null;
-  const rows = () => [...list.querySelectorAll('.mrow')];
+  let timer = null, lifted = false, active = false, startY = 0, sx = 0, sy = 0;
+  const rows = () => [...list.children].filter(el => el.classList.contains('mrow'));
   const lift = () => {
     lifted = true; row.classList.remove('press'); row.classList.add('lift');
     if (navigator.vibrate) navigator.vibrate(10);
   };
-  grip.onpointerdown = e => {
-    pid = e.pointerId; startY = e.clientY; sx = e.clientX;
-    try { grip.setPointerCapture(pid); } catch (_) {}
-    if (e.pointerType === 'mouse') lift();
-    else { row.classList.add('press'); timer = setTimeout(lift, 300); }
+  const begin = (x, y, mouse) => {
+    active = true; startY = sy = y; sx = x;
+    if (mouse) lift(); else { row.classList.add('press'); timer = setTimeout(lift, 300); }
   };
-  grip.onpointermove = e => {
-    if (e.pointerId !== pid) return;
-    if (!lifted) { if (Math.abs(e.clientY - startY) > 8 || Math.abs(e.clientX - sx) > 8) cancel(); return; }
-    let dy = e.clientY - startY;
-    const all = rows(), i = all.indexOf(row), prev = all[i - 1], next = all[i + 1];
-    const step = el => el.getBoundingClientRect().height + 8;
-    if (prev && dy < -step(prev) / 2) { list.insertBefore(row, prev); startY -= step(prev); slide(prev, -step(prev)); }
-    else if (next && dy > step(next) / 2) { list.insertBefore(next, row); startY += step(next); slide(next, step(next)); }
-    dy = e.clientY - startY;
-    row.style.transform = `translateY(${dy}px) scale(1.02)`;
-  };
+  const step = el => el.getBoundingClientRect().height + (parseFloat(getComputedStyle(el).marginBottom) || 0);
   // 入れ替わった行を、元の位置からすっと動かす
   const slide = (el, from) => { el.classList.remove('slide'); el.style.transform = `translateY(${from}px)`; el.offsetHeight; el.classList.add('slide'); el.style.transform = ''; };
-  const cancel = () => { clearTimeout(timer); row.classList.remove('press'); pid = null; };
-  const drop = () => {
+  const move = (x, y) => {
+    if (!active) return false;
+    if (!lifted) { if (Math.abs(y - sy) > 8 || Math.abs(x - sx) > 8) cancel(); return false; }
+    let dy = y - startY;
+    const all = rows(), i = all.indexOf(row), prev = all[i - 1], next = all[i + 1];
+    if (prev && dy < -step(prev) / 2) { const h = step(prev); list.insertBefore(row, prev); startY -= h; slide(prev, -h); }
+    else if (next && dy > step(next) / 2) { const h = step(next); list.insertBefore(next, row); startY += h; slide(next, h); }
+    dy = y - startY;
+    row.style.transform = `translateY(${dy}px) scale(1.02)`;
+    return true;
+  };
+  const cancel = () => { clearTimeout(timer); row.classList.remove('press'); active = false; };
+  const end = () => {
     clearTimeout(timer); row.classList.remove('press');
-    if (!lifted) { pid = null; return; }
-    lifted = false; pid = null; row.classList.remove('lift'); row.style.transform = '';
-    const order = rows().map(r => +r.dataset.i);
-    if (order.some((v, k) => v !== k)) { G[key] = order.map(k => G[key][k]); dirty = true; }
+    const was = lifted; active = false; lifted = false;
+    if (!was) return;
+    row.classList.remove('lift'); row.style.transform = '';
+    // この一覧に並んでいる項目の新しい順番を、全体の配列に書き戻す
+    const order = rows().map(r => +r.dataset.i), pos = order.slice().sort((a, b) => a - b);
+    if (order.some((v, k) => v !== pos[k])) { const arr = G[key].slice(); pos.forEach((p, k) => { arr[p] = G[key][order[k]]; }); G[key] = arr; dirty = true; }
     drawSet();
   };
-  grip.onpointerup = drop; grip.onpointercancel = drop;
+  // マウス・ペン
+  grip.onpointerdown = e => { if (e.pointerType === 'touch') return; e.preventDefault(); try { grip.setPointerCapture(e.pointerId); } catch (_) {} begin(e.clientX, e.clientY, true); };
+  grip.onpointermove = e => { if (e.pointerType !== 'touch') move(e.clientX, e.clientY); };
+  grip.onpointerup = grip.onpointercancel = e => { if (e.pointerType !== 'touch') end(); };
+  // タッチ(iPhone など): 長押しで浮かせ、浮いている間は画面のスクロールを止める
+  grip.addEventListener('touchstart', e => { const t = e.touches[0]; begin(t.clientX, t.clientY, false); }, { passive: true });
+  grip.addEventListener('touchmove', e => { const t = e.touches[0]; if (lifted || active) { if (move(t.clientX, t.clientY) || lifted) e.preventDefault(); } }, { passive: false });
+  grip.addEventListener('touchend', end); grip.addEventListener('touchcancel', end);
   grip.oncontextmenu = e => e.preventDefault();
   grip.onkeydown = e => {
     const d = { ArrowUp: -1, ArrowDown: 1 }[e.key]; if (!d) return;
-    e.preventDefault(); const i = +row.dataset.i, id = list.id; moveItem(key, i, i + d); drawSet();
-    const g = $(id).querySelectorAll('.grip')[Math.max(0, Math.min(G[key].length - 1, i + d))]; if (g) g.focus();
+    e.preventDefault();
+    const all = rows(), j = all.indexOf(row) + d; if (!all[j]) return;
+    const a = +row.dataset.i, b = +all[j].dataset.i, arr = G[key].slice(); [arr[a], arr[b]] = [arr[b], arr[a]]; G[key] = arr; dirty = true;
+    const id = list.id; drawSet();
+    const g = $(id) && $(id).querySelector(`.mrow[data-i="${b}"] .grip`); if (g) g.focus();
   };
 }
 /* 従業員画面のパスワード(すぐ保存) */
@@ -466,10 +498,13 @@ $('staffClear').onclick = busy($('staffClear'), async () => {
   await api('adminSave', { staffPw: '' }); G.staffPw = false; drawStaff();
 });
 $('addModel').onclick = () => { G.models.push({ name: '', large: false }); dirty = true; drawSet(); };
-$('addStaff').onclick = () => {
-  const last = G.staff[G.staff.length - 1]; G.staff.push({ store: last ? last.store : '', name: '' }); dirty = true; drawSet();
+$('addStore').onclick = () => {
+  const v = $('newStore').value.trim(); if (!v) { $('newStore').focus(); return; }
+  if (G.staff.some(m => m.store === v)) return alert('「' + v + '」はすでにあります。その店舗の「+ スタッフを追加」から追加してください。');
+  G.staff.push({ store: v, name: '' }); $('newStore').value = ''; dirty = true; drawSet();
   const ins = $('staffList').querySelectorAll('[data-sn]'); if (ins.length) ins[ins.length - 1].focus();
 };
+$('newStore').addEventListener('keydown', e => { if (e.key === 'Enter') $('addStore').click(); });
 
 /* 時間帯(開始時間の選択・1日の上限・日ごとの変則) */
 const toM = t => { const m = String(t).match(/(\d{1,2}):(\d{2})/); return m ? +m[1] * 60 + +m[2] : NaN; };
