@@ -595,7 +595,7 @@ function drawModels() {
   const el = $('fModel');
   el.innerHTML = cfg.models.map(m => {
     const on = m.name === curModel, wide = [...m.name].length > 4;
-    return `<button type="button" class="mt ${on ? 'on' : ''} ${wide ? 'wide' : ''}" role="radio" aria-checked="${on}" tabindex="${on || (!curModel && m === cfg.models[0]) ? 0 : -1}" data-v="${esc(m.name)}"><b>${esc(m.name)}</b>${m.large && !/大型/.test(m.name) ? '<small>大型</small>' : ''}</button>`;
+    return `<button type="button" class="mt ${on ? 'on' : ''} ${wide ? 'wide' : ''}" role="radio" aria-checked="${on}" tabindex="${on || (!curModel && m === cfg.models[0]) ? 0 : -1}" data-v="${esc(m.name)}"><b>${esc(m.name)}</b></button>`;
   }).join('');
   const tiles = [...el.querySelectorAll('.mt')];
   tiles.forEach((t, i) => {
