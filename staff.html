@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#f5f4f1">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="洗車スタッフ">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<title>洗車予約 スタッフ</title>
+<style>
+:root{--ink:#1d1d1f;--sub:#6e6e73;--mute:#a1a1a6;--line:#e9e8e5;--bg:#f5f4f1;--card:#fff;--soft:#f2f1ee;--gold:#d6b46a;--red:#c4412d;--rl:18px}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 "Hiragino Sans","Hiragino Kaku Gothic ProN","Noto Sans JP","Yu Gothic UI","Yu Gothic",system-ui,sans-serif;letter-spacing:.02em;-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;letter-spacing:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+[hidden]{display:none!important}
+.wrap{max-width:720px;margin:0 auto;padding:0 16px calc(40px + env(safe-area-inset-bottom))}
+
+/* ヘッダー */
+.head{position:sticky;top:0;z-index:5;background:rgba(245,244,241,.92);backdrop-filter:saturate(1.6) blur(16px);-webkit-backdrop-filter:saturate(1.6) blur(16px);box-shadow:0 1px 0 var(--line)}
+.top{display:flex;align-items:center;justify-content:space-between;gap:10px;max-width:720px;margin:0 auto;padding:calc(12px + env(safe-area-inset-top)) 16px 4px}
+.top h1{display:flex;align-items:center;gap:10px;margin:0;font-size:15px;font-weight:600;letter-spacing:.12em}
+.top h1::before{content:"";width:5px;height:20px;border-radius:3px;background:linear-gradient(#d6b46a,#a8853d)}
+.top h1 small{font-size:11.5px;font-weight:500;color:var(--sub);letter-spacing:.08em}
+.tbtn{min-height:34px;padding:0 12px;border:0;border-radius:99px;background:none;color:var(--sub);font-size:13px}
+.tbtn:hover{background:#ebe9e4;color:var(--ink)}
+
+/* 日付の切り替え */
+.dnav{display:grid;grid-template-columns:44px 1fr 44px;align-items:center;gap:6px;max-width:720px;margin:0 auto;padding:4px 12px 10px}
+.dnav>button{display:grid;place-items:center;width:44px;height:44px;border:0;border-radius:50%;background:none;font-size:24px;line-height:1}
+.dnav>button:hover{background:#ebe9e4}
+.dmid{position:relative;display:flex;flex-direction:column;align-items:center;min-width:0}
+.dlabel{display:flex;align-items:baseline;gap:8px;padding:2px 12px;border:0;border-radius:12px;background:none}
+.dlabel:hover{background:#ebe9e4}
+.dlabel b{font-size:21px;font-weight:600;letter-spacing:.04em;font-variant-numeric:tabular-nums}
+.dlabel span{font-size:12px;font-weight:600;color:var(--gold);letter-spacing:.08em}
+.dmid input{position:absolute;inset:0;opacity:0;pointer-events:none}
+.dsub{display:flex;gap:10px;align-items:center;font-size:12.5px;color:var(--sub)}
+.dsub .today{min-height:26px;padding:0 10px;border:0;border-radius:99px;background:var(--ink);color:#fff;font-size:11.5px;font-weight:600}
+
+/* 一覧 */
+.sum{display:flex;align-items:baseline;justify-content:space-between;margin:18px 4px 10px}
+.sum b{font-size:28px;font-weight:600;font-variant-numeric:tabular-nums;line-height:1}
+.sum b small{margin-left:4px;font-size:13px;font-weight:600;color:var(--sub)}
+.sum span{font-size:12px;color:var(--sub)}
+.list{background:var(--card);border-radius:var(--rl);box-shadow:0 0 0 1px var(--line),0 1px 2px rgba(0,0,0,.03);overflow:hidden}
+.row{display:grid;grid-template-columns:76px minmax(0,1fr) auto;gap:4px 14px;align-items:center;padding:14px 16px 14px 18px;border-bottom:1px solid var(--line)}
+.row:last-child{border-bottom:0}
+.tm{grid-row:span 2;font-variant-numeric:tabular-nums;line-height:1.3}
+.tm b{display:block;font-size:22px;font-weight:600;letter-spacing:.02em}
+.tm small{font-size:12px;color:var(--mute)}
+.model{display:flex;align-items:center;gap:8px;min-width:0;font-size:19px;font-weight:600;letter-spacing:.06em}
+.model i{flex:none;padding:0 7px;border-radius:99px;background:#f3ecdc;color:#8a6a2a;font-size:10.5px;font-style:normal;font-weight:600;letter-spacing:.04em;line-height:1.75}
+.model .hold{background:#fdecd2;color:#9a5300}
+.name{grid-column:2;font-size:14.5px;color:var(--sub);overflow-wrap:anywhere}
+.name b{color:var(--ink);font-weight:600}
+.plate{grid-row:1/span 2;grid-column:3;justify-self:end;padding:6px 10px;border:1.5px solid #3d6b4f;border-radius:7px;background:#fff;color:#1f4a33;font-size:14.5px;font-weight:600;font-variant-numeric:tabular-nums;letter-spacing:.04em;white-space:nowrap;box-shadow:inset 0 0 0 2px #fff,inset 0 0 0 3px #e3ece6}
+.row.past{opacity:.42}
+.row.now{background:#fffaf0;box-shadow:inset 4px 0 0 var(--gold)}
+.brk{display:flex;align-items:center;gap:10px;padding:8px 18px;background:var(--soft);font-size:12px;font-weight:600;color:var(--sub);letter-spacing:.06em;border-bottom:1px solid var(--line)}
+.brk::before,.brk::after{content:"";flex:1;height:1px;background:#dcdad5}
+.empty{padding:56px 16px;text-align:center;color:var(--mute);font-size:14.5px}
+.empty b{display:block;margin-bottom:4px;font-size:16px;color:var(--sub)}
+.upd{margin:14px 4px 0;font-size:11.5px;color:var(--mute);text-align:right}
+@media (max-width:420px){.row{grid-template-columns:62px minmax(0,1fr);padding:14px 14px 14px 16px}.tm b{font-size:19px}.plate{grid-row:auto;grid-column:2;justify-self:start;margin-top:4px;font-size:13.5px;padding:4px 9px}.model{font-size:17px}}
+
+/* ログイン */
+.login{max-width:360px;margin:14vh auto 0;padding:30px 26px 26px;background:var(--card);border-radius:var(--rl);box-shadow:0 0 0 1px var(--line)}
+.login h2{margin:0 0 4px;font-size:20px;font-weight:600;letter-spacing:.06em}
+.login p{margin:0 0 14px;font-size:12.5px;color:var(--sub)}
+.login input[type=password]{display:block;width:100%;height:48px;padding:0 14px;border:0;border-radius:10px;background:var(--soft);font:inherit;font-size:16px}
+.login input:focus{background:#fff;box-shadow:0 0 0 1.5px var(--ink);outline:none}
+.login label.chk{display:flex;align-items:center;gap:8px;margin:12px 2px 0;font-size:13px;color:var(--sub)}
+.login label.chk input{width:18px;height:18px;margin:0;accent-color:var(--ink)}
+.btn{display:block;width:100%;min-height:50px;margin-top:16px;border:0;border-radius:99px;background:var(--ink);color:#fff;font-weight:600;letter-spacing:.08em}
+.btn:disabled{background:#d6d5d1}
+.err{color:var(--red);font-size:13px;margin:10px 2px 0}
+</style>
+</head>
+<body>
+<div class="head" id="head" hidden>
+  <header class="top"><h1>洗車予約 <small>スタッフ</small></h1><div><button class="tbtn" id="reload">更新</button><button class="tbtn" id="logout">ログアウト</button></div></header>
+  <nav class="dnav" aria-label="日付">
+    <button id="prev" aria-label="前の日">‹</button>
+    <div class="dmid">
+      <button class="dlabel" id="dlabel" aria-label="日付を選ぶ"><b id="dtext"></b><span id="dtag"></span></button>
+      <input type="date" id="dpick" tabindex="-1" aria-hidden="true">
+      <div class="dsub"><span id="dwhen"></span><button class="today" id="today" hidden>今日へ</button></div>
+    </div>
+    <button id="next" aria-label="次の日">›</button>
+  </nav>
+</div>
+
+<main class="wrap">
+  <div class="login" id="login">
+    <h2>スタッフ</h2>
+    <p>その日の予約を、時間の早い順に確認できます。</p>
+    <input type="password" id="pw" placeholder="パスワード" autocomplete="current-password" aria-label="パスワード">
+    <label class="chk"><input type="checkbox" id="keep" checked>この端末に保存する</label>
+    <button class="btn" id="go">ひらく</button>
+    <p class="err" id="err" hidden></p>
+  </div>
+  <div id="app" hidden>
+    <div class="sum"><b id="cnt"></b><span id="cntSub"></span></div>
+    <div id="list"></div>
+    <p class="upd" id="upd"></p>
+  </div>
+</main>
+
+<script>
+/* GASのウェブアプリURL(お客様画面・管理画面と同じ) */
+const API = 'https://script.google.com/macros/s/AKfycbzHj9e15-2k4kkNa63ctM0P2KBXVbKfzGJGvhBNKXl0Er2u5_75qR7Kmev8Z0TzTdcg/exec';
+
+const $ = id => document.getElementById(id);
+const WD = ['日', '月', '火', '水', '木', '金', '土'];
+const pad = n => String(n).padStart(2, '0');
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const KEY = 'wash_staff_pw';
+const getPw = () => { try { return localStorage.getItem(KEY) || sessionStorage.getItem(KEY) || ''; } catch (e) { return ''; } };
+const setPw = (v, keep) => { try { localStorage.removeItem(KEY); sessionStorage.removeItem(KEY); if (v) (keep ? localStorage : sessionStorage).setItem(KEY, v); } catch (e) {} };
+const toD = s => { const a = s.split('-'); return new Date(+a[0], a[1] - 1, +a[2]); };
+const fmt = d => d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+const addDay = (s, n) => { const d = toD(s); d.setDate(d.getDate() + n); return fmt(d); };
+const toM = t => +t.slice(0, 2) * 60 + +t.slice(3, 5);
+
+let pw = getPw(), cur = null, today = null, busy = false;
+
+async function api(data) {
+  let r;
+  try { r = await fetch(API, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(Object.assign({ action: 'staffDay', pw }, data)) }); }
+  catch (e) { throw new Error('通信できませんでした。電波の良い場所で「更新」を押してください。'); }
+  const j = await r.json();
+  if (!j.ok) throw new Error(j.error);
+  return j.data;
+}
+
+async function load(date) {
+  if (busy) return; busy = true;
+  if (date) cur = date;
+  if (cur) drawHead();
+  if (!$('list').innerHTML) $('list').innerHTML = '<div class="list"><p class="empty">読み込み中…</p></div>';
+  try {
+    const d = await api({ date: cur });
+    cur = d.date; today = d.today; draw(d);
+  } catch (e) {
+    if (/パスワード/.test(e.message)) return logout(e.message);
+    $('list').innerHTML = '<div class="list"><p class="empty">' + esc(e.message) + '</p></div>';
+  } finally { busy = false; }
+}
+
+function drawHead() {
+  const d = toD(cur), diff = today ? Math.round((d - toD(today)) / 864e5) : null;
+  $('dtext').textContent = (d.getMonth() + 1) + '月' + d.getDate() + '日(' + WD[d.getDay()] + ')';
+  $('dtag').textContent = { 0: '今日', 1: '明日', '-1': '昨日' }[diff] || '';
+  $('dwhen').textContent = d.getFullYear() + '年';
+  $('today').hidden = diff === 0 || diff === null;
+  $('dpick').value = cur;
+}
+
+function draw(d) {
+  drawHead();
+  const n = d.list.length, big = d.list.filter(x => x.large).length;
+  $('cnt').innerHTML = n + '<small>台</small>';
+  $('cntSub').textContent = d.closed ? '休業日' : (n ? '普通 ' + (n - big) + ' ・ 大型 ' + big : '');
+  if (!n) {
+    $('list').innerHTML = '<div class="list"><p class="empty"><b>' + (d.closed ? '休業日です' : '予約はありません') + '</b>' + (d.closed ? '' : 'この日の予約はまだ入っていません。') + '</p></div>';
+  } else {
+    // いま洗車中の予約に印をつけ、終わった予約は薄くする(今日のみ)
+    const now = new Date(), nm = now.getHours() * 60 + now.getMinutes(), isToday = d.date === d.today;
+    let h = '', lunchShown = false;
+    const lunchS = toM(d.lunch[0]), lunchE = toM(d.lunch[1]);
+    d.list.forEach(r => {
+      if (!lunchShown && lunchE > lunchS && toM(r.start) >= lunchE && d.list.some(x => toM(x.start) < lunchS)) { h += `<div class="brk">昼休憩 ${d.lunch[0]}〜${d.lunch[1]}</div>`; lunchShown = true; }
+      const st = isToday ? (toM(r.end) <= nm ? 'past' : toM(r.start) <= nm ? 'now' : '') : '';
+      h += `<div class="row ${st}"><div class="tm"><b>${r.start}</b><small>〜${r.end}</small></div>`
+        + `<div class="model">${esc(r.model)}${r.large ? '<i>大型</i>' : ''}${r.hold ? '<i class="hold">案内中</i>' : ''}</div>`
+        + `<div class="name"><b>${esc(r.name)}</b> 様</div>`
+        + `<div class="plate">${esc(r.plate)}</div></div>`;
+    });
+    $('list').innerHTML = '<div class="list">' + h + '</div>';
+  }
+  const t = new Date();
+  $('upd').textContent = pad(t.getHours()) + ':' + pad(t.getMinutes()) + ' 更新(1分ごとに自動で更新します)';
+}
+
+function enter() { $('login').hidden = true; $('app').hidden = false; $('head').hidden = false; load(); }
+function logout(msg) {
+  pw = ''; setPw('');
+  $('app').hidden = true; $('head').hidden = true; $('login').hidden = false; $('list').innerHTML = '';
+  $('err').hidden = !msg; $('err').textContent = msg || ''; $('pw').value = ''; $('pw').focus();
+}
+
+$('go').onclick = async () => {
+  const v = $('pw').value.trim(); if (!v) return;
+  pw = v; $('go').disabled = true; $('err').hidden = true;
+  try { const d = await api({}); setPw(pw, $('keep').checked); cur = d.date; today = d.today; $('login').hidden = true; $('app').hidden = false; $('head').hidden = false; draw(d); }
+  catch (e) { pw = ''; $('err').hidden = false; $('err').textContent = e.message; }
+  finally { $('go').disabled = false; }
+};
+$('pw').addEventListener('keydown', e => { if (e.key === 'Enter') $('go').click(); });
+$('logout').onclick = () => logout();
+$('reload').onclick = () => load();
+$('prev').onclick = () => cur && load(addDay(cur, -1));
+$('next').onclick = () => cur && load(addDay(cur, 1));
+$('today').onclick = () => today && load(today);
+$('dlabel').onclick = () => { const i = $('dpick'); if (i.showPicker) { try { i.showPicker(); return; } catch (e) {} } i.focus(); i.click(); };
+$('dpick').onchange = e => { if (e.target.value) load(e.target.value); };
+// 左右にスワイプで前後の日へ
+let sx = null, sy = null;
+$('app').addEventListener('touchstart', e => { sx = e.touches[0].clientX; sy = e.touches[0].clientY; }, { passive: true });
+$('app').addEventListener('touchend', e => {
+  if (sx === null || !cur) return;
+  const dx = e.changedTouches[0].clientX - sx, dy = e.changedTouches[0].clientY - sy; sx = null;
+  if (Math.abs(dx) > 70 && Math.abs(dx) > Math.abs(dy) * 1.5) load(addDay(cur, dx < 0 ? 1 : -1));
+});
+// 1分ごと・画面に戻ったときに更新
+setInterval(() => { if (pw && !document.hidden && !$('app').hidden) load(); }, 60000);
+document.addEventListener('visibilitychange', () => { if (!document.hidden && pw && !$('app').hidden) load(); });
+
+if (pw) enter();
+</script>
+</body>
+</html>
