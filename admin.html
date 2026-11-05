@@ -99,6 +99,9 @@ textarea:focus,input:focus{background:#fff;box-shadow:0 0 0 1.5px var(--ink);out
 .fields{display:grid;grid-template-columns:1fr;column-gap:16px}
 .fields>div{display:flex;flex-direction:column;justify-content:flex-end}
 @media (min-width:720px){.fields{grid-template-columns:1fr 1fr}.fields.three{grid-template-columns:1fr 1fr 1fr}}
+.mrow.srow{grid-template-columns:auto minmax(0,1fr) auto}
+.sfs{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:6px}
+@media (max-width:560px){.sfs{grid-template-columns:1fr}.sfs input[data-ss]{height:36px;font-size:14px!important;color:var(--sub)}}
 .mrow{display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;gap:8px;align-items:center;margin-bottom:8px;padding:4px;border-radius:12px;background:var(--card);transition:box-shadow .15s,transform .15s}
 .grip{display:grid;place-items:center;width:36px;height:44px;border:0;border-radius:8px;background:none;color:var(--mute);cursor:grab;touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 .grip:hover{background:var(--soft);color:var(--ink)}
@@ -251,6 +254,12 @@ textarea:focus,input:focus{background:#fff;box-shadow:0 0 0 1.5px var(--ink);out
       <div id="modelList"></div>
       <button class="btn sub sm" id="addModel">+ 車種を追加</button>
     </section>
+    <section class="card pad" id="staffCard" style="margin-top:16px" hidden>
+      <h3>担当スタッフ</h3>
+      <p class="note" style="margin:0">お客様が予約のときに選べる担当スタッフです。店舗が2つ以上あると、お客様の画面では店舗ごとに分けて表示します。つまみを長押しして上下に動かすと、並び順を変えられます。</p>
+      <div id="staffList" style="margin-top:14px"></div>
+      <button class="btn sub sm" id="addStaff">+ スタッフを追加</button>
+    </section>
     <section class="card pad" id="staffBox" style="margin-top:16px" hidden>
       <div class="hrow"><h3>従業員画面</h3><a class="btn sub sm" href="staff.html" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;text-decoration:none">開く</a></div>
       <p class="note" style="margin:2px 0 0">その日の予約(時間・車種・ナンバー・お名前)だけを見られる画面です。電話番号やメールアドレスは表示されず、設定の変更もできません。従業員用パスワードが未設定のあいだは、管理者パスワードで開けます。</p>
@@ -328,7 +337,7 @@ async function loadRes() {
   $('resList').innerHTML = '<p class="empty">読み込み中…</p>';
   const list = await api('adminRes', { from: $('from').value, to: $('to').value });
   const byDay = {}; list.forEach(r => (byDay[r.date] = byDay[r.date] || []).push(r));
-  $('resList').innerHTML = list.length ? `<p class="count">${list.length}件の予約</p>` + Object.keys(byDay).map(d => `<section class="day"><h4>${dJa(d)}<span>${byDay[d].length}件</span></h4><div class="card">` + byDay[d].map(r => `<div class="it"><div class="tm">${r.start}<small>〜${r.end}</small></div><div class="bd"><div class="t">${esc(r.name)}<span class="tag ${r.large ? 'l' : ''}">${r.large ? '大型' : '普通'}</span>${r.status === '保留' ? '<span class="tag w">案内中</span>' : ''}</div><div class="s">${esc(r.model)} ・ ${esc(r.plate)}</div><div class="s2">${esc(r.phone)} ・ ${esc(r.email)} ・ No.${esc(r.no)}</div></div>${r.status === '保留' ? `<button class="btn sub sm" data-rs="${r.id}">再送</button>` : ''}<button class="btn danger sm" data-c="${r.id}">取消</button></div>`).join('') + '</div></section>').join('') : '<p class="empty">この期間の予約はありません。</p>';
+  $('resList').innerHTML = list.length ? `<p class="count">${list.length}件の予約</p>` + Object.keys(byDay).map(d => `<section class="day"><h4>${dJa(d)}<span>${byDay[d].length}件</span></h4><div class="card">` + byDay[d].map(r => `<div class="it"><div class="tm">${r.start}<small>〜${r.end}</small></div><div class="bd"><div class="t">${esc(r.name)}<span class="tag ${r.large ? 'l' : ''}">${r.large ? '大型' : '普通'}</span>${r.status === '保留' ? '<span class="tag w">案内中</span>' : ''}</div><div class="s">${esc(r.model)} ・ ${esc(r.plate)}${r.staff ? ' ・ 担当 ' + esc(r.staff) : ''}</div><div class="s2">${esc(r.phone)} ・ ${esc(r.email)} ・ No.${esc(r.no)}</div></div>${r.status === '保留' ? `<button class="btn sub sm" data-rs="${r.id}">再送</button>` : ''}<button class="btn danger sm" data-c="${r.id}">取消</button></div>`).join('') + '</div></section>').join('') : '<p class="empty">この期間の予約はありません。</p>';
   $('resList').querySelectorAll('[data-rs]').forEach(b => b.onclick = busy(b, async () => {
     if (!confirm('このお客様へ「空きが出ました」の案内メールをもう一度送りますか?')) return;
     await api('adminResend', { id: b.dataset.rs }); alert('送りました');
@@ -344,7 +353,7 @@ $('resGo').onclick = busy($('resGo'), loadRes);
 async function loadWait() {
   $('waitList').innerHTML = '<p class="empty">読み込み中…</p>';
   const list = await api('adminWaits');
-  $('waitList').innerHTML = list.length ? '<div class="card">' + list.map((w, i) => `<div class="it"><div class="num">${i + 1}</div><div class="bd"><div class="t">${esc(w.name)}${w.state === '通知中' ? '<span class="tag w">通知中</span>' : ''}</div><div class="s">${esc(w.summary)}(対象${w.count}日)</div><div class="s2">${esc(w.model)} ・ ${esc(w.plate)} ・ ${esc(w.phone)} ・ ${esc(w.email)} ・ 登録 ${esc(w.created)}</div></div><button class="btn danger sm" data-w="${w.id}">削除</button></div>`).join('') + '</div>' : '<p class="empty">キャンセル待ちはありません。</p>';
+  $('waitList').innerHTML = list.length ? '<div class="card">' + list.map((w, i) => `<div class="it"><div class="num">${i + 1}</div><div class="bd"><div class="t">${esc(w.name)}${w.state === '通知中' ? '<span class="tag w">通知中</span>' : ''}</div><div class="s">${esc(w.summary)}(対象${w.count}日)</div><div class="s2">${esc(w.model)} ・ ${esc(w.plate)}${w.staff ? ' ・ 担当 ' + esc(w.staff) : ''} ・ ${esc(w.phone)} ・ ${esc(w.email)} ・ 登録 ${esc(w.created)}</div></div><button class="btn danger sm" data-w="${w.id}">削除</button></div>`).join('') + '</div>' : '<p class="empty">キャンセル待ちはありません。</p>';
   $('waitList').querySelectorAll('[data-w]').forEach(b => b.onclick = busy(b, async () => {
     if (!confirm('このキャンセル待ちを削除しますか?')) return;
     await api('adminWaitStop', { id: b.dataset.w }); await loadWait();
@@ -377,18 +386,29 @@ function dot() { const n = G.need.filter(m => !G.confirmed.includes(m)).length; 
 function drawSet() {
   $('setList').innerHTML = GROUPS.slice(1).map(fieldsCard).join('');
   $('setList').querySelectorAll('[data-k]').forEach(e => e.oninput = () => { sv(e.dataset.k).v = e.value; dirty = true; });
-  $('modelList').innerHTML = G.models.map((m, i) => `<div class="mrow" data-i="${i}"><button type="button" class="grip" aria-label="${esc(m.name || '車種')}の並べ替え(上下キーで移動)"><svg width="14" height="20" viewBox="0 0 14 20" fill="currentColor" aria-hidden="true"><circle cx="4" cy="4" r="1.6"/><circle cx="10" cy="4" r="1.6"/><circle cx="4" cy="10" r="1.6"/><circle cx="10" cy="10" r="1.6"/><circle cx="4" cy="16" r="1.6"/><circle cx="10" cy="16" r="1.6"/></svg></button><input type="text" aria-label="車種名" data-mn="${i}" value="${esc(m.name)}"><label class="chk"><input type="checkbox" data-ml="${i}" ${m.large ? 'checked' : ''}>大型</label><button class="btn danger sm" data-md="${i}">削除</button></div>`).join('');
+  $('modelList').innerHTML = G.models.map((m, i) => `<div class="mrow" data-i="${i}">${gripHtml(m.name || '車種')}<input type="text" aria-label="車種名" data-mn="${i}" value="${esc(m.name)}"><label class="chk"><input type="checkbox" data-ml="${i}" ${m.large ? 'checked' : ''}>大型</label><button class="btn danger sm" data-md="${i}">削除</button></div>`).join('');
   $('modelList').querySelectorAll('[data-mn]').forEach(e => e.oninput = () => { G.models[e.dataset.mn].name = e.value; dirty = true; });
   $('modelList').querySelectorAll('[data-ml]').forEach(e => e.onchange = () => { G.models[e.dataset.ml].large = e.checked; dirty = true; });
   $('modelList').querySelectorAll('[data-md]').forEach(e => e.onclick = () => { G.models.splice(+e.dataset.md, 1); dirty = true; drawSet(); });
-  $('modelList').querySelectorAll('.mrow').forEach(sortable);
+  $('modelList').querySelectorAll('.mrow').forEach(r => sortable(r, 'models'));
+  // 担当スタッフ(店舗・名前)
+  const has = Array.isArray(G.staff); $('staffCard').hidden = !has;
+  if (has) {
+    $('staffList').innerHTML = G.staff.length ? G.staff.map((m, i) => `<div class="mrow srow" data-i="${i}">${gripHtml(m.name || 'スタッフ')}<div class="sfs"><input type="text" aria-label="店舗名" placeholder="店舗名" data-ss="${i}" value="${esc(m.store)}"><input type="text" aria-label="スタッフ名" placeholder="スタッフ名" data-sn="${i}" value="${esc(m.name)}"></div><button class="btn danger sm" data-sd="${i}">削除</button></div>`).join('') : '<p class="note" style="margin:10px 0 4px">まだ登録がありません。登録すると、お客様が予約のときに担当スタッフを選べるようになります。</p>';
+    $('staffList').querySelectorAll('[data-ss]').forEach(e => e.oninput = () => { G.staff[e.dataset.ss].store = e.value; dirty = true; });
+    $('staffList').querySelectorAll('[data-sn]').forEach(e => e.oninput = () => { G.staff[e.dataset.sn].name = e.value; dirty = true; });
+    $('staffList').querySelectorAll('[data-sd]').forEach(e => e.onclick = () => { G.staff.splice(+e.dataset.sd, 1); dirty = true; drawSet(); });
+    $('staffList').querySelectorAll('.mrow').forEach(r => sortable(r, 'staff'));
+  }
 }
-/* 車種の並べ替え: つまみを長押し(マウスはそのまま)で浮かせて上下に動かす */
-function moveModel(from, to) {
-  if (to < 0 || to >= G.models.length || from === to) return;
-  const [m] = G.models.splice(from, 1); G.models.splice(to, 0, m); dirty = true;
+const gripHtml = label => `<button type="button" class="grip" aria-label="${esc(label)}の並べ替え(上下キーで移動)"><svg width="14" height="20" viewBox="0 0 14 20" fill="currentColor" aria-hidden="true"><circle cx="4" cy="4" r="1.6"/><circle cx="10" cy="4" r="1.6"/><circle cx="4" cy="10" r="1.6"/><circle cx="10" cy="10" r="1.6"/><circle cx="4" cy="16" r="1.6"/><circle cx="10" cy="16" r="1.6"/></svg></button>`;
+/* 車種・担当スタッフの並べ替え: つまみを長押し(マウスはそのまま)で浮かせて上下に動かす。key は G の中の配列名 */
+function moveItem(key, from, to) {
+  const a = G[key];
+  if (to < 0 || to >= a.length || from === to) return;
+  const [m] = a.splice(from, 1); a.splice(to, 0, m); dirty = true;
 }
-function sortable(row) {
+function sortable(row, key) {
   const grip = row.querySelector('.grip'), list = row.parentNode;
   let timer = null, lifted = false, startY = 0, sx = 0, pid = null;
   const rows = () => [...list.querySelectorAll('.mrow')];
@@ -421,15 +441,15 @@ function sortable(row) {
     if (!lifted) { pid = null; return; }
     lifted = false; pid = null; row.classList.remove('lift'); row.style.transform = '';
     const order = rows().map(r => +r.dataset.i);
-    if (order.some((v, k) => v !== k)) { G.models = order.map(k => G.models[k]); dirty = true; }
+    if (order.some((v, k) => v !== k)) { G[key] = order.map(k => G[key][k]); dirty = true; }
     drawSet();
   };
   grip.onpointerup = drop; grip.onpointercancel = drop;
   grip.oncontextmenu = e => e.preventDefault();
   grip.onkeydown = e => {
     const d = { ArrowUp: -1, ArrowDown: 1 }[e.key]; if (!d) return;
-    e.preventDefault(); const i = +row.dataset.i; moveModel(i, i + d); drawSet();
-    const g = $('modelList').querySelectorAll('.grip')[Math.max(0, Math.min(G.models.length - 1, i + d))]; if (g) g.focus();
+    e.preventDefault(); const i = +row.dataset.i, id = list.id; moveItem(key, i, i + d); drawSet();
+    const g = $(id).querySelectorAll('.grip')[Math.max(0, Math.min(G[key].length - 1, i + d))]; if (g) g.focus();
   };
 }
 /* 従業員画面のパスワード(すぐ保存) */
@@ -446,6 +466,10 @@ $('staffClear').onclick = busy($('staffClear'), async () => {
   await api('adminSave', { staffPw: '' }); G.staffPw = false; drawStaff();
 });
 $('addModel').onclick = () => { G.models.push({ name: '', large: false }); dirty = true; drawSet(); };
+$('addStaff').onclick = () => {
+  const last = G.staff[G.staff.length - 1]; G.staff.push({ store: last ? last.store : '', name: '' }); dirty = true; drawSet();
+  const ins = $('staffList').querySelectorAll('[data-sn]'); if (ins.length) ins[ins.length - 1].focus();
+};
 
 /* 時間帯(開始時間の選択・1日の上限・日ごとの変則) */
 const toM = t => { const m = String(t).match(/(\d{1,2}):(\d{2})/); return m ? +m[1] * 60 + +m[2] : NaN; };
@@ -531,10 +555,10 @@ function drawTxt() {
 }
 /* メールの文章: [設定のキー(メ_〜), 見出し, いつ届くか, 使える差し込み項目] */
 const MAILS = [
-  ['予約確認', '予約の確認', '予約を受け付けたとき', ['氏名', '日時', '予約番号', 'お車', 'ナンバー', '店名']],
-  ['キャンセル', 'キャンセルの確認', 'お客様・管理画面で予約をキャンセルしたとき', ['氏名', '日時', '予約番号', 'お車', 'ナンバー', '店名']],
-  ['待ち受付', 'キャンセル待ちの受付', 'キャンセル待ちを登録したとき', ['氏名', '対象', '日数', 'お車', 'ナンバー', '店名']],
-  ['空き案内', '空きのご案内', 'キャンセル待ちの方に空きが出たとき({リンク}は必須)', ['氏名', '日時', '期限', 'リンク', 'お車', 'ナンバー', '店名']],
+  ['予約確認', '予約の確認', '予約を受け付けたとき', ['氏名', '日時', '予約番号', 'お車', 'ナンバー', '担当', '店名']],
+  ['キャンセル', 'キャンセルの確認', 'お客様・管理画面で予約をキャンセルしたとき', ['氏名', '日時', '予約番号', 'お車', 'ナンバー', '担当', '店名']],
+  ['待ち受付', 'キャンセル待ちの受付', 'キャンセル待ちを登録したとき', ['氏名', '対象', '日数', 'お車', 'ナンバー', '担当', '店名']],
+  ['空き案内', '空きのご案内', 'キャンセル待ちの方に空きが出たとき({リンク}は必須)', ['氏名', '日時', '期限', 'リンク', 'お車', 'ナンバー', '担当', '店名']],
   ['署名', 'すべてのメールの最後', 'どのメールにも最後に付きます(空欄で付けない)', ['問い合わせ先', '店名']]
 ];
 function drawMail() {
@@ -618,7 +642,7 @@ async function saveHol() {
 /* 設定・文章の保存 */
 async function saveAll() {
   const settings = {}; G.settings.forEach(s => settings[s.k] = s.v);
-  await api('adminSave', { settings, models: G.models, holidays: G.holidays, confirmed: G.confirmed, special: G.special || [] });
+  await api('adminSave', Object.assign({ settings, models: G.models, holidays: G.holidays, confirmed: G.confirmed, special: G.special || [] }, Array.isArray(G.staff) ? { staff: G.staff } : {}));
   alert('保存しました'); await reloadG();
 }
 $('saveSet').onclick = busy($('saveSet'), saveAll);
