@@ -71,6 +71,39 @@ button{font:inherit;color:inherit;letter-spacing:inherit;cursor:pointer}
 .upd{margin:14px 4px 0;font-size:11.5px;color:var(--mute);text-align:right}
 @media (max-width:420px){.row.has-t .plate{grid-row:auto}.row{grid-template-columns:62px minmax(0,1fr);padding:14px 14px 14px 16px}.tm b{font-size:19px}.plate{grid-row:auto;grid-column:2;justify-self:start;margin-top:4px;font-size:13.5px;padding:4px 9px}.model{font-size:17px}}
 
+.pbtn{display:inline-flex;align-items:center;gap:5px;color:var(--ink);font-weight:600}
+.top h1,.tbtn{white-space:nowrap}
+.top>div{display:flex;flex:none}
+@media (max-width:420px){.top h1 small,.pbtn .wide{display:none}.tbtn{padding:0 9px}}
+.sheet{display:none}
+
+/* 印刷(A4縦・白黒でも読みやすく) */
+@page{size:A4 portrait;margin:12mm 12mm 14mm}
+@media print{
+  body{background:#fff;font-size:11pt;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  body>*:not(.sheet){display:none!important}
+  .sheet{display:block;color:#000}
+  .sh-h{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;padding-bottom:6px;border-bottom:2px solid #000}
+  .sh-h h1{margin:0;font-size:18pt;font-weight:700;letter-spacing:.04em}
+  .sh-h h1 small{margin-left:10px;font-size:11pt;font-weight:600}
+  .sh-h p{margin:0;font-size:9pt;text-align:right;line-height:1.5}
+  .sh-sum{margin:8px 0 10px;font-size:10.5pt}
+  .sh-sum b{font-size:13pt}
+  table{width:100%;border-collapse:collapse;table-layout:fixed}
+  th{padding:5px 6px;border-bottom:1.5px solid #000;font-size:9pt;font-weight:600;text-align:left}
+  td{padding:9px 6px;border-bottom:.6pt solid #999;font-size:11pt;vertical-align:middle;overflow-wrap:anywhere}
+  tr{break-inside:avoid}
+  .c-tm{width:17%}.c-md{width:13%}.c-pl{width:25%}.c-nm{width:21%}.c-st{width:14%}.c-ck{width:10%;text-align:center}
+  td.c-tm b{font-size:13pt}
+  td.c-tm small{display:block;font-size:8.5pt;color:#444}
+  td.c-md b{font-size:12pt;letter-spacing:.04em}
+  td.c-md i{display:block;font-size:8pt;font-style:normal;color:#444}
+  .box{display:inline-block;width:14px;height:14px;border:1.2pt solid #000;border-radius:2px}
+  tr.sh-brk td{padding:4px 6px;background:#eee;font-size:9pt;font-weight:600;text-align:center;border-bottom:.6pt solid #999}
+  .sh-empty{padding:30px 0;text-align:center;font-size:12pt}
+  .sh-f{margin-top:10px;font-size:8.5pt;color:#444;text-align:right}
+}
+
 /* ログイン */
 .login{max-width:360px;margin:14vh auto 0;padding:30px 26px 26px;background:var(--card);border-radius:var(--rl);box-shadow:0 0 0 1px var(--line)}
 .login h2{margin:0 0 4px;font-size:20px;font-weight:600;letter-spacing:.06em}
@@ -86,7 +119,7 @@ button{font:inherit;color:inherit;letter-spacing:inherit;cursor:pointer}
 </head>
 <body>
 <div class="head" id="head" hidden>
-  <header class="top"><h1>洗車予約 <small>スタッフ</small></h1><div><button class="tbtn" id="reload">更新</button><button class="tbtn" id="logout">ログアウト</button></div></header>
+  <header class="top"><h1>洗車予約 <small>スタッフ</small></h1><div><button class="tbtn pbtn" id="print" aria-label="この日の一覧を印刷・PDFにする"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V3h12v6"/><rect x="6" y="14" width="12" height="7" rx="1"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/></svg>印刷<span class="wide">・PDF</span></button><button class="tbtn" id="reload">更新</button><button class="tbtn" id="logout">ログアウト</button></div></header>
   <nav class="dnav" aria-label="日付">
     <button id="prev" aria-label="前の日">‹</button>
     <div class="dmid">
@@ -113,6 +146,8 @@ button{font:inherit;color:inherit;letter-spacing:inherit;cursor:pointer}
     <p class="upd" id="upd"></p>
   </div>
 </main>
+<!-- 印刷用(画面には出さない) -->
+<section id="sheet" class="sheet" aria-hidden="true"></section>
 
 <script>
 /* GASのウェブアプリURL(お客様画面・管理画面と同じ) */
@@ -164,8 +199,25 @@ function drawHead() {
   $('dpick').value = cur;
 }
 
+/** 印刷用の表を作る(画面の一覧と同じ内容) */
+function drawSheet(d) {
+  const dt = toD(d.date), title = (dt.getMonth() + 1) + '月' + dt.getDate() + '日(' + WD[dt.getDay()] + ')';
+  const n = d.list.length, big = d.list.filter(x => x.large).length, now = new Date();
+  const lunchS = toM(d.lunch[0]), lunchE = toM(d.lunch[1]);
+  let rows = '', lunchShown = false;
+  d.list.forEach(r => {
+    if (!lunchShown && lunchE > lunchS && toM(r.start) >= lunchE && d.list.some(x => toM(x.start) < lunchS)) { rows += `<tr class="sh-brk"><td colspan="6">昼休憩 ${d.lunch[0]}〜${d.lunch[1]}</td></tr>`; lunchShown = true; }
+    rows += `<tr><td class="c-tm"><b>${r.start}</b><small>〜${r.end}</small></td><td class="c-md"><b>${esc(r.model)}</b>${r.large || r.hold ? `<i>${[r.large ? '大型' : '', r.hold ? '案内中(未確定)' : ''].filter(Boolean).join(' ・ ')}</i>` : ''}</td><td class="c-pl">${esc(r.plate)}</td><td class="c-nm">${esc(r.name)} 様</td><td class="c-st">${esc(r.staff || '')}</td><td class="c-ck"><span class="box"></span></td></tr>`;
+  });
+  $('sheet').innerHTML = `<div class="sh-h"><h1>洗車予約一覧<small>${dt.getFullYear()}年${title}</small></h1><p>${esc(d.name || '')}<br>${now.getMonth() + 1}/${now.getDate()} ${pad(now.getHours())}:${pad(now.getMinutes())} 時点</p></div>`
+    + (n ? `<p class="sh-sum">全 <b>${n}</b> 台(普通 ${n - big} ・ 大型 ${big})</p><table><thead><tr><th class="c-tm">時間</th><th class="c-md">車種</th><th class="c-pl">ナンバー</th><th class="c-nm">お客様名</th><th class="c-st">担当</th><th class="c-ck">済</th></tr></thead><tbody>${rows}</tbody></table>`
+      : `<p class="sh-empty">${d.closed ? '休業日です' : 'この日の予約はありません'}</p>`)
+    + '<p class="sh-f">お客様の個人情報を含みます。取り扱いにご注意ください。</p>';
+  sheetDate = d.date;
+}
+let sheetDate = null;
 function draw(d) {
-  drawHead();
+  drawHead(); drawSheet(d);
   const n = d.list.length, big = d.list.filter(x => x.large).length;
   $('cnt').innerHTML = n + '<small>台</small>';
   $('cntSub').textContent = d.closed ? '休業日' : (n ? '普通 ' + (n - big) + ' ・ 大型 ' + big : '');
@@ -207,6 +259,15 @@ $('go').onclick = async () => {
 $('pw').addEventListener('keydown', e => { if (e.key === 'Enter') $('go').click(); });
 $('logout').onclick = () => logout();
 $('reload').onclick = () => load();
+// 印刷・PDF: 印刷の画面を開く(PDFはそこから保存できる)
+// (iPhone は押した直後でないと印刷の画面を開けないので、表示中の内容ですぐ印刷する。内容は1分ごとに自動で最新になる)
+$('print').onclick = () => {
+  if (!sheetDate || sheetDate !== cur) return load();
+  const t = document.title; document.title = '洗車予約_' + sheetDate; // PDFのファイル名になる
+  const back = () => { document.title = t; removeEventListener('afterprint', back); };
+  addEventListener('afterprint', back); setTimeout(back, 60000);
+  window.print();
+};
 $('prev').onclick = () => cur && load(addDay(cur, -1));
 $('next').onclick = () => cur && load(addDay(cur, 1));
 $('today').onclick = () => today && load(today);
