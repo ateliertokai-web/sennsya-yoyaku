@@ -109,13 +109,14 @@ textarea:focus,input:focus{background:#fff;box-shadow:0 0 0 1.5px var(--ink);out
 .store .mrow{background:#fff}
 .newstore{display:flex;gap:8px;margin-top:4px}
 .newstore input{flex:1}
-.mrow{display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;gap:8px;align-items:center;margin-bottom:8px;padding:4px;border-radius:12px;background:var(--card);transition:box-shadow .15s,transform .15s}
+.mrow{display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;gap:8px;align-items:center;margin-bottom:8px;padding:4px;border-radius:12px;background:var(--card);transition:box-shadow .15s}
 .grip{display:grid;place-items:center;width:36px;height:44px;border:0;border-radius:8px;background:none;color:var(--mute);cursor:grab;touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 .grip:hover{background:var(--soft);color:var(--ink)}
-.mrow.lift{position:relative;z-index:5;box-shadow:0 10px 28px rgba(0,0,0,.16),0 0 0 1.5px var(--ink);transition:box-shadow .15s}
+.mrow.lift{position:relative;z-index:5;box-shadow:0 10px 28px rgba(0,0,0,.16),0 0 0 1.5px var(--ink);transition:box-shadow .12s;will-change:transform}
+.mrow.shift{transition:transform .16s cubic-bezier(.2,.8,.2,1);will-change:transform}
 .mrow.lift .grip{cursor:grabbing;color:var(--ink)}
 .mrow.press .grip{background:var(--soft);color:var(--ink)}
-.mrow.slide{transition:transform .18s ease}
+
 .chk{display:flex;align-items:center;gap:7px;margin:0;white-space:nowrap;font-size:13.5px;font-weight:500;color:var(--ink)}
 .chk input{width:18px;height:18px;margin:0;accent-color:var(--ink)}
 #modelList{margin-top:14px}
@@ -431,55 +432,80 @@ const gripHtml = label => `<button type="button" class="grip" aria-label="${esc(
 /* 車種・担当スタッフの並べ替え: つまみを長押し(マウスはそのまま)で浮かせて上下に動かす。key は G の中の配列名 */
 function sortable(row, key) {
   const grip = row.querySelector('.grip'), list = row.parentNode;
-  let timer = null, lifted = false, active = false, startY = 0, sx = 0, sy = 0;
   const rows = () => [...list.children].filter(el => el.classList.contains('mrow'));
+  // ドラッグ中は DOM を動かさず、浮かせた行と押しのけられる行を transform で動かすだけにする(なめらかに動かすため)
+  let timer = null, active = false, lifted = false, sx = 0, sy = 0, fy = 0, pageStart = 0, raf = 0;
+  let all = [], i0 = 0, tops = [], mids = [], h = 0, target = 0;
   const lift = () => {
     lifted = true; row.classList.remove('press'); row.classList.add('lift');
-    if (navigator.vibrate) navigator.vibrate(10);
+    all = rows(); i0 = all.indexOf(row); target = i0;
+    const sc = scrollY, r = all.map(el => el.getBoundingClientRect());
+    tops = r.map(x => x.top + sc); mids = r.map(x => x.top + sc + x.height / 2);
+    h = (all[i0 + 1] ? tops[i0 + 1] - tops[i0] : all[i0 - 1] ? tops[i0] - tops[i0 - 1] : r[i0].height + 8);
+    pageStart = fy + sc;
+    all.forEach(el => { if (el !== row) el.classList.add('shift'); });
+    if (navigator.vibrate) navigator.vibrate(8);
+    paint(); tick();
   };
   const begin = (x, y, mouse) => {
-    active = true; startY = sy = y; sx = x;
-    if (mouse) lift(); else { row.classList.add('press'); timer = setTimeout(lift, 300); }
+    active = true; sx = x; sy = fy = y;
+    if (mouse) lift(); else { row.classList.add('press'); timer = setTimeout(lift, 180); }
   };
-  const step = el => el.getBoundingClientRect().height + (parseFloat(getComputedStyle(el).marginBottom) || 0);
-  // 入れ替わった行を、元の位置からすっと動かす
-  const slide = (el, from) => { el.classList.remove('slide'); el.style.transform = `translateY(${from}px)`; el.offsetHeight; el.classList.add('slide'); el.style.transform = ''; };
+  // 指の位置に合わせて、浮かせた行と押しのけられる行を動かす
+  const paint = () => {
+    const dy = fy + scrollY - pageStart, c = mids[i0] + dy, early = h * 0.3; // 少し手前で入れ替えて軽く感じさせる
+    let t = i0;
+    for (let j = i0 + 1; j < all.length; j++) if (c > mids[j] - early) t = j;
+    for (let j = i0 - 1; j >= 0; j--) if (c < mids[j] + early) t = j;
+    if (t !== target) {
+      target = t;
+      all.forEach((el, j) => { if (j === i0) return; el.style.transform = (j > i0 && j <= t) ? `translateY(${-h}px)` : (j < i0 && j >= t) ? `translateY(${h}px)` : ''; });
+      if (navigator.vibrate) navigator.vibrate(4);
+    }
+    row.style.transform = `translateY(${dy}px) scale(1.02)`;
+  };
+  // 指が画面の端に近いときは自動でスクロール
+  const tick = () => {
+    cancelAnimationFrame(raf);
+    if (!lifted) return;
+    const edge = 90, vh = innerHeight;
+    if (fy < edge) { scrollBy(0, -Math.ceil((edge - fy) / 6)); paint(); } else if (fy > vh - edge) { scrollBy(0, Math.ceil((fy - (vh - edge)) / 6)); paint(); }
+    raf = requestAnimationFrame(tick);
+  };
   const move = (x, y) => {
     if (!active) return false;
+    fy = y;
     if (!lifted) { if (Math.abs(y - sy) > 8 || Math.abs(x - sx) > 8) cancel(); return false; }
-    let dy = y - startY;
-    const all = rows(), i = all.indexOf(row), prev = all[i - 1], next = all[i + 1];
-    if (prev && dy < -step(prev) / 2) { const h = step(prev); list.insertBefore(row, prev); startY -= h; slide(prev, -h); }
-    else if (next && dy > step(next) / 2) { const h = step(next); list.insertBefore(next, row); startY += h; slide(next, h); }
-    dy = y - startY;
-    row.style.transform = `translateY(${dy}px) scale(1.02)`;
-    return true;
+    paint(); return true;
   };
   const cancel = () => { clearTimeout(timer); row.classList.remove('press'); active = false; };
   const end = () => {
-    clearTimeout(timer); row.classList.remove('press');
+    clearTimeout(timer); cancelAnimationFrame(raf); row.classList.remove('press');
     const was = lifted; active = false; lifted = false;
     if (!was) return;
-    row.classList.remove('lift'); row.style.transform = '';
-    // この一覧に並んでいる項目の新しい順番を、全体の配列に書き戻す
-    const order = rows().map(r => +r.dataset.i), pos = order.slice().sort((a, b) => a - b);
-    if (order.some((v, k) => v !== pos[k])) { const arr = G[key].slice(); pos.forEach((p, k) => { arr[p] = G[key][order[k]]; }); G[key] = arr; dirty = true; }
+    all.forEach(el => { el.classList.remove('shift', 'lift'); el.style.transform = ''; });
+    if (target !== i0) {
+      // この一覧の順番を入れ替えて、全体の配列に書き戻す
+      const order = all.map(r => +r.dataset.i), pos = order.slice().sort((a, b) => a - b);
+      const [m] = order.splice(i0, 1); order.splice(target, 0, m);
+      const arr = G[key].slice(); pos.forEach((p, k) => { arr[p] = G[key][order[k]]; }); G[key] = arr; dirty = true;
+    }
     drawSet();
   };
   // マウス・ペン
-  grip.onpointerdown = e => { if (e.pointerType === 'touch') return; e.preventDefault(); try { grip.setPointerCapture(e.pointerId); } catch (_) {} begin(e.clientX, e.clientY, true); };
+  grip.onpointerdown = e => { if (e.pointerType === 'touch') return; e.preventDefault(); try { grip.setPointerCapture(e.pointerId); } catch (_) {} fy = e.clientY; begin(e.clientX, e.clientY, true); };
   grip.onpointermove = e => { if (e.pointerType !== 'touch') move(e.clientX, e.clientY); };
   grip.onpointerup = grip.onpointercancel = e => { if (e.pointerType !== 'touch') end(); };
   // タッチ(iPhone など): 長押しで浮かせ、浮いている間は画面のスクロールを止める
   grip.addEventListener('touchstart', e => { const t = e.touches[0]; begin(t.clientX, t.clientY, false); }, { passive: true });
-  grip.addEventListener('touchmove', e => { const t = e.touches[0]; if (lifted || active) { if (move(t.clientX, t.clientY) || lifted) e.preventDefault(); } }, { passive: false });
+  grip.addEventListener('touchmove', e => { const t = e.touches[0]; move(t.clientX, t.clientY); if (lifted) e.preventDefault(); }, { passive: false });
   grip.addEventListener('touchend', end); grip.addEventListener('touchcancel', end);
   grip.oncontextmenu = e => e.preventDefault();
   grip.onkeydown = e => {
     const d = { ArrowUp: -1, ArrowDown: 1 }[e.key]; if (!d) return;
     e.preventDefault();
-    const all = rows(), j = all.indexOf(row) + d; if (!all[j]) return;
-    const a = +row.dataset.i, b = +all[j].dataset.i, arr = G[key].slice(); [arr[a], arr[b]] = [arr[b], arr[a]]; G[key] = arr; dirty = true;
+    const rs = rows(), j = rs.indexOf(row) + d; if (!rs[j]) return;
+    const a = +row.dataset.i, b = +rs[j].dataset.i, arr = G[key].slice(); [arr[a], arr[b]] = [arr[b], arr[a]]; G[key] = arr; dirty = true;
     const id = list.id; drawSet();
     const g = $(id) && $(id).querySelector(`.mrow[data-i="${b}"] .grip`); if (g) g.focus();
   };
