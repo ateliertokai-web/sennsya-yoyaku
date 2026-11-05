@@ -286,6 +286,14 @@ body.hashome .app{padding-bottom:calc(330px + env(safe-area-inset-bottom))}
 .toast.err{background:var(--red)}
 .toast.show{opacity:1;transform:translate(-50%,0)}
 body.hasbar .toast{bottom:calc(100px + env(safe-area-inset-bottom))}
+/* 読み込み中のお知らせ(待ち時間が少しあるときだけ出す) */
+.loader{position:fixed;left:0;right:0;top:calc(12px + env(safe-area-inset-top));z-index:60;display:flex;align-items:center;gap:11px;width:max-content;max-width:calc(100% - 32px);margin:0 auto;padding:10px 18px 10px 14px;border-radius:18px;background:rgba(29,29,31,.94);color:#fff;font-size:13.5px;font-weight:600;line-height:1.45;letter-spacing:.04em;box-shadow:0 10px 30px rgba(0,0,0,.2);transform:translateY(-12px);opacity:0;pointer-events:none;transition:opacity .2s,transform .2s}
+.loader.show{opacity:1;transform:none}
+.loader i{flex:none;width:18px;height:18px;border:2.5px solid rgba(255,255,255,.25);border-top-color:#d6b46a;border-radius:50%;animation:spin .8s linear infinite}
+.loader small{display:none;font-size:11.5px;font-weight:500;color:#c7c7cc;letter-spacing:.02em}
+.loader.long small{display:block}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media print{.loader{display:none!important}}
 </style>
 </head>
 <body>
@@ -433,11 +441,22 @@ body.hasbar .toast{bottom:calc(100px + env(safe-area-inset-bottom))}
 <div class="bar-fixed" id="bar" hidden><div class="bar-in"><div class="sum"><b id="barMain"></b><span id="barSub"></span></div><button class="cta" id="barBtn"></button></div></div>
 <div class="toast" id="toast" role="status"></div>
 
+<div class="loader" id="loader" role="status" aria-live="polite"><i aria-hidden="true"></i><div>読み込み中…<small>通信に数秒かかることがあります。そのままお待ちください。</small></div></div>
 <script>
 /* GASのウェブアプリURL */
 const API = 'https://script.google.com/macros/s/AKfycbzHj9e15-2k4kkNa63ctM0P2KBXVbKfzGJGvhBNKXl0Er2u5_75qR7Kmev8Z0TzTdcg/exec';
 
 const $ = id => document.getElementById(id);
+/* 読み込み中のお知らせ: 待っている処理がある間だけ出す(0.25秒以内に終われば出さない) */
+const Loading = (() => {
+  let n = 0, t1 = 0, t2 = 0;
+  const el = () => document.getElementById('loader');
+  return {
+    start() { if (n++ === 0) { t1 = setTimeout(() => el().classList.add('show'), 250); t2 = setTimeout(() => el().classList.add('long'), 2200); } },
+    stop() { if (n > 0 && --n === 0) { clearTimeout(t1); clearTimeout(t2); el().classList.remove('show', 'long'); } }
+  };
+})();
+async function waiting(p) { Loading.start(); try { return await p; } finally { Loading.stop(); } }
 const WD = ['日','月','火','水','木','金','土'];
 const pad = n => String(n).padStart(2,'0');
 const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -462,7 +481,7 @@ function toast(msg, isErr) {
   clearTimeout(tt); tt = setTimeout(() => t.classList.remove('show'), isErr ? 5200 : 2600);
 }
 function busy(btn, fn) {
-  return async () => { btn.disabled = true; try { await fn(); } catch (e) { toast(e.message, true); } finally { btn.disabled = false; } };
+  return async () => { btn.disabled = true; Loading.start(); try { await fn(); } catch (e) { toast(e.message, true); } finally { btn.disabled = false; Loading.stop(); } };
 }
 const STEPS = { info: 1, cal: 2, slots: 3 };
 function show(id) {
@@ -514,7 +533,7 @@ async function init() {
   // 前回の設定があれば先に表示して、最新の設定は裏で読み込む
   const cached = load('wash_cfg', null);
   if (cached && cached.models && !hold) { cfg = cached; applyCfg(); renderHome(); show('home'); warmUp(); }
-  try { cfg = await api('config'); save('wash_cfg', cfg); }
+  try { cfg = await (cached && !hold ? api('config') : waiting(api('config'))); save('wash_cfg', cfg); }
   catch (e) {
     if (cached && !hold) return;
     $('home').innerHTML = '<p class="err">読み込めませんでした。ページを開き直してください。<br>' + esc(e.message) + '</p>'; show('home'); return;
@@ -746,7 +765,7 @@ async function openCal(ym) {
   };
   const c = cachedMonth(k, lg);
   if (c) draw(c); else { renderCal(el, k, { days: {} }); el.classList.add('loading'); markBooked(); }
-  try { draw(await fetchMonth(k, lg)); }
+  try { draw(await (c ? fetchMonth(k, lg) : waiting(fetchMonth(k, lg)))); }
   catch (e) { if (!shown && curYm === k && !$('cal').hidden) { el.classList.remove('loading'); el.innerHTML = '<p class="err">' + esc(e.message) + '</p>'; } }
   const i = list.indexOf(k); [list[i + 1], list[i - 1]].forEach(m => { if (m) fetchMonth(m, lg).catch(() => {}); });
 }
@@ -775,7 +794,7 @@ async function openSlots(d) {
   $('slotTitle').textContent = dJa(d); $('slotSub').textContent = '開始する時間をお選びください';
   $('slotList').innerHTML = '<p class="empty">読み込み中…</p>'; show('slots');
   try {
-    const r = await api('slots', { date: d, large });
+    const r = await waiting(api('slots', { date: d, large }));
     if (!r.starts.length) { $('slotList').innerHTML = '<p class="empty">この日は満席になりました。別の日を選ぶか、キャンセル待ちをご利用ください。</p>'; monthCache = {}; return; }
     const toM = t => +t.slice(0, 2) * 60 + +t.slice(3, 5), list = r.starts;
     const lo = Math.floor(toM(list[0].s) / 60) * 60, hi = Math.ceil(Math.max(...list.map(x => toM(x.e))) / 60) * 60, span = hi - lo || 60;
@@ -885,7 +904,7 @@ async function refreshWait() {
   };
   const c = cachedMonth(ym, lg);
   if (c) draw(c); else { renderCal(el, ym, { days: {} }); el.classList.add('loading'); }
-  try { draw(await fetchMonth(ym, lg)); }
+  try { draw(await (c ? fetchMonth(ym, lg) : waiting(fetchMonth(ym, lg)))); }
   catch (e) { if (!c && W.ym === ym) { el.classList.remove('loading'); el.innerHTML = '<p class="err">' + esc(e.message) + '</p>'; } }
 }
 function waitBar() {
@@ -904,7 +923,7 @@ function waitBar() {
 async function holdView(token) {
   show('hold');
   try {
-    const h = await api('holdInfo', { token });
+    const h = await waiting(api('holdInfo', { token }));
     $('holdBody').innerHTML = `<p class="lead">${h.until} までに、下のボタンで予約を確定してください。過ぎると次の方へご案内します。</p><dl class="facts"><div><dt>日時</dt><dd>${dJa(h.date)} ${h.start}〜${h.end}</dd></div><div><dt>お車</dt><dd>${esc(h.model)}</dd></div>${h.staff ? `<div><dt>担当</dt><dd>${esc(h.staff)}</dd></div>` : ''}<div><dt>ナンバー</dt><dd>${esc(h.plate)}</dd></div><div><dt>お名前</dt><dd>${esc(h.name)} 様</dd></div></dl><button class="cta" id="hGo">予約を確定する</button>`;
     $('hGo').onclick = busy($('hGo'), async () => {
       const r = await api('holdConfirm', { token });

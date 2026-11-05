@@ -132,6 +132,14 @@ button{font:inherit;color:inherit;letter-spacing:inherit;cursor:pointer}
 .btn{display:block;width:100%;min-height:50px;margin-top:16px;border:0;border-radius:99px;background:var(--ink);color:#fff;font-weight:600;letter-spacing:.08em}
 .btn:disabled{background:#d6d5d1}
 .err{color:var(--red);font-size:13px;margin:10px 2px 0}
+/* 読み込み中のお知らせ(待ち時間が少しあるときだけ出す) */
+.loader{position:fixed;left:0;right:0;top:calc(12px + env(safe-area-inset-top));z-index:60;display:flex;align-items:center;gap:11px;width:max-content;max-width:calc(100% - 32px);margin:0 auto;padding:10px 18px 10px 14px;border-radius:18px;background:rgba(29,29,31,.94);color:#fff;font-size:13.5px;font-weight:600;line-height:1.45;letter-spacing:.04em;box-shadow:0 10px 30px rgba(0,0,0,.2);transform:translateY(-12px);opacity:0;pointer-events:none;transition:opacity .2s,transform .2s}
+.loader.show{opacity:1;transform:none}
+.loader i{flex:none;width:18px;height:18px;border:2.5px solid rgba(255,255,255,.25);border-top-color:#d6b46a;border-radius:50%;animation:spin .8s linear infinite}
+.loader small{display:none;font-size:11.5px;font-weight:500;color:#c7c7cc;letter-spacing:.02em}
+.loader.long small{display:block}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media print{.loader{display:none!important}}
 </style>
 </head>
 <body>
@@ -166,11 +174,22 @@ button{font:inherit;color:inherit;letter-spacing:inherit;cursor:pointer}
 <!-- 印刷用(画面には出さない) -->
 <section id="sheet" class="sheet" aria-hidden="true"></section>
 
+<div class="loader" id="loader" role="status" aria-live="polite"><i aria-hidden="true"></i><div>読み込み中…<small>通信に数秒かかることがあります。そのままお待ちください。</small></div></div>
 <script>
 /* GASのウェブアプリURL(お客様画面・管理画面と同じ) */
 const API = 'https://script.google.com/macros/s/AKfycbzHj9e15-2k4kkNa63ctM0P2KBXVbKfzGJGvhBNKXl0Er2u5_75qR7Kmev8Z0TzTdcg/exec';
 
 const $ = id => document.getElementById(id);
+/* 読み込み中のお知らせ: 待っている処理がある間だけ出す(0.25秒以内に終われば出さない) */
+const Loading = (() => {
+  let n = 0, t1 = 0, t2 = 0;
+  const el = () => document.getElementById('loader');
+  return {
+    start() { if (n++ === 0) { t1 = setTimeout(() => el().classList.add('show'), 250); t2 = setTimeout(() => el().classList.add('long'), 2200); } },
+    stop() { if (n > 0 && --n === 0) { clearTimeout(t1); clearTimeout(t2); el().classList.remove('show', 'long'); } }
+  };
+})();
+async function waiting(p) { Loading.start(); try { return await p; } finally { Loading.stop(); } }
 const WD = ['日', '月', '火', '水', '木', '金', '土'];
 const pad = n => String(n).padStart(2, '0');
 const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -193,13 +212,13 @@ async function api(data) {
   return j.data;
 }
 
-async function load(date) {
+async function load(date, quiet) {
   if (busy) return; busy = true;
   if (date) cur = date;
   if (cur) drawHead();
   if (!$('list').innerHTML) $('list').innerHTML = '<div class="list"><p class="empty">読み込み中…</p></div>';
   try {
-    const d = await api({ date: cur });
+    const d = await (quiet ? api({ date: cur }) : waiting(api({ date: cur })));
     cur = d.date; today = d.today; draw(d);
   } catch (e) {
     if (/パスワード/.test(e.message)) return logout(e.message);
@@ -303,7 +322,7 @@ function logout(msg) {
 $('go').onclick = async () => {
   const v = $('pw').value.trim(); if (!v) return;
   pw = v; $('go').disabled = true; $('err').hidden = true;
-  try { const d = await api({}); setPw(pw, $('keep').checked); cur = d.date; today = d.today; $('login').hidden = true; $('app').hidden = false; $('head').hidden = false; draw(d); }
+  try { const d = await waiting(api({})); setPw(pw, $('keep').checked); cur = d.date; today = d.today; $('login').hidden = true; $('app').hidden = false; $('head').hidden = false; draw(d); }
   catch (e) { pw = ''; $('err').hidden = false; $('err').textContent = e.message; }
   finally { $('go').disabled = false; }
 };
@@ -333,8 +352,8 @@ $('app').addEventListener('touchend', e => {
   if (Math.abs(dx) > 70 && Math.abs(dx) > Math.abs(dy) * 1.5) load(addDay(cur, dx < 0 ? 1 : -1));
 });
 // 1分ごと・画面に戻ったときに更新
-setInterval(() => { if (pw && !document.hidden && !$('app').hidden) load(); }, 60000);
-document.addEventListener('visibilitychange', () => { if (!document.hidden && pw && !$('app').hidden) load(); });
+setInterval(() => { if (pw && !document.hidden && !$('app').hidden) load(null, true); }, 60000);
+document.addEventListener('visibilitychange', () => { if (!document.hidden && pw && !$('app').hidden) load(null, true); });
 
 if (pw) enter();
 </script>
