@@ -99,15 +99,40 @@ input:focus{background:#fff;box-shadow:0 0 0 1.5px var(--ink);outline:none}
 .pchips{display:flex;flex-wrap:wrap;gap:6px;margin:-2px 0 8px}
 .pchips button{min-height:32px;padding:0 12px;border:0;border-radius:99px;background:var(--soft);font-size:12.5px;font-weight:600}
 
-/* ホーム画面に追加の案内 */
-.install{display:flex;align-items:center;gap:14px;margin-top:16px;padding:14px 12px 14px 16px}
-.install img{flex:none;width:40px;height:40px;border-radius:10px}
-.install div{flex:1;min-width:0;font-size:12.5px;line-height:1.6;color:var(--sub)}
-.install div b{display:block;font-size:13.5px;color:var(--ink)}
-.install .btns{display:flex;align-items:center;gap:2px}
-.install .add{min-height:36px;padding:0 14px;border:0;border-radius:99px;background:var(--ink);color:#fff;font-size:12.5px;font-weight:600;white-space:nowrap}
-.install .x{width:32px;height:32px;border:0;border-radius:50%;background:none;color:var(--mute);font-size:18px;line-height:1}
-.ios-steps{margin:8px 0 0;padding-left:1.2em;font-size:12.5px}
+/* 下に固定する「予約する」 */
+.homebar .bar-in .cta{flex:1;width:100%;min-height:56px;font-size:16px;letter-spacing:.12em}
+.textlink{display:block;margin:26px auto 0;padding:10px 14px;border:0;background:none;color:var(--sub);font-size:13.5px;font-weight:600;text-decoration:underline;text-decoration-color:#cfcdc7;text-underline-offset:4px}
+.textlink:hover{color:var(--ink);text-decoration-color:var(--ink)}
+
+/* 洗車システムについて(下から出るパネル) */
+.about-bg{position:fixed;inset:0;z-index:20;background:rgba(20,20,22,.4);backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px)}
+.about{position:fixed;left:0;right:0;bottom:0;z-index:21;display:flex;flex-direction:column;max-width:480px;max-height:88vh;margin:0 auto;border-radius:22px 22px 0 0;background:var(--bg);box-shadow:0 -10px 40px rgba(0,0,0,.14)}
+.about::before{content:"";display:block;flex:none;width:36px;height:4px;margin:8px auto 0;border-radius:2px;background:#d6d4cf}
+.about-head{display:flex;align-items:center;justify-content:space-between;flex:none;padding:8px 12px 8px 22px}
+.about-head h3{margin:0;font-size:16px;font-weight:600;color:var(--ink);letter-spacing:.06em}
+.about-x{width:40px;height:40px;border:0;border-radius:50%;background:none;color:var(--sub);font-size:22px;line-height:1}
+.about-x:hover{background:var(--soft)}
+.about-body{overflow:auto;overscroll-behavior:contain;padding:4px 20px calc(24px + env(safe-area-inset-bottom))}
+.about-body h4{margin:22px 4px 8px;font-size:12px;font-weight:600;color:var(--sub);letter-spacing:.1em}
+.about-body .rules{margin:0}
+.notice{display:flex;gap:10px;align-items:flex-start;margin:4px 0 0;padding:14px 16px;border-radius:14px;background:var(--ink);color:#fff;font-size:13.5px;font-weight:600;line-height:1.7}
+.notice::before{content:"";flex:none;width:4px;align-self:stretch;border-radius:2px;background:#d6b46a}
+.pts{margin:0;padding:6px 20px;list-style:none;background:var(--card);border-radius:var(--rl);box-shadow:0 0 0 1px var(--line)}
+.pts li{position:relative;padding:11px 0 11px 16px;border-bottom:1px solid var(--line);font-size:13.5px;line-height:1.75}
+.pts li:last-child{border-bottom:0}
+.pts li::before{content:"";position:absolute;left:0;top:20px;width:6px;height:6px;border-radius:50%;background:#d6b46a}
+.pts b{font-weight:600}
+.now{display:block;margin-bottom:2px;font-size:15px;font-weight:600;font-variant-numeric:tabular-nums}
+.inst{display:flex;gap:14px;align-items:center;padding:14px 16px;background:var(--card);border-radius:var(--rl);box-shadow:0 0 0 1px var(--line)}
+.inst img{flex:none;width:44px;height:44px;border-radius:11px}
+.inst div{font-size:12.5px;line-height:1.7;color:var(--sub)}
+.inst div b{display:block;font-size:13.5px;color:var(--ink)}
+.steps{margin:10px 0 0;padding:6px 20px 6px 40px;background:var(--card);border-radius:var(--rl);box-shadow:0 0 0 1px var(--line);font-size:13.5px;line-height:1.75}
+.steps li{padding:6px 0}
+.steps .os{display:block;margin:10px 0 2px -20px;font-size:12px;font-weight:600;color:var(--sub);letter-spacing:.06em;list-style:none}
+.steps .os:first-child{margin-top:4px}
+.inst-go{display:block;width:100%;min-height:48px;margin-top:10px;border:0;border-radius:99px;background:var(--ink);color:#fff;font-weight:600;letter-spacing:.06em}
+@media (prefers-reduced-motion:no-preference){.about{animation:up .24s cubic-bezier(.2,.8,.2,1)}}
 
 /* 車種のタイル */
 .mgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
@@ -264,16 +289,10 @@ body.hasbar .toast{bottom:calc(100px + env(safe-area-inset-bottom))}
   <div id="mine" class="mine"></div>
   <h2 id="homeTitle"></h2>
   <p class="lead" id="homeLead"></p>
-  <button class="cta" id="goReserve">予約する</button>
   <div class="list">
     <button class="rowbtn" id="goLookup"><span>予約の確認・キャンセル</span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>
   </div>
-  <dl class="rules" id="rules"></dl>
-  <div class="card install" id="install" hidden>
-    <img src="apple-touch-icon.png" alt="">
-    <div><b>ホーム画面に追加</b><span id="installTxt">アプリのようにすぐ開けて、お車の登録も残ります。</span><ol class="ios-steps" id="iosSteps" hidden><li>画面下の共有ボタン(□↑)を押す</li><li>「ホーム画面に追加」を選ぶ</li></ol></div>
-    <div class="btns"><button class="add" id="installGo">追加</button><button class="x" id="installX" aria-label="閉じる">×</button></div>
-  </div>
+  <button class="textlink" id="aboutBtn" aria-haspopup="dialog">洗車システムについて</button>
 </section>
 
 <!-- お車の情報 -->
@@ -385,6 +404,12 @@ body.hasbar .toast{bottom:calc(100px + env(safe-area-inset-bottom))}
 </main>
 </div>
 
+<div class="bar-fixed homebar" id="homeBar" hidden><div class="bar-in"><button class="cta" id="goReserve">予約する</button></div></div>
+<div class="about-bg" id="aboutBg" hidden></div>
+<div class="about" id="about" role="dialog" aria-modal="true" aria-labelledby="aboutTitle" hidden>
+  <div class="about-head"><h3 id="aboutTitle">洗車システムについて</h3><button class="about-x" id="aboutX" aria-label="閉じる">×</button></div>
+  <div class="about-body" id="aboutBody"></div>
+</div>
 <div class="bar-fixed" id="bar" hidden><div class="bar-in"><div class="sum"><b id="barMain"></b><span id="barSub"></span></div><button class="cta" id="barBtn"></button></div></div>
 <div class="toast" id="toast" role="status"></div>
 
@@ -429,6 +454,9 @@ function show(id) {
     if (n === p) b.setAttribute('aria-current', 'step'); else b.removeAttribute('aria-current');
   });
   setBar(null); window.scrollTo(0, 0);
+  // ホームでは「予約する」を画面の下に固定(指が届きやすい位置)
+  const home = id === 'home' && !!cfg;
+  $('homeBar').hidden = !home; if (home) document.body.classList.add('hasbar');
 }
 /* 進行バーを押すと、その工程に戻る */
 document.querySelectorAll('#prog button').forEach(b => b.onclick = () => {
@@ -490,11 +518,16 @@ function warmUp() {
 }
 /** 文章を入れる。空なら枠ごと隠す */
 function setText(id, t) { const e = $(id); e.textContent = t || ''; e.hidden = !t; }
-function renderHome() {
-  $('rules').innerHTML = String((cfg.texts || {})['トップご案内'] || '').split('\n').map(l => l.trim()).filter(Boolean).map(l => {
+/** 管理画面の「トップご案内」の表 */
+function rulesHtml() {
+  // 「予約できる日」「月1回」は下の「予約の受付について」で実際の日付つきでまとめて出すので、ここでは省く
+  const skip = /^(予約できる日|月1回)\s*[:：]/;
+  return String((cfg.texts || {})['トップご案内'] || '').split('\n').map(l => l.trim()).filter(l => l && !skip.test(l)).map(l => {
     const i = l.search(/[:：]/);
     return i < 0 ? `<div><dd>${esc(l)}</dd></div>` : `<div><dt>${esc(l.slice(0, i))}</dt><dd>${esc(l.slice(i + 1))}</dd></div>`;
   }).join('');
+}
+function renderHome() {
   const up = mine.filter(r => r.date >= cfg.today).sort((a, b) => (a.date + a.start) < (b.date + b.start) ? -1 : 1);
   $('mine').innerHTML = up.length ? '<h3 style="margin-top:0">ご予約中</h3>' + up.map(r => `<div class="res"><div><div class="dt">${dJa(r.date)} ${r.start}〜${r.end}</div><div class="sub">${esc(r.model)}</div></div><div class="no">No.${esc(r.no)}</div></div>`).join('') + '<p class="note">変更・キャンセルは「予約の確認・キャンセル」から。</p>' : '';
 }
@@ -846,24 +879,53 @@ async function holdView(token) {
   } catch (e) { $('holdBody').innerHTML = '<p class="err">' + esc(e.message) + '</p><button class="ghost" onclick="location.href=location.pathname">トップへ</button>'; }
 }
 
-/* ---------- ホーム画面に追加 ---------- */
-(function () {
-  const standalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone;
-  if (standalone || load('wash_install_x', false)) return;
-  const ios = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-  let ev = null;
-  $('installX').onclick = () => { $('install').hidden = true; save('wash_install_x', true); };
-  if (ios) {
-    $('install').hidden = false;
-    $('installGo').textContent = '方法';
-    $('installGo').onclick = () => { $('iosSteps').hidden = !$('iosSteps').hidden; };
-  }
-  addEventListener('beforeinstallprompt', e => {
-    e.preventDefault(); ev = e; $('install').hidden = false;
-    $('installGo').onclick = async () => { ev.prompt(); const r = await ev.userChoice; if (r.outcome === 'accepted') $('install').hidden = true; ev = null; };
-  });
-  addEventListener('appinstalled', () => { $('install').hidden = true; });
-})();
+/* ---------- 洗車システムについて ---------- */
+const isStandalone = () => matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+let installEv = null;
+addEventListener('beforeinstallprompt', e => { e.preventDefault(); installEv = e; });
+addEventListener('appinstalled', () => { installEv = null; });
+/** 予約受付のしくみ(いま予約できる期間を実際の日付で出す) */
+function windowHtml() {
+  const t = cfg.today.split('-').map(Number), x = cfg.max.split('-').map(Number), n = (x[0] * 12 + x[1]) - (t[0] * 12 + t[1]);
+  const from = cfg.min === cfg.today ? '今日' : '明日';
+  const md = d => { const a = d.split('-'); return (+a[1]) + '月' + (+a[2]) + '日'; };
+  return `<ul class="pts">
+    <li><span class="now">いま予約できるのは ${dJa(cfg.min)} 〜 ${dJa(cfg.max)}</span>${from}から、${n}か月先の同じ日までご予約いただけます。</li>
+    <li>毎日1日ずつ、新しい日が予約できるようになります(今日が${md(cfg.today)}なら${md(cfg.max)}まで)。</li>
+    <li>${n}か月先に同じ日がないとき(例: 12月30日・31日 → 2月)は、その月の末日で止まり、数日のあいだ新しい日は開きません。月をまたぐときは、2日ぶんが一度に開くこともあります。</li>
+    <li><b>お車1台につき、月1回まで</b>です。別の月なら、同じ日にまとめてご予約いただけます。</li>
+    <li>満席の日は、カレンダーで日にちを押すと<b>キャンセル待ち</b>に登録できます。空きが出たら登録順にメールでご案内します。</li>
+  </ul>`;
+}
+function installHtml() {
+  if (isStandalone()) return '<div class="inst"><img src="apple-touch-icon.png" alt=""><div><b>ホーム画面から開いています</b>このままアプリのようにお使いいただけます。</div></div>';
+  return `<div class="inst"><img src="apple-touch-icon.png" alt=""><div><b>アプリのように使えます</b>ホーム画面に追加すると、すぐに開けて、登録したお車の情報も残りやすくなります。</div></div>
+    ${installEv ? '<button class="inst-go" id="instGo">ホーム画面に追加する</button>' : ''}
+    <ol class="steps">
+      <li class="os">iPhone(Safari)</li>
+      <li>画面下の共有ボタン(□に↑のマーク)を押す</li>
+      <li>「ホーム画面に追加」を選び、右上の「追加」を押す</li>
+      <li class="os">Android(Chrome)</li>
+      <li>右上のメニュー(︙)を押す</li>
+      <li>「ホーム画面に追加」または「アプリをインストール」を選ぶ</li>
+    </ol>
+    ${isIOS ? '<p class="note">※ LINEなどのアプリ内で開いている場合は、一度Safariで開いてから追加してください。</p>' : ''}`;
+}
+function openAbout() {
+  const rules = rulesHtml();
+  $('aboutBody').innerHTML = '<div class="notice">この予約はレクサス鹿児島東開でのみ有効です。</div>'
+    + (rules ? '<h4>ご案内</h4><dl class="rules">' + rules + '</dl>' : '')
+    + '<h4>予約の受付について</h4>' + windowHtml()
+    + '<h4>ホーム画面に追加する</h4>' + installHtml();
+  const go = $('instGo');
+  if (go) go.onclick = async () => { installEv.prompt(); await installEv.userChoice; installEv = null; openAbout(); };
+  $('aboutBg').hidden = false; $('about').hidden = false; $('aboutBody').scrollTop = 0;
+  document.addEventListener('keydown', aboutKey); $('aboutX').focus();
+}
+function closeAbout() { $('aboutBg').hidden = true; $('about').hidden = true; document.removeEventListener('keydown', aboutKey); $('aboutBtn').focus(); }
+const aboutKey = e => { if (e.key === 'Escape') closeAbout(); };
+$('aboutBtn').onclick = openAbout; $('aboutX').onclick = closeAbout; $('aboutBg').onclick = closeAbout;
 if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
 
 init();
