@@ -101,9 +101,12 @@ input:focus{background:#fff;box-shadow:0 0 0 1.5px var(--ink);outline:none}
 
 /* 下に固定する「予約する」 */
 /* 画面の一番下より少し上に浮かせる(背景はうっすらぼかすだけ) */
-.bar-fixed.homebar{padding:20px 20px calc(110px + env(safe-area-inset-bottom));background:linear-gradient(rgba(245,244,241,0),rgba(245,244,241,.92) 40%);backdrop-filter:none;-webkit-backdrop-filter:none;box-shadow:none}
+.bar-fixed.homebar{padding:20px 20px calc(110px + env(safe-area-inset-bottom));background:linear-gradient(rgba(245,244,241,0),rgba(245,244,241,.96) 18%);backdrop-filter:none;-webkit-backdrop-filter:none;box-shadow:none}
 .homebar .bar-in .cta{flex:1;width:100%;min-height:58px;font-size:16px;letter-spacing:.12em;box-shadow:0 10px 26px rgba(0,0,0,.18)}
-body.hashome .app{padding-bottom:calc(210px + env(safe-area-inset-bottom))}
+body.hashome .app{padding-bottom:calc(330px + env(safe-area-inset-bottom))}
+.homebar .bar-in{flex-direction:column;align-items:stretch;gap:12px}
+.homebar .textlink{margin:0 auto}
+.homebar .hlist{margin:0;box-shadow:0 0 0 1px var(--line),0 6px 18px rgba(0,0,0,.06)}
 .textlink{display:block;margin:26px auto 0;padding:10px 14px;border:0;background:none;color:var(--sub);font-size:13.5px;font-weight:600;text-decoration:underline;text-decoration-color:#cfcdc7;text-underline-offset:4px}
 .textlink:hover{color:var(--ink);text-decoration-color:var(--ink)}
 
@@ -292,10 +295,6 @@ body.hasbar .toast{bottom:calc(100px + env(safe-area-inset-bottom))}
   <div id="mine" class="mine"></div>
   <h2 id="homeTitle"></h2>
   <p class="lead" id="homeLead"></p>
-  <div class="list">
-    <button class="rowbtn" id="goLookup"><span>予約の確認・キャンセル</span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>
-  </div>
-  <button class="textlink" id="aboutBtn" aria-haspopup="dialog">洗車システムについて</button>
 </section>
 
 <!-- お車の情報 -->
@@ -407,7 +406,13 @@ body.hasbar .toast{bottom:calc(100px + env(safe-area-inset-bottom))}
 </main>
 </div>
 
-<div class="bar-fixed homebar" id="homeBar" hidden><div class="bar-in"><button class="cta" id="goReserve">予約する</button></div></div>
+<div class="bar-fixed homebar" id="homeBar" hidden><div class="bar-in">
+  <button class="textlink" id="aboutBtn" aria-haspopup="dialog">洗車システムについて</button>
+  <button class="cta" id="goReserve">予約する</button>
+  <div class="list hlist">
+    <button class="rowbtn" id="goLookup"><span>予約の確認・キャンセル</span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>
+  </div>
+</div></div>
 <div class="about-bg" id="aboutBg" hidden></div>
 <div class="about" id="about" role="dialog" aria-modal="true" aria-labelledby="aboutTitle" hidden>
   <div class="about-head"><h3 id="aboutTitle">洗車システムについて</h3><button class="about-x" id="aboutX" aria-label="閉じる">×</button></div>
