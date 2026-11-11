@@ -242,6 +242,8 @@ body.hashome .app{padding-bottom:calc(330px + env(safe-area-inset-bottom))}
 .slot small{font-size:11px;color:var(--mute);letter-spacing:.04em;line-height:1.4;transition:color .2s}
 .slot:active{transform:scale(.96)}
 @media (hover:hover){.slot:hover{box-shadow:0 0 0 1.5px var(--ink)}}
+.slot.full,.slot.full:hover{background:var(--soft);color:#c4c3be;box-shadow:none;cursor:default;transform:none}
+.slot.full small{color:#c4c3be}
 .slot.on{background:var(--ink);color:#fff;box-shadow:0 0 0 1.5px var(--ink),0 6px 16px rgba(0,0,0,.14)}
 .slot.on small{color:#d6b46a}
 .slot.on::after{content:"";position:absolute;top:8px;right:8px;width:6px;height:6px;border-radius:50%;background:#d6b46a}
@@ -795,18 +797,26 @@ async function openSlots(d) {
   $('slotList').innerHTML = '<p class="empty">読み込み中…</p>'; show('slots');
   try {
     const r = await waiting(api('slots', { date: d, large }));
-    if (!r.starts.length) { $('slotList').innerHTML = '<p class="empty">この日は満席になりました。別の日を選ぶか、キャンセル待ちをご利用ください。</p>'; monthCache = {}; return; }
-    const toM = t => +t.slice(0, 2) * 60 + +t.slice(3, 5), list = r.starts;
+    // 予約済みの時間もグレーで見せる(新しいサーバーは all に全部の時間と空きの有無を返す)
+    const list = r.all && r.all.length ? r.all : r.starts.map(x => Object.assign({ ok: true }, x)), open = list.filter(x => x.ok);
+    const toM = t => +t.slice(0, 2) * 60 + +t.slice(3, 5);
+    const tile = x => x.ok ? `<button class="slot" data-s="${x.s}" data-e="${x.e}" aria-label="${x.s}から${x.e}まで"><b>${x.s}</b><small>〜${x.e}</small></button>`
+      : `<button class="slot full" disabled aria-label="${x.s} 予約済み"><b>${x.s}</b><small>予約済み</small></button>`;
+    const group = (title, arr) => { if (!arr.length) return ''; const n = arr.filter(x => x.ok).length; return `<h3 class="grp">${title}<small>${n ? '空き ' + n + '枠' : '満席'}</small></h3><div class="grid">${arr.map(tile).join('')}</div>`; };
+    if (!open.length) {
+      $('slotList').innerHTML = '<p class="empty" style="padding-top:8px">この日は満席になりました。別の日を選ぶか、キャンセル待ちをご利用ください。</p>'
+        + group('午前', list.filter(x => x.s < '12:00')) + group('午後', list.filter(x => x.s >= '12:00'));
+      monthCache = {}; return;
+    }
     const lo = Math.floor(toM(list[0].s) / 60) * 60, hi = Math.ceil(Math.max(...list.map(x => toM(x.e))) / 60) * 60, span = hi - lo || 60;
     const pos = m => ((m - lo) / span * 100).toFixed(2) + '%';
     // 選べる時間帯(開始〜終了の重なりをまとめる)
-    const av = []; list.map(x => [toM(x.s), toM(x.e)]).sort((a, b) => a[0] - b[0]).forEach(v => { const l = av[av.length - 1]; if (l && v[0] <= l[1]) l[1] = Math.max(l[1], v[1]); else av.push(v.slice()); });
+    const av = []; open.map(x => [toM(x.s), toM(x.e)]).sort((a, b) => a[0] - b[0]).forEach(v => { const l = av[av.length - 1]; if (l && v[0] <= l[1]) l[1] = Math.max(l[1], v[1]); else av.push(v.slice()); });
     const step = span > 360 ? 120 : 60, ticks = [];
     for (let m = lo; m < hi; m += step) ticks.push(`<i style="left:${pos(m)}">${m / 60}:00</i>`);
-    const group = (title, arr) => arr.length ? `<h3 class="grp">${title}<small>${arr.length}枠</small></h3><div class="grid">${arr.map(s => `<button class="slot" data-s="${s.s}" data-e="${s.e}" aria-label="${s.s}から${s.e}まで"><b>${s.s}</b><small>〜${s.e}</small></button>`).join('')}</div>` : '';
-    $('slotList').innerHTML = `<div class="tl"><div class="tl-card"><div class="tl-head"><b class="ph" id="tlTime">バーをなぞるか、下から選べます</b><span id="tlDur">約${durOf(profile.model)}分</span></div><div class="trackwrap" id="tlTrack" tabindex="0" role="slider" aria-label="開始時間" aria-valuemin="0" aria-valuemax="${list.length - 1}"><div class="track">${av.map(v => `<div class="av" style="left:${pos(v[0])};width:${pos(lo + v[1] - v[0])}"></div>`).join('')}<div class="pick" id="tlPick" style="opacity:0"></div></div></div><div class="ticks">${ticks.join('')}</div></div></div>`
+    $('slotList').innerHTML = `<div class="tl"><div class="tl-card"><div class="tl-head"><b class="ph" id="tlTime">バーをなぞるか、下から選べます</b><span id="tlDur">約${durOf(profile.model)}分</span></div><div class="trackwrap" id="tlTrack" tabindex="0" role="slider" aria-label="開始時間" aria-valuemin="0" aria-valuemax="${open.length - 1}"><div class="track">${av.map(v => `<div class="av" style="left:${pos(v[0])};width:${pos(lo + v[1] - v[0])}"></div>`).join('')}<div class="pick" id="tlPick" style="opacity:0"></div></div></div><div class="ticks">${ticks.join('')}</div></div></div>`
       + group('午前', list.filter(s => s.s < '12:00')) + group('午後', list.filter(s => s.s >= '12:00'));
-    const track = $('tlTrack'), btns = [...$('slotList').querySelectorAll('.slot')];
+    const track = $('tlTrack'), btns = [...$('slotList').querySelectorAll('.slot:not(.full)')];
     let cur = null;
     const choose = (b, drag) => {
       if (!b || b === cur) return; cur = b;
