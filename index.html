@@ -445,9 +445,10 @@ body.hasbar .toast{bottom:calc(100px + env(safe-area-inset-bottom))}
 <div class="toast" id="toast" role="status"></div>
 
 <div class="loader" id="loader" role="status" aria-live="polite"><i aria-hidden="true"></i><div>読み込み中…<small>通信に数秒かかることがあります。そのままお待ちください。</small></div></div>
+<script src="config.js"></script>
 <script>
-/* GASのウェブアプリURL */
-const API = 'https://script.google.com/macros/s/AKfycbzHj9e15-2k4kkNa63ctM0P2KBXVbKfzGJGvhBNKXl0Er2u5_75qR7Kmev8Z0TzTdcg/exec';
+/* GASのウェブアプリURL(config.js の値を優先) */
+const API = (window.WASH_CONFIG && window.WASH_CONFIG.api) || 'https://script.google.com/macros/s/AKfycbzHj9e15-2k4kkNa63ctM0P2KBXVbKfzGJGvhBNKXl0Er2u5_75qR7Kmev8Z0TzTdcg/exec';
 
 const $ = id => document.getElementById(id);
 /* 読み込み中のお知らせ: 待っている処理がある間だけ出す(0.25秒以内に終われば出さない) */

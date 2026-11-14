@@ -20,6 +20,9 @@ button{font:inherit;color:inherit;letter-spacing:inherit;cursor:pointer}
 .top h1{display:flex;align-items:center;gap:10px;margin:0;font-size:15px;font-weight:600;letter-spacing:.12em}
 .top h1::before{content:"";width:5px;height:20px;border-radius:3px;background:linear-gradient(#d6b46a,#a8853d)}
 .top h1 small{font-size:11.5px;font-weight:500;color:var(--sub);letter-spacing:.08em}
+.who{display:flex;align-items:center;gap:6px;min-width:0}
+.who span{font-size:11.5px;color:var(--mute);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:46vw}
+.gbtn{display:flex;justify-content:center;min-height:44px}
 .top button{min-height:34px;padding:0 14px;border:0;border-radius:99px;background:none;color:var(--sub);font-size:13px}
 .top button:hover{background:#ebe9e4;color:var(--ink)}
 .tabs{display:flex;gap:2px;max-width:960px;margin:0 auto;padding:0 12px;overflow-x:auto;scrollbar-width:none}
@@ -108,6 +111,9 @@ textarea:focus,input:focus{background:#fff;box-shadow:0 0 0 1.5px var(--ink);out
 .store .addin{margin-top:4px}
 .store .mrow{background:#fff}
 .newstore{display:flex;gap:8px;margin-top:4px}
+.urow{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--line)}
+.urow .em{flex:1;min-width:0;font-size:14px;overflow-wrap:anywhere}
+.rsel{height:40px;padding:0 10px;border:0;border-radius:var(--r);background:var(--soft);font:inherit;font-size:14px!important;color:var(--ink)}
 .newstore input{flex:1}
 .mrow{display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;gap:8px;align-items:center;margin-bottom:8px;padding:4px;border-radius:12px;background:var(--card);transition:box-shadow .15s}
 .grip{display:grid;place-items:center;width:36px;height:44px;border:0;border-radius:8px;background:none;color:var(--mute);cursor:grab;touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
@@ -206,7 +212,7 @@ textarea:focus,input:focus{background:#fff;box-shadow:0 0 0 1.5px var(--ink);out
 </head>
 <body>
 <div class="head">
-<header class="top"><h1>洗車予約 <small>管理</small></h1><button id="logout" hidden>ログアウト</button></header>
+<header class="top"><h1>洗車予約 <small>管理</small></h1><div class="who"><span id="whoName"></span><button id="logout" hidden>ログアウト</button></div></header>
 <nav class="tabs" id="tabs" hidden>
     <button class="tab on" data-t="res">予約</button>
     <button class="tab" data-t="wait">キャンセル待ち</button>
@@ -220,9 +226,15 @@ textarea:focus,input:focus{background:#fff;box-shadow:0 0 0 1.5px var(--ink);out
 
 <div class="card" id="login">
   <h2>ログイン</h2>
-  <label for="pw">管理者パスワード</label>
-  <input type="password" id="pw" autocomplete="current-password">
-  <button class="btn" id="loginBtn">ログイン</button>
+  <div id="pwLogin">
+    <label for="pw">管理者パスワード</label>
+    <input type="password" id="pw" autocomplete="current-password">
+    <button class="btn" id="loginBtn">ログイン</button>
+  </div>
+  <div id="gLogin" hidden>
+    <p class="note" style="margin:6px 0 16px">会社の Google アカウントでログインしてください。</p>
+    <div id="gBtn" class="gbtn"></div>
+  </div>
   <p class="err" id="loginErr"></p>
 </div>
 
@@ -287,6 +299,12 @@ textarea:focus,input:focus{background:#fff;box-shadow:0 0 0 1.5px var(--ink);out
       <div id="staffList" style="margin-top:14px"></div>
       <div class="newstore"><input type="text" id="newStore" placeholder="新しい店舗名(例: レクサス鹿児島東開)" aria-label="新しい店舗名"><button class="btn sub sm" id="addStore" style="min-height:44px">+ 店舗を追加</button></div>
     </section>
+    <section class="card pad" id="userCard" style="margin-top:16px" hidden>
+      <div class="hrow"><h3>ログインできる人</h3><a class="btn sub sm" href="staff.html" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;text-decoration:none">従業員画面を開く</a></div>
+      <p class="note" style="margin:2px 0 12px">会社の Google アカウントで入れる人です。「管理者」は管理画面と従業員画面、「スタッフ」は従業員画面(その日の予約の確認・印刷)だけ使えます。辞めた人や異動した人は削除してください。</p>
+      <div id="userList"></div>
+      <div class="newstore" style="margin-top:8px"><input type="email" id="newUser" placeholder="追加する人のメールアドレス" aria-label="追加する人のメールアドレス" autocomplete="off"><select id="newRole" aria-label="役割" class="rsel"><option>スタッフ</option><option>管理者</option></select><button class="btn sub sm" id="addUser" style="min-height:44px">追加</button></div>
+    </section>
     <section class="card pad" id="staffBox" style="margin-top:16px" hidden>
       <div class="hrow"><h3>従業員画面</h3><a class="btn sub sm" href="staff.html" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;text-decoration:none">開く</a></div>
       <p class="note" style="margin:2px 0 0">その日の予約(時間・車種・ナンバー・お名前)だけを見られる画面です。電話番号やメールアドレスは表示されず、設定の変更もできません。従業員用パスワードが未設定のあいだは、管理者パスワードで開けます。</p>
@@ -319,9 +337,12 @@ textarea:focus,input:focus{background:#fff;box-shadow:0 0 0 1.5px var(--ink);out
 </div>
 
 <div class="loader" id="loader" role="status" aria-live="polite"><i aria-hidden="true"></i><div>読み込み中…<small>通信に数秒かかることがあります。そのままお待ちください。</small></div></div>
+<script src="config.js"></script>
+<script src="auth.js"></script>
 <script>
-/* GASのウェブアプリURL */
-const API = 'https://script.google.com/macros/s/AKfycbzHj9e15-2k4kkNa63ctM0P2KBXVbKfzGJGvhBNKXl0Er2u5_75qR7Kmev8Z0TzTdcg/exec';
+/* GASのウェブアプリURL(config.js の値を優先) */
+const API = (window.WASH_CONFIG && window.WASH_CONFIG.api) || 'https://script.google.com/macros/s/AKfycbzHj9e15-2k4kkNa63ctM0P2KBXVbKfzGJGvhBNKXl0Er2u5_75qR7Kmev8Z0TzTdcg/exec';
+const GA = window.WashAuth || { enabled: false };
 
 const $ = id => document.getElementById(id);
 /* 読み込み中のお知らせ: 待っている処理がある間だけ出す(0.25秒以内に終われば出さない) */
@@ -340,13 +361,30 @@ const dJa = d => { const a = d.split('-'); return (+a[1]) + '/' + (+a[2]) + '(' 
 let pw = sessionStorage.getItem('wash_admin_pw') || '', G = null;
 
 async function api(action, data) { return waiting(apiRaw(action, data)); }
-async function apiRaw(action, data) {
+async function apiRaw(action, data, retried) {
   let r;
-  try { r = await fetch(API, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(Object.assign({ action, pw }, data || {})) }); }
+  const cred = GA.enabled ? { idToken: GA.token } : { pw };
+  try { r = await fetch(API, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(Object.assign({ action }, cred, data || {})) }); }
   catch (e) { throw new Error('通信できませんでした'); }
   const j = await r.json();
-  if (!j.ok) throw new Error(j.error);
+  if (!j.ok) {
+    if (/^LOGIN:/.test(j.error)) {
+      const msg = j.error.slice(6);
+      // ログインが切れたときは、まず自動で取り直してもう一度試す
+      if (GA.enabled && !retried && GA.token && /期限|し直/.test(msg)) { try { await GA.refresh(); return apiRaw(action, data, true); } catch (e) {} }
+      if (GA.enabled) GA.clear();
+      showLogin(msg);
+      throw new Error(msg);
+    }
+    throw new Error(j.error);
+  }
   return j.data;
+}
+/** ログイン画面に戻す */
+function showLogin(msg) {
+  $('app').hidden = true; $('tabs').hidden = true; $('logout').hidden = true; $('whoName').textContent = '';
+  $('login').hidden = false; $('loginErr').textContent = msg || '';
+  if (GA.enabled) { $('pwLogin').hidden = true; $('gLogin').hidden = false; GA.button($('gBtn')); }
 }
 function busy(btn, fn) { return async () => { btn.disabled = true; try { await fn(); } catch (e) { alert(e.message); } finally { btn.disabled = false; } }; }
 
@@ -356,6 +394,7 @@ async function enter() {
   $('from').value = f(t); const e = new Date(t); e.setMonth(e.getMonth() + 3); $('to').value = f(e);
   await loadRes();
   ensureG().then(dot).catch(() => {});
+  if (GA.enabled) api('whoami').then(w => { $('whoName').textContent = w.email || ''; }).catch(() => {});
 }
 $('loginBtn').onclick = busy($('loginBtn'), async () => {
   pw = $('pw').value; $('loginErr').textContent = '';
@@ -363,7 +402,7 @@ $('loginBtn').onclick = busy($('loginBtn'), async () => {
   catch (e) { $('loginErr').textContent = e.message; pw = ''; }
 });
 $('pw').addEventListener('keydown', e => { if (e.key === 'Enter') $('loginBtn').click(); });
-$('logout').onclick = () => { sessionStorage.removeItem('wash_admin_pw'); location.reload(); };
+$('logout').onclick = () => { sessionStorage.removeItem('wash_admin_pw'); if (GA.enabled) GA.signOut(); location.reload(); };
 document.querySelectorAll('.tab').forEach(b => b.onclick = () => {
   document.querySelectorAll('.tab').forEach(x => x.classList.toggle('on', x === b));
   ['res', 'wait', 'hol', 'time', 'set', 'txt'].forEach(k => $('t-' + k).hidden = k !== b.dataset.t);
@@ -541,9 +580,29 @@ function sortable(row, key) {
     const g = $(id) && $(id).querySelector(`.mrow[data-i="${b}"] .grip`); if (g) g.focus();
   };
 }
+/* ログインできる人(Google ログインのとき)。「設定を保存する」で保存 */
+function drawUsers() {
+  const on = G.auth === 'google' && Array.isArray(G.users); $('userCard').hidden = !on; if (!on) return;
+  const fixed = (G.fixedAdmins || []).map(e => `<div class="urow"><span class="em">${esc(e)}</span><span class="tag l">管理者(固定)</span></div>`).join('');
+  $('userList').innerHTML = fixed + G.users.map((u, i) => `<div class="urow"><span class="em">${esc(u.email)}</span><select class="rsel" data-ur="${i}" aria-label="${esc(u.email)}の役割"><option ${u.role !== '管理者' ? 'selected' : ''}>スタッフ</option><option ${u.role === '管理者' ? 'selected' : ''}>管理者</option></select><button class="btn danger sm" data-ud="${i}">削除</button></div>`).join('')
+    + (fixed || G.users.length ? '' : '<p class="note" style="margin:0">まだ登録がありません。</p>');
+  $('userList').querySelectorAll('[data-ur]').forEach(e => e.onchange = () => { G.users[+e.dataset.ur].role = e.value; dirty = true; });
+  $('userList').querySelectorAll('[data-ud]').forEach(e => e.onclick = () => {
+    const u = G.users[+e.dataset.ud]; if (!confirm(u.email + ' を削除しますか?(保存すると、この人はログインできなくなります)')) return;
+    G.users.splice(+e.dataset.ud, 1); dirty = true; drawUsers();
+  });
+}
+$('addUser').onclick = () => {
+  const email = $('newUser').value.trim().toLowerCase(), dom = (window.WASH_CONFIG || {}).domain;
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return alert('メールアドレスを確認してください');
+  if (dom && email.split('@')[1] !== dom) return alert('会社のアカウント(@' + dom + ')を入れてください');
+  if (G.users.some(u => u.email === email) || (G.fixedAdmins || []).includes(email)) return alert('すでに登録されています');
+  G.users.push({ email, role: $('newRole').value }); $('newUser').value = ''; dirty = true; drawUsers();
+};
 /* 従業員画面のパスワード(すぐ保存) */
 function drawStaff() {
-  const has = G.staffPw !== undefined; $('staffBox').hidden = !has; if (!has) return;
+  drawUsers();
+  const has = G.staffPw !== undefined && G.auth !== 'google'; $('staffBox').hidden = !has; if (!has) return;
   $('staffState').textContent = G.staffPw ? '(設定済み)' : '(未設定)'; $('staffClear').hidden = !G.staffPw; $('staffPw').value = '';
 }
 $('staffSave').onclick = busy($('staffSave'), async () => {
@@ -781,13 +840,17 @@ async function saveHol() {
 /* 設定・文章の保存 */
 async function saveAll() {
   const settings = {}; G.settings.forEach(s => settings[s.k] = s.v);
-  await api('adminSave', Object.assign({ settings, models: G.models, holidays: G.holidays, confirmed: G.confirmed, special: G.special || [] }, Array.isArray(G.staff) ? { staff: G.staff } : {}));
+  await api('adminSave', Object.assign({ settings, models: G.models, holidays: G.holidays, confirmed: G.confirmed, special: G.special || [] }, Array.isArray(G.staff) ? { staff: G.staff } : {}, G.auth === 'google' && Array.isArray(G.users) ? { users: G.users } : {}));
   alert('保存しました'); await reloadG();
 }
 $('saveSet').onclick = busy($('saveSet'), saveAll);
 $('saveTxt').onclick = busy($('saveTxt'), saveAll);
 
-if (pw) api('adminGet').then(enter).catch(() => { sessionStorage.removeItem('wash_admin_pw'); pw = ''; });
+if (GA.enabled) {
+  // Google ログイン: ログインできたら管理画面へ(タブの中にトークンが残っていればそのまま入る)
+  GA.onSignIn = () => { $('loginErr').textContent = ''; api('adminGet').then(enter).catch(e => { $('loginErr').textContent = e.message; }); };
+  if (GA.token) api('adminGet').then(enter).catch(() => {}); else showLogin('');
+} else if (pw) api('adminGet').then(enter).catch(() => { sessionStorage.removeItem('wash_admin_pw'); pw = ''; });
 </script>
 </body>
 </html>

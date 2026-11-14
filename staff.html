@@ -160,9 +160,12 @@ button{font:inherit;color:inherit;letter-spacing:inherit;cursor:pointer}
   <div class="login" id="login">
     <h2>スタッフ</h2>
     <p>その日の予約を、時間の早い順に確認できます。</p>
-    <input type="password" id="pw" placeholder="パスワード" autocomplete="current-password" aria-label="パスワード">
-    <label class="chk"><input type="checkbox" id="keep" checked>この端末に保存する</label>
-    <button class="btn" id="go">ひらく</button>
+    <div id="pwLogin">
+      <input type="password" id="pw" placeholder="パスワード" autocomplete="current-password" aria-label="パスワード">
+      <label class="chk"><input type="checkbox" id="keep" checked>この端末に保存する</label>
+      <button class="btn" id="go">ひらく</button>
+    </div>
+    <div id="gLogin" hidden><p style="margin:0 0 14px">会社の Google アカウントでログインしてください。</p><div id="gBtn" style="display:flex;justify-content:center;min-height:44px"></div></div>
     <p class="err" id="err" hidden></p>
   </div>
   <div id="app" hidden>
@@ -175,9 +178,12 @@ button{font:inherit;color:inherit;letter-spacing:inherit;cursor:pointer}
 <section id="sheet" class="sheet" aria-hidden="true"></section>
 
 <div class="loader" id="loader" role="status" aria-live="polite"><i aria-hidden="true"></i><div>読み込み中…<small>通信に数秒かかることがあります。そのままお待ちください。</small></div></div>
+<script src="config.js"></script>
+<script src="auth.js"></script>
 <script>
-/* GASのウェブアプリURL(お客様画面・管理画面と同じ) */
-const API = 'https://script.google.com/macros/s/AKfycbzHj9e15-2k4kkNa63ctM0P2KBXVbKfzGJGvhBNKXl0Er2u5_75qR7Kmev8Z0TzTdcg/exec';
+/* GASのウェブアプリURL(config.js の値を優先。お客様画面・管理画面と同じ) */
+const API = (window.WASH_CONFIG && window.WASH_CONFIG.api) || 'https://script.google.com/macros/s/AKfycbzHj9e15-2k4kkNa63ctM0P2KBXVbKfzGJGvhBNKXl0Er2u5_75qR7Kmev8Z0TzTdcg/exec';
+const GA = window.WashAuth || { enabled: false };
 
 const $ = id => document.getElementById(id);
 /* 読み込み中のお知らせ: 待っている処理がある間だけ出す(0.25秒以内に終われば出さない) */
@@ -203,12 +209,21 @@ const toM = t => +t.slice(0, 2) * 60 + +t.slice(3, 5);
 
 let pw = getPw(), cur = null, today = null, busy = false;
 
-async function api(data) {
+async function api(data, retried) {
   let r;
-  try { r = await fetch(API, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(Object.assign({ action: 'staffDay', pw }, data)) }); }
+  const cred = GA.enabled ? { idToken: GA.token } : { pw };
+  try { r = await fetch(API, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(Object.assign({ action: 'staffDay' }, cred, data)) }); }
   catch (e) { throw new Error('通信できませんでした。電波の良い場所で「更新」を押してください。'); }
   const j = await r.json();
-  if (!j.ok) throw new Error(j.error);
+  if (!j.ok) {
+    if (/^LOGIN:/.test(j.error)) {
+      const msg = j.error.slice(6);
+      // ログインが切れたときは自動で取り直して、もう一度試す(お店の端末を開きっぱなしでも使えるように)
+      if (GA.enabled && !retried && GA.token && /期限|し直/.test(msg)) { try { await GA.refresh(); return api(data, true); } catch (e) {} }
+      throw new Error('パスワード:' + msg);
+    }
+    throw new Error(j.error);
+  }
   return j.data;
 }
 
@@ -317,8 +332,11 @@ function draw(d) {
 function enter() { $('login').hidden = true; $('app').hidden = false; $('head').hidden = false; load(); }
 function logout(msg) {
   pw = ''; setPw('');
+  msg = String(msg || '').replace(/^パスワード:/, '');
   $('app').hidden = true; $('head').hidden = true; $('login').hidden = false; $('list').innerHTML = '';
-  $('err').hidden = !msg; $('err').textContent = msg || ''; $('pw').value = ''; $('pw').focus();
+  $('err').hidden = !msg; $('err').textContent = msg || '';
+  if (GA.enabled) { GA.clear(); $('pwLogin').hidden = true; $('gLogin').hidden = false; GA.button($('gBtn')); }
+  else { $('pw').value = ''; $('pw').focus(); }
 }
 
 $('go').onclick = async () => {
@@ -329,7 +347,7 @@ $('go').onclick = async () => {
   finally { $('go').disabled = false; }
 };
 $('pw').addEventListener('keydown', e => { if (e.key === 'Enter') $('go').click(); });
-$('logout').onclick = () => logout();
+$('logout').onclick = () => { if (GA.enabled) GA.signOut(); logout(); };
 $('reload').onclick = () => load();
 // 印刷・PDF: 印刷の画面を開く(PDFはそこから保存できる)
 // (iPhone は押した直後でないと印刷の画面を開けないので、表示中の内容ですぐ印刷する。内容は1分ごとに自動で最新になる)
@@ -357,7 +375,11 @@ $('app').addEventListener('touchend', e => {
 setInterval(() => { if (pw && !document.hidden && !$('app').hidden) load(null, true); }, 60000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden && pw && !$('app').hidden) load(null, true); });
 
-if (pw) enter();
+if (GA.enabled) {
+  // Google ログイン: ログインできたら一覧へ
+  GA.onSignIn = () => { $('err').hidden = true; enter(); };
+  if (GA.token) enter(); else logout('');
+} else if (pw) enter();
 </script>
 </body>
 </html>
