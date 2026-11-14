@@ -184,6 +184,13 @@ textarea:focus,input:focus{background:#fff;box-shadow:0 0 0 1.5px var(--ink);out
 .tags button{min-height:30px;padding:0 11px;border:0;border-radius:99px;background:#f3ecdc;color:#7a5a1e;font-size:12px;font-weight:600}
 .tags button:hover{background:#ece0c4}
 
+/* 台ごとの開始時間 */
+.lanesw{margin:14px 0 4px;font-size:14px}
+.lanetabs{display:flex;gap:4px;margin:10px 0 0;padding:4px;border-radius:12px;background:var(--soft);width:max-content;max-width:100%;overflow-x:auto}
+.lanetabs button{min-height:36px;padding:0 16px;border:0;border-radius:9px;background:none;color:var(--sub);font-size:13.5px;font-weight:600;white-space:nowrap}
+.lanetabs button small{margin-left:6px;font-size:11px;font-weight:500;color:var(--mute)}
+.lanetabs button.on{background:#fff;color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.08)}
+
 .savebar{position:sticky;bottom:0;z-index:4;display:flex;justify-content:flex-end;margin:24px -20px -80px;padding:12px 20px calc(12px + env(safe-area-inset-bottom));background:rgba(245,244,241,.9);backdrop-filter:saturate(1.6) blur(16px);-webkit-backdrop-filter:saturate(1.6) blur(16px);box-shadow:0 -1px 0 var(--line)}
 .savebar .btn{min-width:220px}
 @media (max-width:560px){.savebar .btn{width:100%}}
@@ -243,12 +250,16 @@ textarea:focus,input:focus{background:#fff;box-shadow:0 0 0 1.5px var(--ink);out
     <section class="card pad" style="margin-top:16px">
       <div class="hrow"><h3>受付する開始時間</h3><span class="count-pill" id="tCount"></span></div>
       <p class="note" style="margin:2px 0 0">押すと切り替わります。黒い時間だけ、お客様が開始時間として選べます。洗車時間ぶんの空きがない時間や、昼休憩にかかる時間は自動で受け付けません。</p>
+      <div id="laneBox" hidden>
+        <label class="chk lanesw"><input type="checkbox" id="laneSw">台ごとに開始時間を変える</label>
+        <div class="lanetabs" id="laneTabs" role="tablist" aria-label="台を選ぶ"></div>
+      </div>
       <div class="tools"><button class="btn sub sm" id="tAll">すべて選ぶ</button><button class="btn sub sm" id="tNone">すべて外す</button></div>
       <div id="tPick"></div>
     </section>
     <section class="card pad" style="margin-top:16px">
       <h3>この日だけ変則</h3>
-      <p class="note" style="margin:2px 0 10px">特定の日だけ、開始時間を変えられます。「決定」を押すとすぐ保存されます。</p>
+      <p class="note" style="margin:2px 0 10px">特定の日だけ、開始時間を変えられます(台ごとに分けている場合も、その日は全部の台がこの時間になります)。「決定」を押すとすぐ保存されます。</p>
       <div id="spList"></div>
       <div class="spedit" id="spEdit" hidden>
         <label for="spDate" style="margin-top:0">日付</label>
@@ -574,24 +585,71 @@ function timeGrid(el, sel, onChange) {
 }
 const usable = sel => [...sel].filter(x => !lunchHit(x)).sort();
 let tSel = new Set(), spE = null;
+/* 台ごとの開始時間: laneOn のとき laneSel[台] を編集し、「台別開始時刻」に JSON で保存する */
+let laneOn = false, laneSel = [], laneCur = 0;
+const capN = () => Math.max(1, Math.min(10, Math.floor(+((sv('同時洗車台数') || {}).v) || 1)));
 function drawTime() {
   const old = !sv('開始時刻'); $('timeOld').hidden = !old; $('timeBody').hidden = old; if (old) return;
   $('timeFields').innerHTML = fieldsCard(GROUPS[0]);
   $('timeFields').querySelectorAll('[data-k]').forEach(e => e.oninput = () => { sv(e.dataset.k).v = e.value; dirty = true; drawPick(); if (spE) drawSpPick(); drawSp(); });
   const cur = listOf(sv('開始時刻').v);
   tSel = new Set(cur.length ? cur : candidates().filter(x => !lunchHit(x)));
+  let lanes = [];
+  try { lanes = sv('台別開始時刻') ? JSON.parse(sv('台別開始時刻').v || '[]') : []; } catch (e) { lanes = []; }
+  laneOn = Array.isArray(lanes) && lanes.length > 0;
+  laneSel = laneOn ? lanes.map(v => { const l = listOf(v); return new Set(l.length ? l : [...tSel]); }) : [];
+  laneCur = 0;
   drawPick(); drawSp();
 }
+/** いま編集している開始時間の Set(共通 or 選んでいる台) */
+const editSel = () => laneOn ? laneSel[laneCur] : tSel;
+function saveLanes() {
+  if (!sv('台別開始時刻')) return;
+  if (laneOn) {
+    sv('台別開始時刻').v = JSON.stringify(laneSel.map(x => usable(x).join(',')));
+    sv('開始時刻').v = usable(laneSel[0]).join(','); // 1台目を共通の候補としても残す
+  } else sv('台別開始時刻').v = '';
+  dirty = true;
+}
 function drawPick() {
-  timeGrid($('tPick'), tSel, () => { sv('開始時刻').v = usable(tSel).join(','); dirty = true; tCount(); });
+  const n = capN(), canLane = n >= 2 && !!sv('台別開始時刻');
+  $('laneBox').hidden = !canLane;
+  if (!canLane && laneOn) { laneOn = false; saveLanes(); }
+  if (laneOn) {
+    while (laneSel.length < n) laneSel.push(new Set(usable(laneSel[laneSel.length - 1] || tSel)));
+    if (laneSel.length > n) laneSel.length = n;
+    if (laneCur >= n) laneCur = 0;
+    $('laneTabs').innerHTML = laneSel.map((x, k) => `<button type="button" role="tab" class="${k === laneCur ? 'on' : ''}" aria-selected="${k === laneCur}" data-lane="${k}">${k + 1}台目<small>${usable(x).length}枠</small></button>`).join('');
+    $('laneTabs').querySelectorAll('[data-lane]').forEach(b => b.onclick = () => { laneCur = +b.dataset.lane; drawPick(); });
+  }
+  $('laneSw').checked = laneOn; $('laneTabs').hidden = !laneOn;
+  timeGrid($('tPick'), editSel(), () => {
+    if (laneOn) { saveLanes(); const t = $('laneTabs').querySelector(`[data-lane="${laneCur}"] small`); if (t) t.textContent = usable(laneSel[laneCur]).length + '枠'; }
+    else { sv('開始時刻').v = usable(tSel).join(','); dirty = true; }
+    tCount();
+  });
   tCount();
 }
 function tCount() {
-  const n = usable(tSel).length, cap = +sv('1日の上限台数').v || 0;
+  const cap = +sv('1日の上限台数').v || 0;
+  const n = laneOn ? laneSel.map(x => usable(x).length).join('+') : usable(tSel).length;
   $('tCount').textContent = n + '枠' + (cap ? ' ・ 1日' + cap + '台まで' : '');
 }
-$('tAll').onclick = () => { tSel = new Set(candidates().filter(x => !lunchHit(x))); sv('開始時刻').v = usable(tSel).join(','); dirty = true; drawPick(); };
-$('tNone').onclick = () => { tSel = new Set(); sv('開始時刻').v = ''; dirty = true; drawPick(); };
+$('laneSw').onchange = () => {
+  laneOn = $('laneSw').checked;
+  if (laneOn) { laneSel = Array.from({ length: capN() }, () => new Set(usable(tSel))); laneCur = 0; }
+  else { tSel = new Set(usable(laneSel[0] || tSel)); sv('開始時刻').v = usable(tSel).join(','); }
+  saveLanes(); drawPick();
+};
+$('tAll').onclick = () => {
+  const all = candidates().filter(x => !lunchHit(x));
+  if (laneOn) { laneSel[laneCur] = new Set(all); saveLanes(); } else { tSel = new Set(all); sv('開始時刻').v = usable(tSel).join(','); dirty = true; }
+  drawPick();
+};
+$('tNone').onclick = () => {
+  if (laneOn) { laneSel[laneCur] = new Set(); saveLanes(); } else { tSel = new Set(); sv('開始時刻').v = ''; dirty = true; }
+  drawPick();
+};
 function drawSp() {
   const list = G.special || [];
   $('spList').innerHTML = list.length ? list.map((r, i) => `<div class="sp"><div class="bd"><b>${dJa(r.date)}</b><div class="s2">${r.times.join('・')}(${r.times.length}枠)</div></div><button class="btn sub sm" data-se="${i}">編集</button><button class="btn danger sm" data-sd="${i}">削除</button></div>`).join('') : '<p class="note" style="margin:0">変則の日はありません。</p>';
@@ -603,7 +661,7 @@ function drawSp() {
 }
 function openSp(i) {
   const r = i >= 0 ? G.special[i] : null;
-  spE = { i, sel: new Set(r ? r.times : usable(tSel)) };
+  spE = { i, sel: new Set(r ? r.times : usable(laneOn ? new Set([].concat(...laneSel.map(x => [...x]))) : tSel)) };
   $('spDate').value = r ? r.date : ''; $('spDate').min = G.today;
   $('spEdit').hidden = false; $('spAdd').hidden = true; drawSpPick();
   if (!r) $('spDate').focus();
@@ -621,7 +679,7 @@ $('spOk').onclick = busy($('spOk'), async () => {
 });
 async function saveSp() { await api('adminSave', { special: G.special || [] }); drawSp(); }
 $('saveTime').onclick = busy($('saveTime'), async () => {
-  if (!usable(tSel).length) return alert('受付する開始時間を1つ以上選んでください');
+  if (laneOn ? laneSel.some(x => !usable(x).length) : !usable(tSel).length) return alert(laneOn ? 'どの台も、受付する開始時間を1つ以上選んでください' : '受付する開始時間を1つ以上選んでください');
   await saveAll();
 });
 

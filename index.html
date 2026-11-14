@@ -183,7 +183,8 @@ body.hashome .app{padding-bottom:calc(330px + env(safe-area-inset-bottom))}
 
 /* カレンダー */
 .car{display:inline-flex;align-items:center;gap:6px;margin:4px 0 18px;padding:5px 13px;border-radius:99px;background:var(--card);box-shadow:0 0 0 1px var(--line);font-size:12.5px;color:var(--sub)}
-.calcard{padding:14px 12px 16px}
+.calcard{padding:14px 12px 16px;overflow:hidden;touch-action:pan-y}
+.cal-swipe{will-change:transform}
 .mnav{display:flex;align-items:center;justify-content:space-between;margin:0 0 8px}
 .mnav b{font-size:16px;font-weight:600;letter-spacing:.06em}
 .mnav button{display:grid;place-items:center;width:40px;height:40px;border:0;border-radius:50%;background:none;font-size:22px;line-height:1;color:var(--ink)}
@@ -337,7 +338,7 @@ body.hasbar .toast{bottom:calc(100px + env(safe-area-inset-bottom))}
   <h3 class="sec">ご連絡先<button type="button" class="link" id="contactEdit" hidden>変更</button></h3>
   <div class="card contact-sum" id="contactSum" hidden></div>
   <div class="card fields" id="contactForm">
-  <label for="fName">お名前</label>
+  <label for="fName">お名前(登録名義)</label>
   <input type="text" id="fName" autocomplete="name">
   <label for="fPhone">電話番号</label>
   <input type="tel" id="fPhone" autocomplete="tel">
@@ -354,9 +355,9 @@ body.hasbar .toast{bottom:calc(100px + env(safe-area-inset-bottom))}
   <h2>日にちを選ぶ</h2>
   <span class="car" id="calNote"></span>
   <div class="cwarn" id="calWarn" hidden></div>
-  <div class="card calcard">
+  <div class="card calcard" id="calCard">
   <div class="mnav"><button id="calPrev" aria-label="前の月">‹</button><b id="calLabel"></b><button id="calNext" aria-label="次の月">›</button></div>
-  <div id="calBody"></div>
+  <div class="cal-swipe"><div id="calBody"></div></div>
   <div class="legend">
     <span><i style="background:var(--ok)"></i>空きあり</span>
     <span><i style="background:var(--few)"></i>残りわずか</span>
@@ -413,9 +414,9 @@ body.hasbar .toast{bottom:calc(100px + env(safe-area-inset-bottom))}
   <div id="wWdBox" hidden><h3>曜日</h3><div class="wds" id="wWd"></div></div>
   <div id="wDatesBox" hidden>
     <h3>日にち(複数選べます)</h3>
-    <div class="card calcard">
+    <div class="card calcard" id="wCard">
     <div class="mnav"><button id="wPrev" aria-label="前の月">‹</button><b id="wLabel"></b><button id="wNext" aria-label="次の月">›</button></div>
-    <div id="wCal"></div>
+    <div class="cal-swipe"><div id="wCal"></div></div>
     </div>
   </div>
 </section>
@@ -626,11 +627,11 @@ function drawStaff() {
   const stores = [...new Set(list.map(x => x.store || ''))], multi = stores.length > 1;
   const isOn = x => !!curStaff && curStaff.name === x.name && (curStaff.store || '') === (x.store || '');
   const tile = (x, i) => `<button type="button" class="mt sf ${isOn(x) ? 'on' : ''}" role="radio" aria-checked="${isOn(x)}" data-si="${i}"><b>${esc(x.name)}</b></button>`;
-  let h = `<div class="sgrid"><button type="button" class="mt sf none ${curStaff ? '' : 'on'}" role="radio" aria-checked="${!curStaff}" data-si="-1"><b>指定なし</b></button>` + (multi ? '</div>' : '');
+  let h = '';
   if (multi) stores.forEach(st => { h += `<div class="sgrp">${esc(st || 'その他')}</div><div class="sgrid">` + list.map((x, i) => (x.store || '') === st ? tile(x, i) : '').join('') + '</div>'; });
-  else h += list.map(tile).join('') + '</div>';
+  else h = '<div class="sgrid">' + list.map(tile).join('') + '</div>';
   $('fStaff').innerHTML = h;
-  $('fStaff').querySelectorAll('[data-si]').forEach(b => b.onclick = () => { const i = +b.dataset.si; curStaff = i < 0 ? null : list[i]; drawStaff(); });
+  $('fStaff').querySelectorAll('[data-si]').forEach(b => b.onclick = () => { curStaff = list[+b.dataset.si]; drawStaff(); });
 }
 function setModel(name) {
   curModel = name || '';
@@ -673,6 +674,7 @@ $('infoNext').onclick = () => {
     // 店の車種名が変わったときは選び直してもらう
     pickCar(-1); $('fPlate').value = car.plate; return toast('車種を選び直してください', true);
   }
+  if (!curStaff && (cfg.staff || []).some(x => x.name)) { $('staffSec').scrollIntoView({ block: 'center', behavior: 'smooth' }); return toast('担当スタッフを選んでください', true); }
   const p = { model: car.model, plate: car.plate, name: $('fName').value.trim(), phone: $('fPhone').value.trim(), email: $('fMail').value.trim(), staff: curStaff ? curStaff.name : '', staffStore: curStaff ? (curStaff.store || '') : '' };
   if (!p.model || !p.plate || !p.name || !p.phone || !p.email) { if (!p.name || !p.phone || !p.email) { contactOpen = true; drawContact(); } return toast('すべての項目を入力してください', true); }
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(p.email)) { contactOpen = true; drawContact(); return toast('メールアドレスを確認してください', true); }
@@ -788,6 +790,36 @@ function dayTap(b) {
     return;
   }
   openSlots(d);
+}
+
+/* カレンダーを左右にスワイプして前後の月へ(指に合わせて少し動き、離すとスライドして切り替わる) */
+function swipeMonths(card, prevId, nextId) {
+  const body = card.querySelector('.cal-swipe') || card;
+  let x0 = 0, y0 = 0, dx = 0, mode = '';
+  card.addEventListener('touchstart', e => { if (e.touches.length !== 1) return; x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; dx = 0; mode = ''; body.style.transition = 'none'; }, { passive: true });
+  card.addEventListener('touchmove', e => {
+    const t = e.touches[0], mx = t.clientX - x0, my = t.clientY - y0;
+    if (!mode) { if (Math.abs(mx) > 10 && Math.abs(mx) > Math.abs(my) * 1.2) mode = 'h'; else if (Math.abs(my) > 10) mode = 'v'; }
+    if (mode !== 'h') return;
+    e.preventDefault(); dx = mx;
+    const edge = (dx > 0 && $(prevId).disabled) || (dx < 0 && $(nextId).disabled);
+    body.style.transform = `translateX(${edge ? dx * 0.25 : dx}px)`; body.style.opacity = String(1 - Math.min(Math.abs(dx) / 600, 0.35));
+  }, { passive: false });
+  card.addEventListener('touchend', () => {
+    if (mode !== 'h') return;
+    const go = Math.abs(dx) > 60 ? (dx < 0 ? $(nextId) : $(prevId)) : null;
+    body.style.transition = 'transform .22s cubic-bezier(.2,.8,.2,1), opacity .22s';
+    if (go && !go.disabled) {
+      const dir = dx < 0 ? -1 : 1;
+      body.style.transform = `translateX(${dir * 110}%)`; body.style.opacity = '0';
+      setTimeout(() => {
+        go.click();
+        body.style.transition = 'none'; body.style.transform = `translateX(${-dir * 40}%)`; body.offsetHeight;
+        body.style.transition = 'transform .24s cubic-bezier(.2,.8,.2,1), opacity .24s'; body.style.transform = ''; body.style.opacity = '';
+      }, 180);
+    } else { body.style.transform = ''; body.style.opacity = ''; }
+    mode = '';
+  });
 }
 
 /* ---------- 時間 ---------- */
@@ -934,7 +966,7 @@ async function holdView(token) {
   show('hold');
   try {
     const h = await waiting(api('holdInfo', { token }));
-    $('holdBody').innerHTML = `<p class="lead">${h.until} までに、下のボタンで予約を確定してください。過ぎると次の方へご案内します。</p><dl class="facts"><div><dt>日時</dt><dd>${dJa(h.date)} ${h.start}〜${h.end}</dd></div><div><dt>お車</dt><dd>${esc(h.model)}</dd></div>${h.staff ? `<div><dt>担当</dt><dd>${esc(h.staff)}</dd></div>` : ''}<div><dt>ナンバー</dt><dd>${esc(h.plate)}</dd></div><div><dt>お名前</dt><dd>${esc(h.name)} 様</dd></div></dl><button class="cta" id="hGo">予約を確定する</button>`;
+    $('holdBody').innerHTML = `<p class="lead">${h.until} までに、下のボタンで予約を確定してください。過ぎると次の方へご案内します。</p><dl class="facts"><div><dt>日時</dt><dd>${dJa(h.date)} ${h.start}〜${h.end}</dd></div><div><dt>お車</dt><dd>${esc(h.model)}</dd></div>${h.staff ? `<div><dt>担当</dt><dd>${esc(h.staff)}</dd></div>` : ''}<div><dt>ナンバー</dt><dd>${esc(h.plate)}</dd></div><div><dt>お名前(登録名義)</dt><dd>${esc(h.name)} 様</dd></div></dl><button class="cta" id="hGo">予約を確定する</button>`;
     $('hGo').onclick = busy($('hGo'), async () => {
       const r = await api('holdConfirm', { token });
       mine.push({ no: r.no, date: r.date, start: r.start, end: r.end, model: r.model, plate: h.plate }); save('wash_mine', mine);
@@ -992,6 +1024,8 @@ const aboutKey = e => { if (e.key === 'Escape') closeAbout(); };
 $('aboutBtn').onclick = openAbout; $('aboutX').onclick = closeAbout; $('aboutBg').onclick = closeAbout;
 if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
 
+swipeMonths($('calCard'), 'calPrev', 'calNext');
+swipeMonths($('wCard'), 'wPrev', 'wNext');
 init();
 </script>
 </body>

@@ -246,12 +246,14 @@ function drawSheet(d) {
   const to = Math.max(1080, ...d.list.map(r => Math.ceil(toM(r.end) / 60) * 60));
   const pct = m => ((m - from) / (to - from) * 100).toFixed(3) + '%';
   // 予約を段に振り分ける(重ならないように、空いている一番上の段へ)
-  const lanes = [];
-  d.list.slice().sort((a, b) => toM(a.start) - toM(b.start)).forEach(r => {
-    let k = lanes.findIndex(l => l.end <= toM(r.start)); if (k < 0) { lanes.push({ end: 0, items: [] }); k = lanes.length - 1; }
-    lanes[k].items.push(r); lanes[k].end = toM(r.end);
+  // 台が決まっている予約はその段に。古い予約(台なし)は空いている段へ
+  const lanes = [], laneOf = k => { while (lanes.length <= k) lanes.push({ items: [] }); return lanes[k]; };
+  const free = (l, r) => l.items.every(o => toM(r.end) <= toM(o.start) || toM(r.start) >= toM(o.end));
+  for (let k = 0; k < Math.max(1, d.cap || 1); k++) laneOf(k);
+  d.list.filter(r => r.lane > 0).forEach(r => laneOf(r.lane - 1).items.push(r));
+  d.list.filter(r => !(r.lane > 0)).sort((a, b) => toM(a.start) - toM(b.start)).forEach(r => {
+    let l = lanes.find(x => free(x, r)); if (!l) l = laneOf(lanes.length); l.items.push(r);
   });
-  while (lanes.length < Math.max(1, d.cap || 1)) lanes.push({ end: 0, items: [] });
   const laneH = Math.max(30, Math.min(62, Math.floor(140 / lanes.length)));
   // 目盛り
   let ticks = '', head = '';
