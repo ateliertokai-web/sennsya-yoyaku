@@ -133,9 +133,10 @@ body.hashome .app{padding-bottom:calc(330px + env(safe-area-inset-bottom))}
 .inst img{flex:none;width:44px;height:44px;border-radius:11px}
 .inst div{font-size:12.5px;line-height:1.7;color:var(--sub)}
 .inst div b{display:block;font-size:13.5px;color:var(--ink)}
-.steps{margin:10px 0 0;padding:6px 20px 6px 40px;background:var(--card);border-radius:var(--rl);box-shadow:0 0 0 1px var(--line);font-size:13.5px;line-height:1.75}
-.steps li{padding:6px 0}
-.steps .os{display:block;margin:10px 0 2px -20px;font-size:12px;font-weight:600;color:var(--sub);letter-spacing:.06em;list-style:none}
+.steps{margin:10px 0 0;padding:8px 20px 8px;background:var(--card);border-radius:var(--rl);box-shadow:0 0 0 1px var(--line);font-size:13.5px;line-height:1.75}
+.steps ol{margin:0;padding-left:1.4em}
+.steps li{padding:4px 0}
+.steps .os{margin:10px 0 2px;font-size:12px;font-weight:600;color:var(--sub);letter-spacing:.06em}
 .steps .os:first-child{margin-top:4px}
 .inst-go{display:block;width:100%;min-height:48px;margin-top:10px;border:0;border-radius:99px;background:var(--ink);color:#fff;font-weight:600;letter-spacing:.06em}
 @media (prefers-reduced-motion:no-preference){.about{animation:up .24s cubic-bezier(.2,.8,.2,1)}}
@@ -313,7 +314,7 @@ body.hasbar .toast{bottom:calc(100px + env(safe-area-inset-bottom))}
 .wrule ul,.pts.rule{margin:0;padding:0;list-style:none}
 .wrule li{display:flex;justify-content:space-between;gap:10px;padding:3px 0;border-top:1px dashed #ecd3a6;font-variant-numeric:tabular-nums}
 .wrule li b{white-space:nowrap}
-.danger-link{color:#a8442f!important;text-decoration-color:#e3b4aa!important;font-size:12.5px!important;margin-top:40px!important}
+.danger-link{color:#a8442f!important;text-decoration-color:#e3b4aa!important;font-size:12.5px!important;margin:32px auto 4px!important}
 
 /* 読み込み中のお知らせ(待ち時間が少しあるときだけ出す) */
 .loader{position:fixed;left:0;right:0;top:calc(12px + env(safe-area-inset-top));z-index:60;display:flex;align-items:center;gap:11px;width:max-content;max-width:calc(100% - 32px);margin:0 auto;padding:10px 18px 10px 14px;border-radius:18px;background:rgba(29,29,31,.94);color:#fff;font-size:13.5px;font-weight:600;line-height:1.45;letter-spacing:.04em;box-shadow:0 10px 30px rgba(0,0,0,.2);transform:translateY(-12px);opacity:0;pointer-events:none;transition:opacity .2s,transform .2s}
@@ -340,7 +341,6 @@ body.hasbar .toast{bottom:calc(100px + env(safe-area-inset-bottom))}
   <div id="mine" class="mine"></div>
   <h2 id="homeTitle"></h2>
   <p class="lead" id="homeLead"></p>
-  <button class="textlink danger-link" id="delMe">お客様情報をすべて削除</button>
 </section>
 
 <!-- お車の情報 -->
@@ -585,7 +585,6 @@ async function init() {
   checkHolds().then(firstGuide);
 }
 function applyCfg() {
-  $('delMe').hidden = !newServer(); // お客様情報の削除は新しいサーバーのときだけ
   $('shop').textContent = cfg.name; document.title = cfg.name;
   const T = cfg.texts || {};
   setText('subline', T['ヘッダー']); setText('homeTitle', T['トップ見出し']); setText('homeLead', T['トップ']); $('goReserve').textContent = T['予約ボタン'] || '予約する'; setText('infoNote', T['お車の情報']);
@@ -1120,7 +1119,7 @@ async function firstGuide() {
 /* ---------- お客様情報をすべて削除(車を手放したときなど) ---------- */
 const DEL_Q = '当店でお預かりしている、この洗車予約アプリに関するお客様情報を削除しますか?';
 const DEL_TXT = 'この端末に保存したお客様情報と、当店でお預かりしているお客様の情報(お名前・電話番号・メールアドレス・車両ナンバー)を、すべて削除いたします。\nご予約中・キャンセル待ち中の内容も、すべて取り消し・削除されます。この操作は元に戻せません。';
-$('delMe').onclick = async () => {
+async function deleteMeFlow() {
   const plates = [...new Set(cars.map(c => c.plate).concat(profile.plate ? [profile.plate] : []))];
   const has = !!(profile.email && plates.length);
   const what = has ? `<div class="list">メール: ${esc(profile.email)}<br>お車: ${plates.map(esc).join('、')}</div>` : '<p class="note">この端末には、当店にお預かりしている情報と結び付くお客様情報(メールアドレス・車両ナンバー)が保存されていません。この端末の中の情報だけを削除します。</p>';
@@ -1135,7 +1134,7 @@ $('delMe').onclick = async () => {
   profile = {}; cars = []; mine = []; booked = new Set(); bookedKey = ''; monthCache = {};
   renderHome(); show('home');
   await dialog('削除しました', '<p>お客様情報をすべて削除いたしました。ご利用ありがとうございました。</p>', [{ label: '閉じる', value: 1 }]);
-};
+}
 
 /* ---------- 洗車システムについて ---------- */
 const isStandalone = () => matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
@@ -1160,14 +1159,12 @@ function installHtml() {
   if (isStandalone()) return '<div class="inst"><img src="apple-touch-icon.png" alt=""><div><b>ホーム画面から開いています</b>このままアプリのようにお使いいただけます。</div></div>';
   return `<div class="inst"><img src="apple-touch-icon.png" alt=""><div><b>アプリのように使えます</b>ホーム画面に追加すると、すぐに開けて、登録したお車の情報も残りやすくなります。</div></div>
     ${installEv ? '<button class="inst-go" id="instGo">ホーム画面に追加する</button>' : ''}
-    <ol class="steps">
-      <li class="os">iPhone(Safari)</li>
-      <li>画面下の共有ボタン(□に↑のマーク)を押す</li>
-      <li>「ホーム画面に追加」を選び、右上の「追加」を押す</li>
-      <li class="os">Android(Chrome)</li>
-      <li>右上のメニュー(︙)を押す</li>
-      <li>「ホーム画面に追加」または「アプリをインストール」を選ぶ</li>
-    </ol>
+    <div class="steps">
+      <p class="os">iPhone(Safari)</p>
+      <ol><li>画面下の共有ボタン(□に↑のマーク)を押す</li><li>「ホーム画面に追加」を選び、右上の「追加」を押す</li></ol>
+      <p class="os">Android(Chrome)</p>
+      <ol><li>右上のメニュー(︙)を押す</li><li>「ホーム画面に追加」または「アプリをインストール」を選ぶ</li></ol>
+    </div>
     ${isIOS ? '<p class="note">※ LINEなどのアプリ内で開いている場合は、一度Safariで開いてから追加してください。</p>' : ''}`;
 }
 function openAbout() {
@@ -1176,7 +1173,9 @@ function openAbout() {
     + (rules ? '<h4>ご案内</h4><dl class="rules">' + rules + '</dl>' : '')
     + '<h4>予約の受付について</h4>' + windowHtml()
     + (ruleHtml() ? '<h4>キャンセル待ちについて</h4><div class="wrule" style="margin:0">' + ruleHtml() + '</div>' : '')
-    + '<h4>ホーム画面に追加する</h4>' + installHtml();
+    + '<h4>ホーム画面に追加する</h4>' + installHtml()
+    + (newServer() ? '<button class="textlink danger-link" id="delMe">お客様情報をすべて削除</button>' : '');
+  if ($('delMe')) $('delMe').onclick = () => { closeAbout(); deleteMeFlow(); };
   const go = $('instGo');
   if (go) go.onclick = async () => { installEv.prompt(); await installEv.userChoice; installEv = null; openAbout(); };
   $('aboutBg').hidden = false; $('about').hidden = false; $('aboutBody').scrollTop = 0;
