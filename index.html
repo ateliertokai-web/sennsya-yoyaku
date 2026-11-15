@@ -308,6 +308,11 @@ body.hasbar .toast{bottom:calc(100px + env(safe-area-inset-bottom))}
 .dlg-btns{display:flex;flex-direction:column;gap:8px;margin-top:16px}
 .dlg-btns .cta{min-height:52px}
 .dlg-btns .red{background:var(--red)}
+.wrule{margin:-8px 0 18px;padding:12px 14px;border-radius:14px;background:#fdf1dd;color:#6b4300;font-size:12.5px;line-height:1.75}
+.wrule p{margin:0 0 6px}
+.wrule ul,.pts.rule{margin:0;padding:0;list-style:none}
+.wrule li{display:flex;justify-content:space-between;gap:10px;padding:3px 0;border-top:1px dashed #ecd3a6;font-variant-numeric:tabular-nums}
+.wrule li b{white-space:nowrap}
 .danger-link{color:#a8442f!important;text-decoration-color:#e3b4aa!important;font-size:12.5px!important;margin-top:40px!important}
 
 /* 読み込み中のお知らせ(待ち時間が少しあるときだけ出す) */
@@ -430,6 +435,7 @@ body.hasbar .toast{bottom:calc(100px + env(safe-area-inset-bottom))}
   <button class="back" data-go="home"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>もどる</button>
   <h2>キャンセル待ち</h2>
   <p class="lead" id="waitLead" hidden></p>
+  <div class="wrule" id="waitRule" hidden></div>
   <h3>対象の選び方</h3>
   <div class="segs" id="wMode"></div>
   <div id="wMonthsBox"><h3>月</h3><div class="chips" id="wMonths"></div></div>
@@ -579,6 +585,7 @@ async function init() {
   checkHolds().then(firstGuide);
 }
 function applyCfg() {
+  $('delMe').hidden = !newServer(); // お客様情報の削除は新しいサーバーのときだけ
   $('shop').textContent = cfg.name; document.title = cfg.name;
   const T = cfg.texts || {};
   setText('subline', T['ヘッダー']); setText('homeTitle', T['トップ見出し']); setText('homeLead', T['トップ']); $('goReserve').textContent = T['予約ボタン'] || '予約する'; setText('infoNote', T['お車の情報']);
@@ -953,6 +960,7 @@ $('lGo').onclick = busy($('lGo'), async () => {
 let W = { mode: 'dates', months: new Set(), wd: new Set(), dates: new Set(), ym: null };
 const MODES = [['dates', '日にちで選ぶ'], ['weekdays', '曜日で選ぶ']];
 function openWait(pre) {
+  const rh = ruleHtml(); $('waitRule').innerHTML = rh; $('waitRule').hidden = !rh;
   if (!profile.plate) return goInfo('wait');
   large = isLarge(profile.model);
   const list = months();
@@ -1039,13 +1047,21 @@ const untilJa = s => (+s.slice(5, 7)) + '月' + (+s.slice(8, 10)) + '日 ' + s.s
 let holdChecking = false;
 async function checkHolds() {
   const plates = [...new Set(cars.map(c => c.plate).concat(profile.plate ? [profile.plate] : []))];
-  if (holdChecking || !profile.email || !plates.length || !$('dlg').hidden) return;
+  if (!newServer() || holdChecking || !profile.email || !plates.length || !$('dlg').hidden) return;
   holdChecking = true;
   try {
     const r = await api('myHolds', { email: profile.email, plates });
+    if ((r.expired || []).length) await noticeExpired(r.expired, plates);
     for (const h of r.holds || []) { if (!(await offerHold(h))) break; }
   } catch (e) { /* 調べられなくても予約サイトは使えるので、ここでは何も出さない */ }
   finally { holdChecking = false; }
+}
+const EXPIRED_TXT = 'ご案内の待機時間(期限: {期限})を過ぎたため、下記の日時のご案内は次のお客様へ移りました。\nキャンセル待ちのご登録は引き続き有効です。ほかの日時に空きが出ましたら、あらためてご案内いたします。';
+/** 期限内に選ばれなかった案内のお知らせ(見たら確認済みにして、次からは出さない) */
+async function noticeExpired(list, plates) {
+  const html = list.map(x => `<p>${nl(txt('待ち期限切れ', EXPIRED_TXT)).replace('{期限}', x.untilAt ? untilJa(x.untilAt) : '')}</p>${x.date ? `<div class="when">${dJa(x.date)} ${x.start}〜${x.end}<small>${esc(x.model || '')} ・ ${esc(x.plate || '')}</small></div>` : ''}`).join('');
+  await dialog('ご案内の期限が過ぎました', html, [{ label: '閉じる', value: 1 }], { modal: true });
+  api('ackExpired', { email: profile.email, plates, ids: list.map(x => x.id) }).catch(() => {});
 }
 /** 空きのご案内を出して「はい / いいえ」を選んでもらう。続けて次の案内を出してよければ true */
 async function offerHold(h) {
@@ -1054,7 +1070,7 @@ async function offerHold(h) {
   const html = `<p>${nl(txt('空き案内', HOLD_TXT))}</p><div class="when">${dJa(h.date)} ${h.start}〜${h.end}<small>${esc(h.model)} ・ ${esc(h.plate)}${h.staff ? ' ・ 担当 ' + esc(h.staff) : ''}</small></div><p class="limit">${limitTxt()}</p>`;
   while (true) {
     const v = await dialog('空きが出ました', html, [{ label: 'はい(予約する)', value: 'yes' }, { label: 'いいえ', cls: 'ghost', value: 'no' }], { modal: true });
-    if (Date.now() >= end) { clearInterval(timer); await dialog('ご案内の期限が過ぎました', '<p>恐れ入りますが、期限が過ぎたため、次のお客様へご案内いたしました。</p>', [{ label: '閉じる', value: 1 }]); return true; }
+    if (Date.now() >= end) { clearInterval(timer); await dialog('ご案内の期限が過ぎました', `<p>${nl(txt('待ち期限切れ', EXPIRED_TXT)).replace('{期限}', untilJa(h.untilAt))}</p>`, [{ label: '閉じる', value: 1 }]); return true; }
     if (v === 'yes') {
       clearInterval(timer);
       try {
@@ -1072,6 +1088,21 @@ async function offerHold(h) {
   }
 }
 
+/* ---------- キャンセル待ちの案内の期限(設定の時間を表示) ---------- */
+const RULE_TXT = 'キャンセル待ちで空きが出た際は、予約サイトを開いたときにご案内いたします。下記の時間内にお手続きがない場合、そのご案内は次のお客様へ移ります(キャンセル待ちのご登録は引き続き有効です。同じ日時を再度ご案内することはありません)。';
+/** 新しいサーバー(案内の期限・アプリ内の案内・お客様情報の削除に対応)かどうか */
+const newServer = () => !!(cfg && cfg.holdHours);
+function holdRules() {
+  const hh = cfg.holdHours;
+  return [['ご予約日が2週間以上先', hh.far], ['ご予約日が2週間以内', hh.mid], ['ご予約日が3日以内', hh.near]];
+}
+function ruleHtml() {
+  if (!newServer()) return '';
+  const t = txt('待ち期限案内', RULE_TXT);
+  if (!t) return '';
+  return `<p>${nl(t)}</p><ul>${holdRules().map(r => `<li><span>${r[0]}</span><b>${r[1]}時間以内</b></li>`).join('')}</ul>`;
+}
+
 /* ---------- はじめて開いたときの案内(ホーム画面への追加) ---------- */
 const FIRST_TXT = 'ホーム画面に追加すると、アプリのようにすぐに開けます。\nアプリにしてからご入力いただくと、お名前や車両ナンバーがこの端末に保存され、次回からご入力の手間が省けます。';
 async function firstGuide() {
@@ -1087,12 +1118,13 @@ async function firstGuide() {
 }
 
 /* ---------- お客様情報をすべて削除(車を手放したときなど) ---------- */
+const DEL_Q = '当店でお預かりしている、この洗車予約アプリに関するお客様情報を削除しますか?';
 const DEL_TXT = 'この端末に保存したお客様情報と、当店でお預かりしているお客様の情報(お名前・電話番号・メールアドレス・車両ナンバー)を、すべて削除いたします。\nご予約中・キャンセル待ち中の内容も、すべて取り消し・削除されます。この操作は元に戻せません。';
 $('delMe').onclick = async () => {
   const plates = [...new Set(cars.map(c => c.plate).concat(profile.plate ? [profile.plate] : []))];
   const has = !!(profile.email && plates.length);
   const what = has ? `<div class="list">メール: ${esc(profile.email)}<br>お車: ${plates.map(esc).join('、')}</div>` : '<p class="note">この端末には、当店にお預かりしている情報と結び付くお客様情報(メールアドレス・車両ナンバー)が保存されていません。この端末の中の情報だけを削除します。</p>';
-  const v = await dialog('お客様情報の削除', `<p class="warn">${nl(txt('情報削除', DEL_TXT))}</p>${what}`, [{ label: '削除する', cls: 'cta red', value: 'yes' }, { label: 'やめる', cls: 'ghost', value: 'no' }]);
+  const v = await dialog('お客様情報の削除', `<p style="font-weight:600;font-size:15px">${nl(txt('情報削除確認', DEL_Q))}</p><p class="warn">${nl(txt('情報削除', DEL_TXT))}</p>${what}`, [{ label: '削除する', cls: 'cta red', value: 'yes' }, { label: 'やめる', cls: 'ghost', value: 'no' }]);
   if (v !== 'yes') return;
   const sure = await dialog('本当に削除しますか?', '<p>削除すると元に戻せません。ご予約中・キャンセル待ち中の内容も取り消されます。</p>', [{ label: 'すべて削除する', cls: 'cta red', value: 'yes' }, { label: '戻る', cls: 'ghost', value: 'no' }], { modal: true });
   if (sure !== 'yes') return;
@@ -1143,6 +1175,7 @@ function openAbout() {
   $('aboutBody').innerHTML = '<div class="notice">この予約はレクサス鹿児島東開でのみ有効です。</div>'
     + (rules ? '<h4>ご案内</h4><dl class="rules">' + rules + '</dl>' : '')
     + '<h4>予約の受付について</h4>' + windowHtml()
+    + (ruleHtml() ? '<h4>キャンセル待ちについて</h4><div class="wrule" style="margin:0">' + ruleHtml() + '</div>' : '')
     + '<h4>ホーム画面に追加する</h4>' + installHtml();
   const go = $('instGo');
   if (go) go.onclick = async () => { installEv.prompt(); await installEv.userChoice; installEv = null; openAbout(); };
