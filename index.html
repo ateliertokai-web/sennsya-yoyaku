@@ -289,6 +289,27 @@ body.hashome .app{padding-bottom:calc(330px + env(safe-area-inset-bottom))}
 .toast.err{background:var(--red)}
 .toast.show{opacity:1;transform:translate(-50%,0)}
 body.hasbar .toast{bottom:calc(100px + env(safe-area-inset-bottom))}
+/* ダイアログ */
+.dlg-bg{position:fixed;inset:0;z-index:40;background:rgba(20,20,22,.45);backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px)}
+.dlg{position:fixed;left:16px;right:16px;top:50%;z-index:41;max-width:420px;max-height:calc(100vh - 48px);margin:0 auto;overflow:auto;padding:24px 22px 20px;border-radius:22px;background:#fff;box-shadow:0 20px 60px rgba(0,0,0,.25);transform:translateY(-50%)}
+.dlg h3{margin:0 30px 10px 0;font-size:18px;font-weight:600;color:var(--ink);letter-spacing:.04em;line-height:1.5}
+.dlg-x{position:absolute;top:10px;right:10px;width:40px;height:40px;border:0;border-radius:50%;background:none;color:var(--sub);font-size:22px;line-height:1}
+.dlg-x:hover{background:var(--soft)}
+.dlg-body{font-size:14px;line-height:1.85;color:var(--ink)}
+.dlg-body p{margin:0 0 10px;white-space:pre-line}
+.dlg-body .when{margin:12px 0;padding:14px 16px;border-radius:14px;background:var(--ink);color:#fff;font-size:17px;font-weight:600;font-variant-numeric:tabular-nums;line-height:1.5}
+.dlg-body .when small{display:block;font-size:12px;font-weight:500;color:#c7c7cc}
+.dlg-body .limit{padding:10px 12px;border-radius:12px;background:#fdf1dd;color:#7a4a00;font-size:13px}
+.dlg-body .limit b{font-variant-numeric:tabular-nums}
+.dlg-body ol{margin:6px 0 10px;padding-left:1.4em;font-size:13.5px}
+.dlg-body .os{margin:10px 0 0;font-size:12px;font-weight:600;color:var(--sub)}
+.dlg-body .warn{padding:12px 14px;border-radius:12px;background:#fbefec;color:#8a2a1c;font-size:13.5px}
+.dlg-body .list{margin:10px 0 0;padding:10px 14px;box-shadow:none;background:var(--soft);font-size:13px}
+.dlg-btns{display:flex;flex-direction:column;gap:8px;margin-top:16px}
+.dlg-btns .cta{min-height:52px}
+.dlg-btns .red{background:var(--red)}
+.danger-link{color:#a8442f!important;text-decoration-color:#e3b4aa!important;font-size:12.5px!important;margin-top:40px!important}
+
 /* 読み込み中のお知らせ(待ち時間が少しあるときだけ出す) */
 .loader{position:fixed;left:0;right:0;top:calc(12px + env(safe-area-inset-top));z-index:60;display:flex;align-items:center;gap:11px;width:max-content;max-width:calc(100% - 32px);margin:0 auto;padding:10px 18px 10px 14px;border-radius:18px;background:rgba(29,29,31,.94);color:#fff;font-size:13.5px;font-weight:600;line-height:1.45;letter-spacing:.04em;box-shadow:0 10px 30px rgba(0,0,0,.2);transform:translateY(-12px);opacity:0;pointer-events:none;transition:opacity .2s,transform .2s}
 .loader.show{opacity:1;transform:none}
@@ -314,6 +335,7 @@ body.hasbar .toast{bottom:calc(100px + env(safe-area-inset-bottom))}
   <div id="mine" class="mine"></div>
   <h2 id="homeTitle"></h2>
   <p class="lead" id="homeLead"></p>
+  <button class="textlink danger-link" id="delMe">お客様情報をすべて削除</button>
 </section>
 
 <!-- お車の情報 -->
@@ -443,6 +465,14 @@ body.hasbar .toast{bottom:calc(100px + env(safe-area-inset-bottom))}
 </div>
 <div class="bar-fixed" id="bar" hidden><div class="bar-in"><div class="sum"><b id="barMain"></b><span id="barSub"></span></div><button class="cta" id="barBtn"></button></div></div>
 <div class="toast" id="toast" role="status"></div>
+<!-- 案内・確認のダイアログ(キャンセル待ちのご案内、はじめての案内、お客様情報の削除) -->
+<div class="dlg-bg" id="dlgBg" hidden></div>
+<div class="dlg" id="dlg" role="dialog" aria-modal="true" aria-labelledby="dlgTitle" hidden>
+  <button class="dlg-x" id="dlgX" aria-label="閉じる">×</button>
+  <h3 id="dlgTitle"></h3>
+  <div class="dlg-body" id="dlgBody"></div>
+  <div class="dlg-btns" id="dlgBtns"></div>
+</div>
 
 <div class="loader" id="loader" role="status" aria-live="polite"><i aria-hidden="true"></i><div>読み込み中…<small>通信に数秒かかることがあります。そのままお待ちください。</small></div></div>
 <script src="config.js"></script>
@@ -546,6 +576,7 @@ async function init() {
   if (hold) return holdView(hold);
   if (!cached) { renderHome(); show('home'); } else if (!$('home').hidden) renderHome();
   warmUp();
+  checkHolds().then(firstGuide);
 }
 function applyCfg() {
   $('shop').textContent = cfg.name; document.title = cfg.name;
@@ -902,7 +933,7 @@ $('lGo').onclick = busy($('lGo'), async () => {
   profile.email = email; profile.plate = plate; save('wash_profile', profile);
   let h = '<h3>ご予約</h3>';
   h += r.res.length ? r.res.map(x => `<div class="item"><div class="t">${dJa(x.date)} ${x.start}〜${x.end}</div><div class="s">${esc(x.model)} / 予約番号 ${esc(x.no)}</div><button class="danger" data-cr="${x.id}">予約をキャンセル</button></div>`).join('') : '<p class="note">ご予約はありません。</p>';
-  if (r.waits.length) h += '<h3>キャンセル待ち</h3>' + r.waits.map(x => `<div class="item"><div class="t">${esc(x.summary)}</div><div class="s">${x.state === '通知中' ? '空きのご案内メールを送信済みです。メールのリンクから確定してください' : '登録順にご案内します'}</div><button class="danger" data-cw="${x.id}">登録を取り消す</button></div>`).join('');
+  if (r.waits.length) h += '<h3>キャンセル待ち</h3>' + r.waits.map((x, i) => `<div class="item"><div class="t">${esc(x.summary)}</div><div class="s">${x.hold ? '<b>空きが出ています(' + dJa(x.hold.date) + ' ' + x.hold.start + '〜)。下のボタンからお選びください</b>' : '登録順にご案内します'}</div>${x.hold ? `<button class="cta" style="grid-column:1/-1;margin-top:8px;min-height:44px" data-ho="${i}">空きのご案内を見る</button>` : `<button class="danger" data-cw="${x.id}">登録を取り消す</button>`}</div>`).join('');
   $('lRes').innerHTML = h;
   $('lRes').querySelectorAll('[data-cr]').forEach(b => b.onclick = busy(b, async () => {
     if (!confirm('この予約をキャンセルしますか?')) return;
@@ -911,6 +942,7 @@ $('lGo').onclick = busy($('lGo'), async () => {
     if (cfg && profile.plate) refreshBooked();
     toast('キャンセルしました'); $('lGo').click();
   }));
+  $('lRes').querySelectorAll('[data-ho]').forEach(b => b.onclick = async () => { const go = await offerHold(r.waits[+b.dataset.ho].hold); if (go !== false) $('lGo').click(); });
   $('lRes').querySelectorAll('[data-cw]').forEach(b => b.onclick = busy(b, async () => {
     if (!confirm('このキャンセル待ちを取り消しますか?')) return;
     await api('waitStop', { id: b.dataset.cw, email, plate }); toast('取り消しました'); $('lGo').click();
@@ -976,6 +1008,103 @@ async function holdView(token) {
   } catch (e) { $('holdBody').innerHTML = '<p class="err">' + esc(e.message) + '</p><button class="ghost" onclick="location.href=location.pathname">トップへ</button>'; }
 }
 
+/* ---------- ダイアログ ---------- */
+/** ダイアログを出す。buttons: [{ label, cls, value }]。押したボタンの value を返す(×・背景は null) */
+function dialog(title, html, buttons, opts) {
+  opts = opts || {};
+  return new Promise(res => {
+    $('dlgTitle').textContent = title; $('dlgBody').innerHTML = html;
+    $('dlgBtns').innerHTML = buttons.map((b, i) => `<button class="${b.cls || 'cta'}" data-i="${i}">${esc(b.label)}</button>`).join('');
+    const close = v => { $('dlg').hidden = true; $('dlgBg').hidden = true; document.removeEventListener('keydown', key); if (opts.onClose) opts.onClose(); res(v); };
+    const key = e => { if (e.key === 'Escape' && !opts.modal) close(null); };
+    $('dlgBtns').querySelectorAll('[data-i]').forEach(b => b.onclick = () => close(buttons[+b.dataset.i].value));
+    $('dlgX').hidden = !!opts.modal; $('dlgX').onclick = () => close(null);
+    $('dlgBg').onclick = () => { if (!opts.modal) close(null); };
+    document.addEventListener('keydown', key);
+    $('dlgBg').hidden = false; $('dlg').hidden = false; $('dlg').scrollTop = 0;
+    const first = $('dlgBtns').querySelector('button'); if (first) first.focus();
+  });
+}
+const txt = (k, d) => { const v = (cfg && cfg.texts || {})[k]; return v === undefined || v === '' ? d : v; };
+const nl = s => esc(s);
+
+/* ---------- キャンセル待ちのご案内(メールのリンクではなく、予約サイトを開いたときにここで選んでもらう) ---------- */
+const HOLD_TXT = 'キャンセル待ちにご登録いただいていた日程に、空きが出ました。\n下記の日時でご予約をお取りいたしますか?';
+const HOLD_LIMIT = '{残り}以内(期限: {期限})にお選びいただけない場合は、恐れ入りますが、次のキャンセル待ちのお客様へ自動的にご案内いたします。';
+const HOLD_NO = 'キャンセル待ちを取り消してもよろしいですか?\n取り消すと、この日時は次のお客様へご案内され、元に戻すことはできません。';
+const toDate = s => new Date(+s.slice(0, 4), +s.slice(5, 7) - 1, +s.slice(8, 10), +s.slice(11, 13), +s.slice(14, 16));
+const leftJa = ms => { const m = Math.max(0, Math.floor(ms / 60000)), h = Math.floor(m / 60); return h ? h + '時間' + (m % 60) + '分' : (m % 60) + '分'; };
+const untilJa = s => (+s.slice(5, 7)) + '月' + (+s.slice(8, 10)) + '日 ' + s.slice(11, 16);
+/** この端末のお客様(メール+登録したお車)に案内中のキャンセル待ちがあるか調べ、あれば選んでもらう */
+let holdChecking = false;
+async function checkHolds() {
+  const plates = [...new Set(cars.map(c => c.plate).concat(profile.plate ? [profile.plate] : []))];
+  if (holdChecking || !profile.email || !plates.length || !$('dlg').hidden) return;
+  holdChecking = true;
+  try {
+    const r = await api('myHolds', { email: profile.email, plates });
+    for (const h of r.holds || []) { if (!(await offerHold(h))) break; }
+  } catch (e) { /* 調べられなくても予約サイトは使えるので、ここでは何も出さない */ }
+  finally { holdChecking = false; }
+}
+/** 空きのご案内を出して「はい / いいえ」を選んでもらう。続けて次の案内を出してよければ true */
+async function offerHold(h) {
+  const end = toDate(h.untilAt), limitTxt = () => nl(txt('空き案内期限', HOLD_LIMIT)).replace('{残り}', '<b id="holdLeft">' + leftJa(end - Date.now()) + '</b>').replace('{期限}', untilJa(h.untilAt));
+  let timer = setInterval(() => { const el = $('holdLeft'); if (el) el.textContent = leftJa(end - Date.now()); if (end - Date.now() <= 0) clearInterval(timer); }, 20000);
+  const html = `<p>${nl(txt('空き案内', HOLD_TXT))}</p><div class="when">${dJa(h.date)} ${h.start}〜${h.end}<small>${esc(h.model)} ・ ${esc(h.plate)}${h.staff ? ' ・ 担当 ' + esc(h.staff) : ''}</small></div><p class="limit">${limitTxt()}</p>`;
+  while (true) {
+    const v = await dialog('空きが出ました', html, [{ label: 'はい(予約する)', value: 'yes' }, { label: 'いいえ', cls: 'ghost', value: 'no' }], { modal: true });
+    if (Date.now() >= end) { clearInterval(timer); await dialog('ご案内の期限が過ぎました', '<p>恐れ入りますが、期限が過ぎたため、次のお客様へご案内いたしました。</p>', [{ label: '閉じる', value: 1 }]); return true; }
+    if (v === 'yes') {
+      clearInterval(timer);
+      try {
+        const r = await waiting(api('holdConfirm', { token: h.token }));
+        mine.push({ no: r.no, date: r.date, start: r.start, end: r.end, model: r.model, plate: h.plate }); save('wash_mine', mine); monthCache = {};
+        doneView(r, '予約が確定しました'); return false;
+      } catch (e) { toast(e.message, true); return true; }
+    }
+    // いいえ: 誤って押したときのために、もう一度確かめる
+    const sure = await dialog('キャンセル待ちの取り消し', `<p>${nl(txt('空き案内取消', HOLD_NO))}</p>`, [{ label: '取り消す', cls: 'cta red', value: 'yes' }, { label: '戻る', cls: 'ghost', value: 'back' }], { modal: true });
+    if (sure !== 'yes') continue;
+    clearInterval(timer);
+    try { await waiting(api('holdDecline', { token: h.token })); toast('キャンセル待ちを取り消しました'); } catch (e) { toast(e.message, true); }
+    return true;
+  }
+}
+
+/* ---------- はじめて開いたときの案内(ホーム画面への追加) ---------- */
+const FIRST_TXT = 'ホーム画面に追加すると、アプリのようにすぐに開けます。\nアプリにしてからご入力いただくと、お名前や車両ナンバーがこの端末に保存され、次回からご入力の手間が省けます。';
+async function firstGuide() {
+  const t = txt('はじめて', FIRST_TXT);
+  if (!t || isStandalone() || load('wash_first_seen', false) || !$('dlg').hidden) return;
+  save('wash_first_seen', true); // 一度出したら次からは出さない(すぐ閉じてもよいように)
+  const steps = isIOS
+    ? '<p class="os">iPhone(Safari)</p><ol><li>画面下の共有ボタン(□に↑)を押す</li><li>「ホーム画面に追加」を選ぶ</li></ol>'
+    : '<p class="os">Android(Chrome)</p><ol><li>右上のメニュー(︙)を押す</li><li>「ホーム画面に追加」を選ぶ</li></ol>';
+  const btns = (installEv ? [{ label: 'ホーム画面に追加する', value: 'install' }] : []).concat([{ label: '閉じる', cls: installEv ? 'ghost' : 'cta', value: 'close' }]);
+  const v = await dialog('アプリとして使えます', `<p>${nl(t)}</p>${steps}<p class="note" style="margin:0">この案内は「洗車システムについて」からいつでも見られます。</p>`, btns);
+  if (v === 'install' && installEv) { installEv.prompt(); await installEv.userChoice; installEv = null; }
+}
+
+/* ---------- お客様情報をすべて削除(車を手放したときなど) ---------- */
+const DEL_TXT = 'この端末に保存したお客様情報と、当店でお預かりしているお客様の情報(お名前・電話番号・メールアドレス・車両ナンバー)を、すべて削除いたします。\nご予約中・キャンセル待ち中の内容も、すべて取り消し・削除されます。この操作は元に戻せません。';
+$('delMe').onclick = async () => {
+  const plates = [...new Set(cars.map(c => c.plate).concat(profile.plate ? [profile.plate] : []))];
+  const has = !!(profile.email && plates.length);
+  const what = has ? `<div class="list">メール: ${esc(profile.email)}<br>お車: ${plates.map(esc).join('、')}</div>` : '<p class="note">この端末には、当店にお預かりしている情報と結び付くお客様情報(メールアドレス・車両ナンバー)が保存されていません。この端末の中の情報だけを削除します。</p>';
+  const v = await dialog('お客様情報の削除', `<p class="warn">${nl(txt('情報削除', DEL_TXT))}</p>${what}`, [{ label: '削除する', cls: 'cta red', value: 'yes' }, { label: 'やめる', cls: 'ghost', value: 'no' }]);
+  if (v !== 'yes') return;
+  const sure = await dialog('本当に削除しますか?', '<p>削除すると元に戻せません。ご予約中・キャンセル待ち中の内容も取り消されます。</p>', [{ label: 'すべて削除する', cls: 'cta red', value: 'yes' }, { label: '戻る', cls: 'ghost', value: 'no' }], { modal: true });
+  if (sure !== 'yes') return;
+  try {
+    if (has) await waiting(api('deleteMe', { email: profile.email, plates }));
+  } catch (e) { toast(e.message, true); return; } // サーバーで消せなかったときは、端末の情報も残しておく(もう一度試せるように)
+  try { Object.keys(localStorage).filter(k => /^wash_/.test(k) && k !== 'wash_first_seen').forEach(k => localStorage.removeItem(k)); } catch (e) {}
+  profile = {}; cars = []; mine = []; booked = new Set(); bookedKey = ''; monthCache = {};
+  renderHome(); show('home');
+  await dialog('削除しました', '<p>お客様情報をすべて削除いたしました。ご利用ありがとうございました。</p>', [{ label: '閉じる', value: 1 }]);
+};
+
 /* ---------- 洗車システムについて ---------- */
 const isStandalone = () => matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
 const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
@@ -1025,6 +1154,7 @@ const aboutKey = e => { if (e.key === 'Escape') closeAbout(); };
 $('aboutBtn').onclick = openAbout; $('aboutX').onclick = closeAbout; $('aboutBg').onclick = closeAbout;
 if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
 
+document.addEventListener('visibilitychange', () => { if (!document.hidden && cfg && !$('home').hidden) checkHolds(); });
 swipeMonths($('calCard'), 'calPrev', 'calNext');
 swipeMonths($('wCard'), 'wPrev', 'wNext');
 init();
