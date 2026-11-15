@@ -98,6 +98,28 @@ textarea:focus,input:focus{background:#fff;box-shadow:0 0 0 1.5px var(--ink);out
 .tag{display:inline-block;margin-left:8px;padding:0 8px;border-radius:99px;background:var(--soft);font-size:11px;font-weight:600;line-height:1.75;color:var(--sub);vertical-align:2px}
 .tag.l{background:#f3ecdc;color:#8a6a2a}
 .tag.w{background:#fdecd2;color:#9a5300}
+.tag.ph{background:#e8f0fb;color:#2a5590}
+.tag.ok{background:#e3f2ea;color:#22704a}
+.tag.ng{background:#fbe6e2;color:#a8331f}
+.it .s3{font-size:12px;color:#7a5a17}
+.it .acts{display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end}
+.addres{display:flex;justify-content:flex-end;margin:14px 0 0}
+.rform{margin-top:14px;padding:6px 18px 18px}
+.rform .grid2{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}
+@media (max-width:560px){.rform .grid2{grid-template-columns:1fr}}
+.rslots{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.rslots button{min-width:74px;min-height:40px;border:0;border-radius:10px;background:var(--soft);font:inherit;font-size:13.5px;font-weight:600;font-variant-numeric:tabular-nums}
+.rslots button.on{background:var(--ink);color:#fff}
+.rslots button:disabled{color:#c2c1bc;text-decoration:line-through}
+.stgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px}
+.stbox{padding:14px 16px}
+.stbox b{display:block;font-size:26px;font-weight:600;font-variant-numeric:tabular-nums;line-height:1.3}
+.stbox span{font-size:12px;color:var(--sub)}
+.bars{display:grid;grid-template-columns:auto 1fr auto;gap:6px 10px;align-items:center;font-size:13px}
+.bars i{display:block;height:10px;border-radius:5px;background:#d6b46a;min-width:2px}
+.bars em{font-style:normal;font-variant-numeric:tabular-nums;color:var(--sub)}
+#stYm{width:100%;height:44px;padding:0 12px;border:0;border-radius:var(--r);background:var(--soft);font:inherit;font-size:15px}
+.st2{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin-top:16px}
 
 /* 設定 */
 .fields{display:grid;grid-template-columns:1fr;column-gap:16px}
@@ -292,6 +314,7 @@ textarea:focus,input:focus{background:#fff;box-shadow:0 0 0 1.5px var(--ink);out
     <button class="tab" data-t="time">時間帯</button>
     <button class="tab" data-t="set">設定</button>
     <button class="tab" data-t="txt">文章・メール</button>
+    <button class="tab" data-t="stat">集計</button>
 </nav>
 </div>
 <div class="wrap">
@@ -321,7 +344,27 @@ textarea:focus,input:focus{background:#fff;box-shadow:0 0 0 1.5px var(--ink);out
       <div class="range"><input type="date" id="from"><span aria-hidden="true">〜</span><input type="date" id="to" aria-label="期間の終わり"></div>
       <button class="btn" id="resGo">表示</button>
     </div>
+    <div class="addres"><button class="btn sub" id="addRes">＋ 電話などで受けた予約を入れる</button></div>
+    <section class="card rform" id="rForm" hidden>
+      <div class="hrow"><h3 id="rfTitle">予約を入れる</h3><button class="btn sub sm" id="rfClose">閉じる</button></div>
+      <p class="note" id="rfNote" style="margin:2px 0 0"></p>
+      <label for="rfDate">日付</label><input type="date" id="rfDate">
+      <div id="rfCar"><label for="rfModel">車種</label><select id="rfModel" class="rsel" style="width:100%;height:44px"></select></div>
+      <label>開始時間</label><div class="rslots" id="rfSlots"><span class="note">日付を選ぶと空き時間が出ます</span></div>
+      <div id="rfCust">
+        <div class="grid2"><div><label for="rfName">お名前</label><input type="text" id="rfName"></div><div><label for="rfPlate">車両ナンバー</label><input type="text" id="rfPlate" placeholder="鹿児島 330 あ 12-34"></div></div>
+        <div class="grid2"><div><label for="rfPhone">電話番号</label><input type="tel" id="rfPhone"></div><div><label for="rfMail">メールアドレス <span class="note">(任意。入れると確認メールが届きます)</span></label><input type="email" id="rfMail"></div></div>
+        <div id="rfStaffBox"><label for="rfStaff">担当スタッフ</label><select id="rfStaff" class="rsel" style="width:100%;height:44px"></select></div>
+        <label for="rfMemo">メモ <span class="note">(従業員画面にも出ます)</span></label><input type="text" id="rfMemo" maxlength="200">
+      </div>
+      <button class="btn" id="rfGo" style="width:100%;margin-top:18px">この内容で入れる</button>
+    </section>
     <div id="resList"></div>
+  </div>
+
+  <div id="t-stat" class="pane" hidden>
+    <div class="card tool"><label for="stYm">月</label><input type="month" id="stYm"><button class="btn" id="stGo">表示</button></div>
+    <div id="stBody" style="margin-top:16px"></div>
   </div>
 
   <div id="t-wait" class="pane" hidden>
@@ -470,7 +513,12 @@ async function apiRaw(action, data, retried) {
       showLogin(msg);
       throw new Error(msg);
     }
-    throw new Error(j.error);
+    if (/^REAUTH:/.test(j.error) && !retried) {
+      // 大事な変更の前の確認: 管理者パスワードをもう一度 / Google でログインし直す
+      if (usePw()) { const v = prompt(j.error.slice(7)); if (!v) throw new Error('取り消しました'); return apiRaw(action, Object.assign({}, data, { confirmPw: v }), true); }
+      if (GA.enabled) { alert(j.error.slice(7)); await GA.refresh(); return apiRaw(action, data, true); }
+    }
+    throw new Error(j.error.replace(/^(REAUTH|MONTH):/, ''));
   }
   return j.data;
 }
@@ -505,9 +553,10 @@ $('lEmail').addEventListener('keydown', e => { if (e.key === 'Enter') $('pw').fo
 $('logout').onclick = () => { sessionStorage.removeItem('wash_admin_pw'); sessionStorage.removeItem('wash_admin_email'); if (GA.enabled) GA.signOut(); location.reload(); };
 document.querySelectorAll('.tab').forEach(b => b.onclick = () => {
   document.querySelectorAll('.tab').forEach(x => x.classList.toggle('on', x === b));
-  ['res', 'wait', 'hol', 'time', 'set', 'txt'].forEach(k => $('t-' + k).hidden = k !== b.dataset.t);
+  ['res', 'wait', 'hol', 'time', 'set', 'txt', 'stat'].forEach(k => $('t-' + k).hidden = k !== b.dataset.t);
   if (b.dataset.t === 'wait') loadWait().catch(e => alert(e.message));
   if (['hol', 'time', 'set', 'txt'].includes(b.dataset.t)) ensureG().then(drawAll).catch(e => alert(e.message));
+  if (b.dataset.t === 'stat' && !$('stBody').innerHTML) loadStats().catch(e => { $('stBody').innerHTML = '<p class="warn">' + esc(e.message) + '</p>'; });
 });
 
 /* 予約 */
@@ -515,7 +564,9 @@ async function loadRes() {
   $('resList').innerHTML = '<p class="empty">読み込み中…</p>';
   const list = await api('adminRes', { from: $('from').value, to: $('to').value });
   const byDay = {}; list.forEach(r => (byDay[r.date] = byDay[r.date] || []).push(r));
-  $('resList').innerHTML = list.length ? `<p class="count">${list.length}件の予約</p>` + Object.keys(byDay).map(d => `<section class="day"><h4>${dJa(d)}<span>${byDay[d].length}件</span></h4><div class="card">` + byDay[d].map(r => `<div class="it"><div class="tm">${r.start}<small>〜${r.end}</small></div><div class="bd"><div class="t">${esc(r.name)}<span class="tag ${r.large ? 'l' : ''}">${r.large ? '大型' : '普通'}</span>${r.status === '保留' ? '<span class="tag w">案内中</span>' : ''}</div><div class="s">${esc(r.model)} ・ ${esc(r.plate)}${r.staff ? ' ・ 担当 ' + esc(r.staff) : ''}</div><div class="s2">${esc(r.phone)} ・ ${esc(r.email)} ・ No.${esc(r.no)}</div></div>${r.status === '保留' ? `<button class="btn sub sm" data-rs="${r.id}">再送</button>` : ''}<button class="btn danger sm" data-c="${r.id}">取消</button></div>`).join('') + '</div></section>').join('') : '<p class="empty">この期間の予約はありません。</p>';
+  const today = (G && G.today) || $('from').value;
+  const mkBtns = r => r.status === '予約' && r.date <= today && r.mark !== undefined ? `<button class="btn sub sm" data-mk="${r.id}" data-v="来店">${r.mark === '来店' ? '✓ ' : ''}来店</button><button class="btn sub sm" data-mk="${r.id}" data-v="未来店">${r.mark === '未来店' ? '✓ ' : ''}来られず</button>` : '';
+  $('resList').innerHTML = list.length ? `<p class="count">${list.length}件の予約</p>` + Object.keys(byDay).map(d => `<section class="day"><h4>${dJa(d)}<span>${byDay[d].length}件</span></h4><div class="card">` + byDay[d].map(r => `<div class="it"><div class="tm">${r.start}<small>〜${r.end}</small></div><div class="bd"><div class="t">${esc(r.name)}<span class="tag ${r.large ? 'l' : ''}">${r.large ? '大型' : '普通'}</span>${r.status === '保留' ? '<span class="tag w">案内中</span>' : ''}${r.source === '管理画面' ? '<span class="tag ph">電話など</span>' : ''}${r.mark === '来店' ? '<span class="tag ok">来店</span>' : r.mark === '未来店' ? '<span class="tag ng">来られず</span>' : ''}</div><div class="s">${esc(r.model)} ・ ${esc(r.plate)}${r.staff ? ' ・ 担当 ' + esc(r.staff) : ''}</div><div class="s2">${[r.phone, r.email, 'No.' + r.no].filter(Boolean).map(esc).join(' ・ ')}</div>${r.memo ? `<div class="s3">メモ: ${esc(r.memo)}</div>` : ''}</div><div class="acts">${mkBtns(r)}${r.status === '保留' ? `<button class="btn sub sm" data-rs="${r.id}">再送</button>` : ''}${r.status === '予約' && r.date >= today && r.source !== undefined ? `<button class="btn sub sm" data-ch="${r.id}">変更</button>` : ''}<button class="btn danger sm" data-c="${r.id}">取消</button></div></div>`).join('') + '</div></section>').join('') : '<p class="empty">この期間の予約はありません。</p>';
   $('resList').querySelectorAll('[data-rs]').forEach(b => b.onclick = busy(b, async () => {
     if (!confirm('このお客様へ「空きが出ました」の案内メールをもう一度送りますか?')) return;
     await api('adminResend', { id: b.dataset.rs }); alert('送りました');
@@ -524,7 +575,75 @@ async function loadRes() {
     if (!confirm('この予約を取り消しますか?\nお客様へキャンセルメールを送り、キャンセル待ちの方へ案内します。')) return;
     await api('adminCancel', { id: b.dataset.c }); await loadRes();
   }));
+  $('resList').querySelectorAll('[data-mk]').forEach(b => b.onclick = busy(b, async () => {
+    const r = list.find(x => x.id === b.dataset.mk), v = r.mark === b.dataset.v ? '' : b.dataset.v;
+    await api('adminMark', { id: r.id, mark: v }); await loadRes();
+  }));
+  $('resList').querySelectorAll('[data-ch]').forEach(b => b.onclick = () => openRForm(list.find(x => x.id === b.dataset.ch)));
 }
+/* ---------- 電話などで受けた予約を入れる / 日時を変える ---------- */
+let rfMode = null, rfPick = null; // rfMode: null=新しい予約 / 予約(変更するとき)
+async function openRForm(chg) {
+  await ensureG();
+  rfMode = chg || null; rfPick = null;
+  $('rForm').hidden = false; $('rfTitle').textContent = chg ? '日時を変更する' : '電話などで受けた予約を入れる';
+  $('rfNote').textContent = chg ? `${chg.name} 様 ・ ${chg.model} ・ ${chg.plate}(いま: ${dJa(chg.date)} ${chg.start}〜)。お客様にメールアドレスがあれば、変更のお知らせが届きます。` : '予約できる期間や締め切りに関係なく入れられます(休業日・埋まっている時間は除く)。メールアドレスを入れたときだけ確認メールが届きます。';
+  $('rfCust').hidden = !!chg; $('rfCar').hidden = !!chg;
+  $('rfModel').innerHTML = G.models.filter(m => m.name).map(m => `<option>${esc(m.name)}</option>`).join('');
+  const st = (G.staff || []).filter(x => x.name); $('rfStaffBox').hidden = !st.length;
+  $('rfStaff').innerHTML = '<option value="">(指定なし)</option>' + st.map((x, i) => `<option value="${i}">${esc((x.store ? x.store + ' ・ ' : '') + x.name)}</option>`).join('');
+  if (!chg) ['rfName', 'rfPlate', 'rfPhone', 'rfMail', 'rfMemo'].forEach(id => $(id).value = '');
+  $('rfDate').value = chg ? chg.date : (G.today || ''); $('rfDate').min = G.today || '';
+  $('rfGo').textContent = chg ? 'この日時に変更する' : 'この内容で入れる';
+  loadRSlots(); $('rForm').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+async function loadRSlots() {
+  const d = $('rfDate').value; rfPick = null; if (!d) return;
+  $('rfSlots').innerHTML = '<span class="note">読み込み中…</span>';
+  const large = (G.models.find(m => m.name === $('rfModel').value) || {}).large;
+  try {
+    const r = await api('adminSlots', Object.assign({ date: d, large: !!large }, rfMode ? { exceptId: rfMode.id } : {}));
+    if (r.closed) { $('rfSlots').innerHTML = '<span class="note">休業日です</span>'; return; }
+    $('rfSlots').innerHTML = r.all.length ? r.all.map(x => `<button type="button" data-s="${x.s}" ${x.ok ? '' : 'disabled'}>${x.s}</button>`).join('') : '<span class="note">受付できる時間がありません</span>';
+    $('rfSlots').querySelectorAll('[data-s]').forEach(b => b.onclick = () => { rfPick = b.dataset.s; $('rfSlots').querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b)); });
+  } catch (e) { $('rfSlots').innerHTML = '<span class="note">' + esc(/不明な操作/.test(e.message) ? 'サーバー(Code.gs)の更新が必要です' : e.message) + '</span>'; }
+}
+$('addRes').onclick = () => openRForm(null).catch(e => alert(e.message));
+$('rfClose').onclick = () => { $('rForm').hidden = true; };
+$('rfDate').onchange = loadRSlots; $('rfModel').onchange = loadRSlots;
+$('rfGo').onclick = busy($('rfGo'), async () => {
+  if (!rfPick) return alert('開始時間を選んでください');
+  const send = async force => {
+    try {
+      if (rfMode) return await api('adminChange', { id: rfMode.id, date: $('rfDate').value, start: rfPick, force });
+      const sv0 = $('rfStaff').value, st = sv0 === '' ? null : (G.staff || []).filter(x => x.name)[+sv0];
+      return await api('adminReserve', { date: $('rfDate').value, start: rfPick, model: $('rfModel').value, name: $('rfName').value.trim(), plate: $('rfPlate').value.trim(), phone: $('rfPhone').value.trim(), custEmail: $('rfMail').value.trim(), memo: $('rfMemo').value.trim(), staff: st ? st.name : '', staffStore: st ? st.store || '' : '', force });
+    } catch (e) {
+      if (!force && /月1回/.test(e.message) && confirm(e.message + '\n\nそれでも入れますか?')) return send(true);
+      throw e;
+    }
+  };
+  if (!rfMode && (!$('rfName').value.trim() || !$('rfPlate').value.trim())) return alert('お名前と車両ナンバーを入れてください');
+  const r = await send(false); if (!r) return;
+  alert(rfMode ? '日時を変更しました' : '予約を入れました(予約番号 ' + r.no + ')');
+  $('rForm').hidden = true; await loadRes();
+});
+/* ---------- 集計 ---------- */
+async function loadStats() {
+  if (!$('stYm').value) $('stYm').value = (G && G.today || new Date().toISOString()).slice(0, 7);
+  $('stBody').innerHTML = '<p class="empty">読み込み中…</p>';
+  let d; try { d = await api('adminStats', { ym: $('stYm').value }); } catch (e) { throw new Error(/不明な操作/.test(e.message) ? 'サーバー(Code.gs)の更新が必要です' : e.message); }
+  const box = (n, t) => `<div class="card stbox"><b>${n}</b><span>${t}</span></div>`;
+  const pct = (a, b) => b ? Math.round(a / b * 100) + '%' : '-';
+  const bars = (o, order) => { const ks = order ? order.filter(k => o[k] !== undefined) : Object.keys(o).sort((a, b) => o[b] - o[a]); const mx = Math.max(1, ...ks.map(k => o[k])); return ks.length ? `<div class="bars">${ks.map(k => `<span>${esc(k)}</span><i style="width:${(o[k] / mx * 100).toFixed(1)}%"></i><em>${o[k]}</em>`).join('')}</div>` : '<p class="note" style="margin:0">なし</p>'; };
+  const card = (t, b) => `<section class="card pad"><h3>${t}</h3>${b}</section>`;
+  const trend = {}; d.trend.forEach(t => { trend[t.ym.replace(/^\d+-0?/, '') + '月'] = t.res; });
+  const hours = Object.keys(d.byHour).sort();
+  $('stBody').innerHTML = `<div class="stgrid">${box(d.total, '予約(確定)')}${box(d.cancel, 'キャンセル(率 ' + pct(d.cancel, d.total + d.cancel) + ')')}${box(d.fromWait, 'キャンセル待ちから成立')}${box(d.phone, '電話などで受付')}${box(d.visited, '来店の記録')}${box(d.noShow, '来られなかった')}${box(d.waits, 'キャンセル待ちの登録')}${box(d.expired, '案内の期限切れ')}</div>`
+    + `<div class="st2">${card('ここ6か月の予約数', bars(trend, Object.keys(trend)))}${card('担当スタッフ別', bars(d.byStaff))}${card('車種別', bars(d.byModel))}${card('曜日別', bars(d.byWd, ['月', '火', '水', '木', '金', '土', '日']))}${card('時間帯別(開始)', bars(d.byHour, hours))}`
+    + card('来られなかったお車(過去1年)', d.noShows.length ? `<div class="bars">${d.noShows.map(n => `<span>${esc(n.plate)}<br><small class="note">${esc(n.name)} ・ 最後 ${dJa(n.last)}</small></span><i style="width:${Math.min(100, n.count * 20)}%;background:#c4412d"></i><em>${n.count}回</em>`).join('')}</div>` + (d.noShowLimit ? `<p class="note">${d.noShowLimit}回になると、お客様画面から予約できなくなります(「設定」の「無断キャンセルの上限」)。記録を直すと解除されます。</p>` : '<p class="note">「設定」の「無断キャンセルの上限」を入れると、回数の多いお車は画面から予約できなくなります。</p>') : '<p class="note" style="margin:0">ありません</p>') + '</div>';
+}
+$('stGo').onclick = busy($('stGo'), loadStats);
 $('resGo').onclick = busy($('resGo'), loadRes);
 
 /* キャンセル待ち */
@@ -544,8 +663,9 @@ async function ensureG() { if (!G) G = await api('adminGet'); return G; }
 async function reloadG() { G = await api('adminGet'); dirty = false; drawAll(); }
 const GROUPS = [
   ['台数・時間', [['同時洗車台数', 'number'], ['1日の上限台数', 'number'], ['開始', 'time'], ['最終開始(普通)', 'time'], ['最終開始(大型)', 'time'], ['昼休憩開始', 'time'], ['昼休憩終了', 'time'], ['洗車分(普通)', 'number'], ['洗車分(大型)', 'number'], ['刻み分', 'number']]],
-  ['予約ルール', [['先行月数', 'number'], ['解禁時刻', 'time'], ['最短日数', 'number'], ['案内の期限(2週間以上先)', 'number'], ['案内の期限(2週間以内)', 'number'], ['案内の期限(3日以内)', 'number'], ['保留時間(分)', 'number']]],
-  ['表示・メール', [['店舗名', 'text'], ['サイトURL', 'text'], ['問い合わせ先', 'text'], ['管理者メール', 'text']]]
+  ['予約ルール', [['先行月数', 'number'], ['解禁時刻', 'time'], ['最短日数', 'number'], ['当日の受付締め切り', 'time'], ['キャンセル締め切り(時間前)', 'number'], ['無断キャンセルの上限', 'number'], ['案内の期限(2週間以上先)', 'number'], ['案内の期限(2週間以内)', 'number'], ['案内の期限(3日以内)', 'number'], ['保留時間(分)', 'number']]],
+  ['表示・メール', [['店舗名', 'text'], ['問い合わせ先', 'text'], ['管理者メール', 'text'], ['リマインド時刻', 'time'], ['サイトURL', 'text']]],
+  ['お知らせ(お客様画面の上に出す)', [['お知らせ', 'textarea'], ['お知らせ開始', 'date'], ['お知らせ終了', 'date']]]
 ];
 const sv = k => G.settings.find(s => s.k === k);
 const tv = v => { const m = String(v).match(/^(\d{1,2}):(\d{2})/); return m ? m[1].padStart(2, '0') + ':' + m[2] : ''; };
@@ -557,10 +677,11 @@ function fieldsCard(g) {
   return `<section class="card pad"><h3>${g[0]}</h3><div class="fields${g[1].length > 6 ? ' three' : ''}">` + g[1].map(f => {
     const s = sv(f[0]); if (!s) return '';
     const val = f[1] === 'time' ? tv(s.v) : s.v;
+    if (f[1] === 'textarea') return `<div style="grid-column:1/-1"><label for="k-${esc(f[0])}">${esc(f[0])}${s.d ? ' <span class="note">' + esc(s.d) + '</span>' : ''}</label><textarea id="k-${esc(f[0])}" data-k="${esc(f[0])}" style="min-height:70px">${esc(val)}</textarea></div>`;
     return `<div><label for="k-${esc(f[0])}">${esc(f[0])}${s.d ? ' <span class="note">' + esc(s.d) + '</span>' : ''}</label><input id="k-${esc(f[0])}" type="${f[1]}" ${f[1] === 'number' ? 'inputmode="numeric" min="0"' : ''} data-k="${esc(f[0])}" value="${esc(val)}"></div>`;
   }).join('') + '</div></section>';
 }
-function dot() { const n = G.need.filter(m => !G.confirmed.includes(m)).length; $('holDot').hidden = !n; $('siteWarn').hidden = G.siteUrl !== ''; }
+function dot() { const n = G.need.filter(m => !G.confirmed.includes(m)).length; $('holDot').hidden = !n; $('siteWarn').hidden = true; /* 案内メールにはリンクを入れないので、サイトURLは不要 */ }
 function drawSet() {
   $('setList').innerHTML = GROUPS.slice(1).map(fieldsCard).join('');
   $('setList').querySelectorAll('[data-k]').forEach(e => e.oninput = () => { sv(e.dataset.k).v = e.value; dirty = true; });
@@ -729,7 +850,7 @@ $('addUser').onclick = () => {
 function mailPreviews() {
   const shop = (sv('店舗名') || {}).v || '洗車予約', contact = (sv('問い合わせ先') || {}).v || shop;
   const ex = { '氏名': '山田 太郎', '日時': '11月20日(金) 10:00〜10:45', '予約番号': '123456', 'お車': 'NX', 'ナンバー': '鹿児島 330 あ 12-34', '担当': '中村', '期限': '11月18日 16:00',
-    '対象': '11月20日(金)、11月21日(土)', '日数': '2', '店名': shop, '問い合わせ先': contact, 'リンク': '(予約サイトを開いてご確認ください)' };
+    '対象': '11月20日(金)、11月21日(土)', '日数': '2', '変更前': '11月19日(木) 14:00〜14:45', '店名': shop, '問い合わせ先': contact, 'リンク': '(予約サイトを開いてご確認ください)' };
   const fill = t => String(t || '').replace(/\{([^{}\n]+)\}/g, (m, k) => ex[k] !== undefined ? ex[k] : m);
   const sig = sv('メ_署名') ? fill(sv('メ_署名').v).trim() : '';
   MAILS.forEach(m => {
@@ -1023,6 +1144,8 @@ const MAILS = [
   ['待ち受付', 'キャンセル待ちの受付', 'キャンセル待ちを登録したとき', ['氏名', '対象', '日数', 'お車', 'ナンバー', '担当', '店名']],
   ['待ち期限切れ', '案内の期限切れ', 'キャンセル待ちの案内の期限が過ぎたとき(キャンセル待ちには戻ります)', ['氏名', '日時', '期限', 'お車', 'ナンバー', '担当', '店名']],
   ['空き案内', '空きのご案内', 'キャンセル待ちの方に空きが出たとき。詐欺メール対策のためリンクは入れず、予約サイトを開いて選んでもらう案内にしてください', ['氏名', '日時', '期限', 'お車', 'ナンバー', '担当', '店名']],
+  ['リマインド', '前日のお知らせ', '「設定」の「リマインド時刻」を過ぎたころ、翌日にご予約のあるお客様へ(予約してから3時間以内の方には送りません)', ['氏名', '日時', '予約番号', 'お車', 'ナンバー', '担当', '店名']],
+  ['変更', '日時の変更', 'お客様・管理画面でご予約の日時を変えたとき', ['氏名', '日時', '変更前', '予約番号', 'お車', 'ナンバー', '担当', '店名']],
   ['署名', 'すべてのメールの最後', 'どのメールにも最後に付きます(空欄で付けない)', ['問い合わせ先', '店名']]
 ];
 function drawMail() {

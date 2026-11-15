@@ -283,6 +283,16 @@ body.hashome .app{padding-bottom:calc(330px + env(safe-area-inset-bottom))}
 .item .t{font-weight:600}
 .item .s{grid-column:1;font-size:12.5px;color:var(--sub)}
 .item .danger{grid-column:2;grid-row:1/span 2}
+.item .acts{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.item .acts .danger{grid-column:auto;grid-row:auto}
+.sbtn{min-height:40px;padding:0 16px;border:0;border-radius:99px;background:var(--soft);color:var(--ink);font-size:13.5px;font-weight:600}
+.item .q{grid-column:1/-1;margin-top:6px;font-size:12px;color:#7a5a17}
+.item .late{grid-column:1/-1;margin-top:8px;font-size:12px;color:var(--sub)}
+.noticebar{margin:10px 20px 0;padding:11px 14px;border-radius:14px;background:#1d1d1f;color:#fff;font-size:13px;line-height:1.7;white-space:pre-line}
+.noticebar::before{content:"お知らせ";display:block;margin-bottom:2px;color:#d6b46a;font-size:11px;font-weight:600;letter-spacing:.1em}
+.calbtns{display:flex;gap:8px;margin:-6px 0 22px}
+.calbtns button{flex:1;min-height:44px;border:0;border-radius:99px;background:var(--card);box-shadow:inset 0 0 0 1px var(--line);font-size:13px;font-weight:600}
+.chgbar{margin:0 0 12px;padding:10px 14px;border-radius:14px;background:#eef4ff;color:#1f3d7a;font-size:12.5px}
 .err{color:var(--red)}
 
 /* 通知 */
@@ -338,6 +348,7 @@ body.hasbar .toast{bottom:calc(100px + env(safe-area-inset-bottom))}
 <body>
 <div class="app">
 <header class="top"><div><h1 id="shop">洗車予約</h1><p id="subline"></p></div></header>
+<div class="noticebar" id="noticeBar" hidden></div>
 <nav class="prog" id="prog" hidden aria-label="予約の手順">
   <button data-step="1"><i></i><span><em>1</em><span data-t="step.car">お車の情報</span></span></button>
   <button data-step="2"><i></i><span><em>2</em><span data-t="step.date">日にち</span></span></button>
@@ -390,6 +401,7 @@ body.hasbar .toast{bottom:calc(100px + env(safe-area-inset-bottom))}
   <button class="back" id="calBack"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg><span data-t="cal.back">お車の情報</span></button>
   <h2 data-t="cal.title">日にちを選ぶ</h2>
   <span class="car" id="calNote"></span>
+  <div class="chgbar" id="chgNote" hidden></div>
   <div class="cwarn" id="calWarn" hidden></div>
   <div class="card calcard" id="calCard">
   <div class="mnav"><button id="calPrev" aria-label="前の月">‹</button><b id="calLabel"></b><button id="calNext" aria-label="次の月">›</button></div>
@@ -420,6 +432,7 @@ body.hasbar .toast{bottom:calc(100px + env(safe-area-inset-bottom))}
     <div class="noV" id="doneNo"></div>
   </div>
   <dl class="facts" id="doneFacts"></dl>
+  <div class="calbtns" id="doneCal"><button type="button" id="calIcs" data-t="done.addCal">カレンダーに追加</button><button type="button" id="calG" data-t="done.addGcal">Google カレンダー</button></div>
   <p class="note" id="doneNote" style="margin:0 4px 24px" hidden></p>
   <button class="cta" data-go="home" data-t="app.toTop">トップへ</button>
 </section>
@@ -549,7 +562,8 @@ function busy(btn, fn) {
 const STEPS = { info: 1, cal: 2, slots: 3 };
 function show(id) {
   document.querySelectorAll('.view').forEach(v => v.hidden = v.id !== id);
-  const p = STEPS[id]; $('prog').hidden = !p;
+  if (changing && id !== 'cal' && id !== 'slots') changing = null;
+  const p = changing ? 0 : STEPS[id]; $('prog').hidden = !p;
   if (p) document.querySelectorAll('#prog button').forEach(b => {
     const n = +b.dataset.step;
     b.classList.toggle('done', n < p); b.classList.toggle('cur', n === p); b.disabled = n >= p;
@@ -559,6 +573,7 @@ function show(id) {
   // ホームでは「予約する」を画面の下に固定(指が届きやすい位置)
   const home = id === 'home' && !!cfg;
   $('homeBar').hidden = !home; document.body.classList.toggle('hashome', home);
+  $('noticeBar').hidden = !(home && cfg.notice);
 }
 /* 進行バーを押すと、その工程に戻る */
 document.querySelectorAll('#prog button').forEach(b => b.onclick = () => {
@@ -574,6 +589,12 @@ function setBar(o) {
 }
 
 let cfg, profile = load('wash_profile', {}), mine = load('wash_mine', []);
+/* 日時の変更中のご予約({ id, email, plate, plateShow, model, month, no })。変更中でなければ null */
+let changing = null;
+/** いま選んでいるお車(変更中はそのご予約のお車) */
+const curCar = () => changing ? { model: changing.model, plate: changing.plateShow } : { model: profile.model, plate: profile.plate };
+/** 予約済みの月か(変更中は、そのご予約の月は空いているものとして扱う。ほかの月の判定はサーバーに任せる) */
+const isBooked = ym => changing ? false : booked.has(ym);
 /* この端末に登録したお車(複数台) */
 let cars = load('wash_cars', []);
 /* この端末で使ったメールアドレス(途中で変えても、お客様情報の削除で前のアドレスの登録も消せるように。5件まで) */
@@ -616,6 +637,7 @@ function applyCfg() {
   const X = cfg.texts || {};
   setText('subline', X['ヘッダー']); setText('homeTitle', X['トップ見出し']); setText('homeLead', X['トップ']); $('goReserve').textContent = X['予約ボタン'] || '予約する'; setText('infoNote', X['お車の情報']);
   setText('waitLead', X['キャンセル待ち']); setText('doneNote', X['完了']);
+  $('noticeBar').textContent = cfg.notice || ''; $('noticeBar').hidden = !(cfg.notice && !$('home').hidden);
 }
 /** 前回のお車がわかっていれば、カレンダーと予約済みの月を先に読み込んでおく */
 function warmUp() {
@@ -789,9 +811,9 @@ function refreshBooked(plate = profile.plate, email = profile.email) {
 }
 function markBooked() {
   if ($('cal').hidden || !curYm) return;
-  const on = booked.has(curYm);
+  const on = isBooked(curYm);
   $('calWarn').hidden = !on;
-  const list = months(), next = list.find(m => m > curYm && !booked.has(m));
+  const list = months(), next = list.find(m => m > curYm && !isBooked(m));
   if (on) {
     $('calWarn').innerHTML = `<div><b>${TH('cal.booked', { '月': ymJa(curYm) })}</b>${TH('cal.bookedNote')}${next ? `<button class="wbtn" id="calWarnGo">${TH('cal.seeMonth', { '月': ymJa(next).replace(/^\d+年/, '') })} ›</button>` : ''}</div>`;
     if (next) $('calWarnGo').onclick = () => openCal(next);
@@ -819,9 +841,11 @@ function renderCal(el, ym, data, selected) {
 async function openCal(ym) {
   const list = months();
   // はじめて開くときは、予約済みでない最初の月から
-  curYm = ym || curYm || list.find(m => !booked.has(m)) || list[0];
+  curYm = ym || curYm || list.find(m => !isBooked(m)) || list[0];
   if (!list.includes(curYm)) curYm = list[0];
-  $('calNote').textContent = profile.model + ' ・ ' + profile.plate + ' ・ ' + T('cal.minutes', { '分': durOf(profile.model) });
+  const cc = curCar();
+  $('calNote').textContent = cc.model + ' ・ ' + cc.plate + ' ・ ' + T('cal.minutes', { '分': durOf(cc.model) });
+  $('chgNote').hidden = !changing; if (changing) $('chgNote').textContent = T('chg.note', { '予約番号': changing.no, '日時': changing.when });
   monthNav('cal', curYm, openCal); show('cal');
   const k = curYm, lg = large, el = $('calBody');
   let shown = null;
@@ -838,12 +862,12 @@ async function openCal(ym) {
   catch (e) { if (!shown && curYm === k && !$('cal').hidden) { el.classList.remove('loading'); el.innerHTML = '<p class="err">' + esc(e.message) + '</p>'; } }
   const i = list.indexOf(k); [list[i + 1], list[i - 1]].forEach(m => { if (m) fetchMonth(m, lg).catch(() => {}); });
 }
-$('calBack').onclick = () => goInfo('cal');
+$('calBack').onclick = () => { if (changing) { changing = null; show('lookup'); } else goInfo('cal'); };
 $('calWait').onclick = () => openWait();
 function dayTap(b) {
   const d = b.dataset.d, ym = d.slice(0, 7);
-  if (booked.has(ym)) {
-    const list = months(), next = list.find(m => m > ym && !booked.has(m)) || list.find(m => !booked.has(m));
+  if (isBooked(ym)) {
+    const list = months(), next = list.find(m => m > ym && !isBooked(m)) || list.find(m => !isBooked(m));
     document.querySelectorAll('#calBody .d').forEach(x => x.classList.toggle('sel', x === b));
     if (next) setBar({ main: T('cal.booked', { '月': (+ym.slice(5)) + '月' }), sub: T('cal.bookedShort'), label: T('cal.seeMonth', { '月': ymJa(next).replace(/^\d+年/, '') }), fn: async () => openCal(next) });
     else toast(T('cal.bookedToast', { '月': ymJa(ym) }), true);
@@ -911,7 +935,7 @@ async function openSlots(d) {
     const av = []; open.map(x => [toM(x.s), toM(x.e)]).sort((a, b) => a[0] - b[0]).forEach(v => { const l = av[av.length - 1]; if (l && v[0] <= l[1]) l[1] = Math.max(l[1], v[1]); else av.push(v.slice()); });
     const step = span > 360 ? 120 : 60, ticks = [];
     for (let m = lo; m < hi; m += step) ticks.push(`<i style="left:${pos(m)}">${m / 60}:00</i>`);
-    $('slotList').innerHTML = `<div class="tl"><div class="tl-card"><div class="tl-head"><b class="ph" id="tlTime">${TH('slot.hint')}</b><span id="tlDur">${TH('slot.dur', { '分': durOf(profile.model) })}</span></div><div class="trackwrap" id="tlTrack" tabindex="0" role="slider" aria-label="開始時間" aria-valuemin="0" aria-valuemax="${open.length - 1}"><div class="track">${av.map(v => `<div class="av" style="left:${pos(v[0])};width:${pos(lo + v[1] - v[0])}"></div>`).join('')}<div class="pick" id="tlPick" style="opacity:0"></div></div></div><div class="ticks">${ticks.join('')}</div></div></div>`
+    $('slotList').innerHTML = `<div class="tl"><div class="tl-card"><div class="tl-head"><b class="ph" id="tlTime">${TH('slot.hint')}</b><span id="tlDur">${TH('slot.dur', { '分': durOf(curCar().model) })}</span></div><div class="trackwrap" id="tlTrack" tabindex="0" role="slider" aria-label="開始時間" aria-valuemin="0" aria-valuemax="${open.length - 1}"><div class="track">${av.map(v => `<div class="av" style="left:${pos(v[0])};width:${pos(lo + v[1] - v[0])}"></div>`).join('')}<div class="pick" id="tlPick" style="opacity:0"></div></div></div><div class="ticks">${ticks.join('')}</div></div></div>`
       + group(TH('slot.am'), list.filter(s => s.s < '12:00')) + group(TH('slot.pm'), list.filter(s => s.s >= '12:00'));
     const track = $('tlTrack'), btns = [...$('slotList').querySelectorAll('.slot:not(.full)')];
     let cur = null;
@@ -924,7 +948,7 @@ async function openSlots(d) {
       $('tlTime').className = ''; $('tlTime').textContent = pick.start + ' → ' + pick.end;
       track.setAttribute('aria-valuenow', btns.indexOf(b)); track.setAttribute('aria-valuetext', pick.start + 'から' + pick.end + 'まで');
       if (drag && navigator.vibrate) navigator.vibrate(4);
-      setBar({ main: dShort(d) + ' ' + pick.start + '〜' + pick.end, sub: profile.model + ' / ' + profile.plate, label: T('slot.reserve'), fn: doReserve });
+      setBar({ main: dShort(d) + ' ' + pick.start + '〜' + pick.end, sub: curCar().model + ' / ' + curCar().plate, label: changing ? T('chg.btn') : T('slot.reserve'), fn: changing ? doChange : doReserve });
     };
     btns.forEach(b => b.onclick = () => choose(b));
     // 黒いバーをなぞって時間を選ぶ(指の位置にいちばん近い枠へ吸い付く)
@@ -953,7 +977,41 @@ async function doReserve() {
   booked.add(r.date.slice(0, 7));
   doneView(r, T('done.title'));
 }
+/** 日時の変更を確定する */
+async function doChange() {
+  const c = changing;
+  const r = await api('change', { id: c.id, email: c.email, plate: c.plate, date: pick.date, start: pick.start });
+  mine = mine.filter(m => String(m.no) !== String(r.no)).concat([{ no: r.no, date: r.date, start: r.start, end: r.end, model: r.model, plate: c.plateShow }]); save('wash_mine', mine); monthCache = {};
+  changing = null; refreshBooked();
+  doneView(r, T('chg.done'));
+}
+/** 「予約の確認・キャンセル」から日時の変更を始める */
+function startChange(x, email, plate) {
+  changing = { id: x.id, email, plate, plateShow: plate, model: x.model, no: x.no, when: dJa(x.date) + ' ' + x.start + '〜' + x.end };
+  large = isLarge(x.model); curYm = x.date.slice(0, 7); prefetch(large);
+  openCal(curYm);
+}
+/* ---------- カレンダーに追加(iPhone・Android のカレンダー / Google カレンダー) ---------- */
+let lastDone = null;
+const icsDt = (d, t) => d.replace(/-/g, '') + 'T' + t.replace(':', '') + '00';
+function calTitle() { return (cfg && cfg.name ? cfg.name + ' ' : '') + T('done.calTitle'); }
+function addIcs(r) {
+  const esc2 = v => String(v).replace(/[\\,;]/g, m => '\\' + m).replace(/\n/g, '\\n');
+  const ics = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//wash//JP', 'BEGIN:VEVENT', 'UID:wash-' + r.no + '-' + r.date + '@wash', 'DTSTAMP:' + new Date().toISOString().replace(/[-:]/g, '').slice(0, 15) + 'Z',
+    'DTSTART;TZID=Asia/Tokyo:' + icsDt(r.date, r.start), 'DTEND;TZID=Asia/Tokyo:' + icsDt(r.date, r.end), 'SUMMARY:' + esc2(calTitle()), 'DESCRIPTION:' + esc2(T('done.no') + ' ' + r.no + (r.model ? ' / ' + r.model : '')),
+    'BEGIN:VALARM', 'TRIGGER:-PT1H', 'ACTION:DISPLAY', 'DESCRIPTION:' + esc2(calTitle()), 'END:VALARM', 'END:VEVENT', 'END:VCALENDAR'].join('\r\n');
+  const url = URL.createObjectURL(new Blob([ics], { type: 'text/calendar;charset=utf-8' }));
+  const a = document.createElement('a'); a.href = url; a.download = 'wash-' + r.date + '.ics'; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 30000);
+}
+function addGcal(r) {
+  const q = new URLSearchParams({ action: 'TEMPLATE', text: calTitle(), dates: icsDt(r.date, r.start) + '/' + icsDt(r.date, r.end), ctz: 'Asia/Tokyo', details: T('done.no') + ' ' + r.no });
+  window.open('https://calendar.google.com/calendar/render?' + q.toString(), '_blank', 'noopener');
+}
+$('calIcs').onclick = () => lastDone && addIcs(lastDone);
+$('calG').onclick = () => lastDone && addGcal(lastDone);
 function doneView(r, title) {
+  lastDone = r;
   $('doneTitle').textContent = title; $('doneNo').textContent = r.no;
   $('doneFacts').innerHTML = [[T('done.when'), dJa(r.date) + ' ' + r.start + '〜' + r.end], [T('done.car'), r.model]].concat(r.staff ? [[T('done.staff'), r.staff]] : []).map(f => `<div><dt>${esc(f[0])}</dt><dd>${esc(f[1])}</dd></div>`).join('');
   show('done');
@@ -965,8 +1023,11 @@ $('lGo').onclick = busy($('lGo'), async () => {
   const r = await api('lookup', { email, plate });
   profile.email = email; profile.plate = plate; save('wash_profile', profile); rememberMail(email);
   let h = '<h3>' + TH('look.res') + '</h3>';
-  h += r.res.length ? r.res.map(x => `<div class="item"><div class="t">${dJa(x.date)} ${x.start}〜${x.end}</div><div class="s">${esc(x.model)} / ${TH('look.no')} ${esc(x.no)}</div><button class="danger" data-cr="${x.id}">${TH('look.cancelBtn')}</button></div>`).join('') : '<p class="note">' + TH('look.noRes') + '</p>';
-  if (r.waits.length) h += '<h3>' + TH('look.waits') + '</h3>' + r.waits.map((x, i) => `<div class="item"><div class="t">${esc(x.summary)}</div><div class="s">${x.hold ? '<b>' + TH('look.waitHold', { '日時': dJa(x.hold.date) + ' ' + x.hold.start }) + '</b>' : TH('look.waitNormal')}</div>${x.hold ? `<button class="cta" style="grid-column:1/-1;margin-top:8px;min-height:44px" data-ho="${i}">${TH('look.waitHoldBtn')}</button>` : `<button class="danger" data-cw="${x.id}">${TH('look.waitStopBtn')}</button>`}</div>`).join('');
+  h += r.res.length ? r.res.map((x, i) => `<div class="item"><div class="t">${dJa(x.date)} ${x.start}〜${x.end}</div><div class="s">${esc(x.model)} / ${TH('look.no')} ${esc(x.no)}</div>`
+    + (x.late ? `<div class="late">${TH('look.late')}</div><div class="acts"><button class="sbtn" data-ca="${i}">${TH('look.addCal')}</button></div>`
+      : `<div class="acts">${cfg && cfg.canChange ? `<button class="sbtn" data-ch="${i}">${TH('look.changeBtn')}</button>` : ''}<button class="sbtn" data-ca="${i}">${TH('look.addCal')}</button><button class="danger" data-cr="${x.id}">${TH('look.cancelBtn')}</button></div>`)
+    + '</div>').join('') : '<p class="note">' + TH('look.noRes') + '</p>';
+  if (r.waits.length) h += '<h3>' + TH('look.waits') + '</h3>' + r.waits.map((x, i) => `<div class="item"><div class="t">${esc(x.summary)}</div><div class="s">${x.hold ? '<b>' + TH('look.waitHold', { '日時': dJa(x.hold.date) + ' ' + x.hold.start }) + '</b>' : TH('look.waitNormal')}</div>${!x.hold && (x.queue || []).length ? `<div class="q">${TH('look.queueHead')} ${x.queue.map(q => q.ahead ? TH('look.queue', { '日付': dShort(q.date), '人数': q.ahead }) : TH('look.queueFirst', { '日付': dShort(q.date) })).join(' / ')}</div>` : ''}${x.hold ? `<button class="cta" style="grid-column:1/-1;margin-top:8px;min-height:44px" data-ho="${i}">${TH('look.waitHoldBtn')}</button>` : `<button class="danger" data-cw="${x.id}">${TH('look.waitStopBtn')}</button>`}</div>`).join('');
   $('lRes').innerHTML = h;
   $('lRes').querySelectorAll('[data-cr]').forEach(b => b.onclick = busy(b, async () => {
     if (!confirm(T('look.cancelConfirm'))) return;
@@ -975,6 +1036,8 @@ $('lGo').onclick = busy($('lGo'), async () => {
     if (cfg && profile.plate) refreshBooked();
     toast(T('look.cancelDone')); $('lGo').click();
   }));
+  $('lRes').querySelectorAll('[data-ch]').forEach(b => b.onclick = () => startChange(r.res[+b.dataset.ch], email, plate));
+  $('lRes').querySelectorAll('[data-ca]').forEach(b => b.onclick = () => addIcs(r.res[+b.dataset.ca]));
   $('lRes').querySelectorAll('[data-ho]').forEach(b => b.onclick = async () => { const go = await offerHold(r.waits[+b.dataset.ho].hold); if (go !== false) $('lGo').click(); });
   $('lRes').querySelectorAll('[data-cw]').forEach(b => b.onclick = busy(b, async () => {
     if (!confirm(T('look.waitStopConfirm'))) return;
