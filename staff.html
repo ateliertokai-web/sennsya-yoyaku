@@ -83,6 +83,24 @@ button{font:inherit;color:inherit;letter-spacing:inherit;cursor:pointer}
 .top>div{display:flex;flex:none}
 @media (max-width:420px){.top h1 small,.pbtn .wide{display:none}.tbtn{padding:0 9px}}
 .sheet{display:none}
+/* スマホ: 印刷の代わりに、A4横の表を画面いっぱいに見せて PDF で保存・共有する */
+.pv{position:fixed;inset:0;z-index:70;display:flex;flex-direction:column;background:#2b2b2e;color:#fff}
+.pv-top{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:calc(10px + env(safe-area-inset-top)) 14px 10px}
+.pv-top b{font-size:14px;letter-spacing:.06em}
+.pv-top button{min-height:40px;padding:0 16px;border:0;border-radius:99px;background:rgba(255,255,255,.14);color:#fff;font:inherit;font-size:14px;font-weight:600}
+.pv-body{flex:1;overflow:auto;-webkit-overflow-scrolling:touch;padding:4px 10px 10px;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.pv-body img{display:block;width:100%;max-width:1400px;height:auto;background:#fff;border-radius:4px;box-shadow:0 8px 30px rgba(0,0,0,.4)}
+.pv-body.rot{position:relative;display:block;overflow:hidden;padding:0}
+.pv-body.rot img{position:absolute;top:50%;left:50%;max-width:none;transform:translate(-50%,-50%) rotate(90deg)}
+.pv-body.rot .pv-hint{display:none}
+.pv-top .r{display:flex;gap:8px}
+.pv-hint{margin:10px 0 0;font-size:12px;color:#b9b9bd;text-align:center}
+.pv-btns{display:flex;gap:10px;padding:10px 14px calc(12px + env(safe-area-inset-bottom))}
+.pv-btns button{flex:1;min-height:50px;border:0;border-radius:99px;font:inherit;font-size:15px;font-weight:600}
+.pv-btns .main{background:#d6b46a;color:#1d1d1f}
+.pv-btns .sub{background:rgba(255,255,255,.14);color:#fff}
+@media (max-height:520px){.pv-top{padding:calc(4px + env(safe-area-inset-top)) 14px 4px}.pv-top button{min-height:32px}.pv-hint{display:none}.pv-btns{padding:4px 14px calc(6px + env(safe-area-inset-bottom))}.pv-btns button{min-height:38px;font-size:14px}.pv-body{padding:2px 10px}}
+@media print{.pv{display:none!important}}
 
 /* 印刷: A4横のタイムスケジュール(白黒でも読みやすく) */
 @page{size:A4 landscape;margin:9mm 10mm 10mm}
@@ -186,6 +204,11 @@ button{font:inherit;color:inherit;letter-spacing:inherit;cursor:pointer}
 </main>
 <!-- 印刷用(画面には出さない) -->
 <section id="sheet" class="sheet" aria-hidden="true"></section>
+<div class="pv" id="pv" role="dialog" aria-modal="true" aria-label="印刷用の表" hidden>
+  <div class="pv-top"><b id="pvTitle">洗車タイムスケジュール</b><div class="r"><button type="button" id="pvRot">回転</button><button type="button" id="pvClose">閉じる</button></div></div>
+  <div class="pv-body"><img id="pvImg" alt="この日の洗車タイムスケジュール(A4横)"><p class="pv-hint">横向きにすると大きく見られます。2本指で拡大もできます。</p></div>
+  <div class="pv-btns"><button type="button" class="main" id="pvPdf">PDFを保存・共有</button><button type="button" class="sub" id="pvPrint">印刷</button></div>
+</div>
 
 <div class="loader" id="loader" role="status" aria-live="polite"><i aria-hidden="true"></i><div>読み込み中…<small>通信に数秒かかることがあります。そのままお待ちください。</small></div></div>
 <script src="config.js"></script>
@@ -314,8 +337,168 @@ function drawSheet(d) {
       : `<p class="sh-sum">全 <b>${n}</b> 台(普通 ${n - big} ・ 大型 ${big})</p><div class="tl">${body}</div>`
         + '<div class="sh-leg"><span><i></i>予約</span><span><i class="lg"></i>大型車</span><span><i class="hold"></i>キャンセル待ちで案内中(未確定)</span><span><i class="gap"></i>空き時間</span></div>')
     + '<p class="sh-f">お客様の個人情報を含みます。取り扱いにご注意ください。</p>';
-  sheetDate = d.date;
+  sheetDate = d.date; sheetDay = d;
 }
+let sheetDay = null;
+
+/* ---------- A4横の表を画像に描く(スマホのプレビューと PDF 用。印刷のレイアウトと同じ形) ---------- */
+function sheetCanvas(d) {
+  const K = 8, PW = 297, PH = 210, X0 = 10, Y0 = 9, W = PW - 20; // 1mm = 8px(約200dpi)
+  const cv = document.createElement('canvas'); cv.width = PW * K; cv.height = PH * K;
+  const g = cv.getContext('2d'), F = '"Hiragino Sans","Hiragino Kaku Gothic ProN","Noto Sans JP","Yu Gothic",sans-serif';
+  const mm = v => v * K, pt = v => v * 0.3528 * K;
+  const font = (size, bold) => { g.font = (bold ? '700 ' : '400 ') + pt(size) + 'px ' + F; };
+  const text = (t, x, y, size, bold, color, align) => { font(size, bold); g.fillStyle = color || '#000'; g.textAlign = align || 'left'; g.textBaseline = 'alphabetic'; g.fillText(t, mm(x), mm(y)); };
+  const rrect = (x, y, w, h, r) => { g.beginPath(); g.moveTo(mm(x + r), mm(y)); g.arcTo(mm(x + w), mm(y), mm(x + w), mm(y + h), mm(r)); g.arcTo(mm(x + w), mm(y + h), mm(x), mm(y + h), mm(r)); g.arcTo(mm(x), mm(y + h), mm(x), mm(y), mm(r)); g.arcTo(mm(x), mm(y), mm(x + w), mm(y), mm(r)); g.closePath(); };
+  /** 幅に収まるように折り返して書く(行数の上限つき) */
+  const wrap = (t, x, y, maxW, size, bold, lineH, maxLines, color) => {
+    font(size, bold); g.fillStyle = color || '#000'; g.textAlign = 'left';
+    const lines = []; let cur = '';
+    for (const ch of String(t)) { if (g.measureText(cur + ch).width > mm(maxW) && cur) { lines.push(cur); cur = ch; } else cur += ch; }
+    if (cur) lines.push(cur);
+    lines.slice(0, maxLines).forEach((l, i) => g.fillText(l, mm(x), mm(y + i * lineH)));
+    return Math.min(lines.length, maxLines);
+  };
+  g.fillStyle = '#fff'; g.fillRect(0, 0, cv.width, cv.height);
+  const dt = toD(d.date), now = new Date(), fm = m => Math.floor(m / 60) + ':' + pad(m % 60);
+  // 見出し
+  text('洗車タイムスケジュール', X0, Y0 + 7, 17, true);
+  font(17, true); const tw = g.measureText('洗車タイムスケジュール').width / K;
+  text(dt.getFullYear() + '年' + (dt.getMonth() + 1) + '月' + dt.getDate() + '日(' + WD[dt.getDay()] + ')', X0 + tw + 4, Y0 + 7, 12, true);
+  text(d.name || '', X0 + W, Y0 + 3.5, 8.5, false, '#000', 'right');
+  text((now.getMonth() + 1) + '/' + now.getDate() + ' ' + pad(now.getHours()) + ':' + pad(now.getMinutes()) + ' 時点', X0 + W, Y0 + 7.5, 8.5, false, '#000', 'right');
+  g.fillStyle = '#000'; g.fillRect(mm(X0), mm(Y0 + 9.2), mm(W), mm(0.7));
+  if (d.closed) { text('休業日です', PW / 2, 100, 14, true, '#000', 'center'); }
+  else {
+    const n = d.list.length, big = d.list.filter(x => x.large).length;
+    text('全 ' + n + ' 台(普通 ' + (n - big) + ' ・ 大型 ' + big + ')', X0, Y0 + 15.5, 10, true);
+    const lunchS = toM(d.lunch[0]), lunchE = toM(d.lunch[1]);
+    const from = Math.min(540, ...d.list.map(r => Math.floor(toM(r.start) / 60) * 60)), to = Math.max(1080, ...d.list.map(r => Math.ceil(toM(r.end) / 60) * 60));
+    const lanes = [], laneOf = k => { while (lanes.length <= k) lanes.push({ items: [] }); return lanes[k]; };
+    const free = (l, r) => l.items.every(o => toM(r.end) <= toM(o.start) || toM(r.start) >= toM(o.end));
+    for (let k = 0; k < Math.max(1, d.cap || 1); k++) laneOf(k);
+    d.list.filter(r => r.lane > 0).forEach(r => laneOf(r.lane - 1).items.push(r));
+    d.list.filter(r => !(r.lane > 0)).sort((a, b) => toM(a.start) - toM(b.start)).forEach(r => { let l = lanes.find(x => free(x, r)); if (!l) l = laneOf(lanes.length); l.items.push(r); });
+    const laneH = Math.max(30, Math.min(62, Math.floor(140 / lanes.length)));
+    const LW = 16, TX = X0 + LW, TW = W - LW, TY = Y0 + 19, HH = 7, xs = m => TX + (m - from) / (to - from) * TW;
+    const totalH = HH + laneH * lanes.length;
+    // 段の見出し
+    g.fillStyle = '#f2f2f2'; g.fillRect(mm(X0), mm(TY + HH), mm(LW), mm(laneH * lanes.length));
+    text('時間', X0 + LW / 2, TY + 4.8, 8, false, '#000', 'center');
+    lanes.forEach((l, k) => text(lanes.length > 1 ? (k + 1) + '台目' : '予約', X0 + LW / 2, TY + HH + k * laneH + laneH / 2 + 1.2, 9, true, '#000', 'center'));
+    // 目盛り
+    for (let m = from; m <= to; m += 15) {
+      const h = m % 60 === 0, x = xs(m);
+      if (m > from && m < to) { g.strokeStyle = h ? '#888' : '#bbb'; g.lineWidth = mm(h ? 0.2 : 0.14); g.setLineDash(h ? [] : [mm(0.5), mm(0.5)]); g.beginPath(); g.moveTo(mm(x), mm(TY + HH)); g.lineTo(mm(x), mm(TY + totalH)); g.stroke(); g.setLineDash([]); }
+      if (h) text(m / 60 + ':00', m === from ? x + 1 : m === to ? x - 1 : x, TY + 5.8, 8.5, true, '#000', m === from ? 'left' : m === to ? 'right' : 'center');
+      else if (m % 30 === 0) text(fm(m), x, TY + 5.8, 6.5, false, '#555', 'center');
+    }
+    // 昼休憩・空き・予約
+    lanes.forEach((l, k) => {
+      const y = TY + HH + k * laneH;
+      if (lunchE > lunchS) {
+        const x1 = xs(lunchS), x2 = xs(lunchE);
+        g.save(); g.beginPath(); g.rect(mm(x1), mm(y), mm(x2 - x1), mm(laneH)); g.clip(); g.fillStyle = '#f6f6f6'; g.fillRect(mm(x1), mm(y), mm(x2 - x1), mm(laneH));
+        g.strokeStyle = '#e2e2e2'; g.lineWidth = mm(1.4); for (let t = -laneH; t < x2 - x1 + laneH; t += 4) { g.beginPath(); g.moveTo(mm(x1 + t), mm(y + laneH)); g.lineTo(mm(x1 + t + laneH), mm(y)); g.stroke(); }
+        g.restore();
+        text('昼休憩', (x1 + x2) / 2, y + laneH / 2, 8, true, '#555', 'center'); text(d.lunch[0] + '〜' + d.lunch[1], (x1 + x2) / 2, y + laneH / 2 + 3.2, 6.5, false, '#555', 'center');
+      }
+      const busy = l.items.map(r => [toM(r.start), toM(r.end)]).concat(lunchE > lunchS ? [[lunchS, lunchE]] : []).sort((a, b) => a[0] - b[0]);
+      const gaps = []; let t = from; busy.forEach(([a, b]) => { if (a > t) gaps.push([t, a]); t = Math.max(t, b); }); if (t < to) gaps.push([t, to]);
+      gaps.filter(([a, b]) => b - a >= 5).forEach(([a, b]) => {
+        const x = xs(a) + 0.6, w = xs(b) - xs(a) - 1.2;
+        rrect(x, y + 1.6, w, laneH - 3.2, 1.5); g.setLineDash([mm(0.8), mm(0.6)]); g.strokeStyle = '#999'; g.lineWidth = mm(0.28); g.stroke(); g.setLineDash([]);
+        if (b - a >= 30) { text('空き', x + w / 2, y + laneH / 2 - 0.4, 8, true, '#444', 'center'); text(fm(a) + '〜' + fm(b), x + w / 2, y + laneH / 2 + 3, 7, false, '#666', 'center'); }
+        else if (b - a >= 15) text('空き', x + w / 2, y + laneH / 2 + 1, 7, false, '#666', 'center');
+      });
+      l.items.forEach(r => {
+        const x = xs(toM(r.start)) + 0.6, w = xs(toM(r.end)) - xs(toM(r.start)) - 1.2, by = y + 1.6, bh = laneH - 3.2;
+        rrect(x, by, w, bh, 1.5); g.fillStyle = '#fff'; g.fill();
+        g.strokeStyle = '#000'; g.lineWidth = mm(r.large ? 0.7 : 0.42); if (r.hold) g.setLineDash([mm(1), mm(0.7)]); g.stroke(); g.setLineDash([]);
+        g.save(); rrect(x, by, w, bh, 1.5); g.clip();
+        const ix = x + 1.6, iw = w - 3.2; let cy = by + 4.2;
+        text(r.start + '〜' + r.end, ix, cy, 8, true); cy += 4.6;
+        cy += wrap(r.name + ' 様', ix, cy, iw, 10, true, 4.2, 2) * 4.2 - 0.2;
+        text(r.model + (r.large ? ' (大型)' : ''), ix, cy, 9, true); cy += 3.8;
+        cy += wrap(r.plate, ix, cy, iw, 7.5, false, 3.2, 2) * 3.2;
+        if (r.staff) { text('担当 ' + r.staff, ix, cy + 0.4, 7.5, false, '#333'); cy += 3.4; }
+        if (r.hold) text('案内中(未確定)', ix, cy + 0.4, 7.5, true, '#333');
+        g.restore();
+      });
+    });
+    // 枠線
+    g.strokeStyle = '#000'; g.lineWidth = mm(0.35); g.strokeRect(mm(X0), mm(TY), mm(W), mm(totalH));
+    g.beginPath(); g.moveTo(mm(TX), mm(TY)); g.lineTo(mm(TX), mm(TY + totalH)); g.stroke();
+    g.lineWidth = mm(0.21); for (let k = 0; k < lanes.length; k++) { g.beginPath(); g.moveTo(mm(X0), mm(TY + HH + k * laneH)); g.lineTo(mm(X0 + W), mm(TY + HH + k * laneH)); g.stroke(); }
+    // 凡例
+    let lx = X0; const ly = TY + totalH + 5;
+    [['予約', 0.42, []], ['大型車', 0.7, []], ['キャンセル待ちで案内中(未確定)', 0.42, [1, 0.7]], ['空き時間', 0.28, [0.8, 0.6]]].forEach(([t, lw, dash]) => {
+      rrect(lx, ly - 2.6, 6, 3, 1); g.strokeStyle = dash.length && lw < 0.3 ? '#999' : '#000'; g.lineWidth = mm(lw); g.setLineDash(dash.map(mm)); g.stroke(); g.setLineDash([]);
+      text(t, lx + 7.5, ly, 7.5, false, '#444'); font(7.5); lx += 7.5 + g.measureText(t).width / K + 6;
+    });
+  }
+  text('お客様の個人情報を含みます。取り扱いにご注意ください。', X0 + W, PH - 9, 7.5, false, '#444', 'right');
+  return cv;
+}
+/** JPEG 1枚を A4横いっぱいに貼った PDF を作る(外部のライブラリなし) */
+function jpegPdf(jpeg, wPx, hPx) {
+  const enc = new TextEncoder(), parts = [], offs = []; let len = 0;
+  const add = x => { const b = typeof x === 'string' ? enc.encode(x) : x; parts.push(b); len += b.length; };
+  const obj = (n, body, stream) => { offs[n] = len; add(n + ' 0 obj\n' + body); if (stream) { add('stream\n'); add(stream); add('\nendstream'); } add('\nendobj\n'); };
+  const PWp = 841.89, PHp = 595.28, cs = 'q ' + PWp + ' 0 0 ' + PHp + ' 0 0 cm /Im0 Do Q';
+  add('%PDF-1.4\n%\xE2\xE3\xCF\xD3\n');
+  obj(1, '<< /Type /Catalog /Pages 2 0 R >>');
+  obj(2, '<< /Type /Pages /Kids [3 0 R] /Count 1 >>');
+  obj(3, '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ' + PWp + ' ' + PHp + '] /Resources << /XObject << /Im0 5 0 R >> >> /Contents 4 0 R >>');
+  obj(4, '<< /Length ' + cs.length + ' >>\n', enc.encode(cs));
+  obj(5, '<< /Type /XObject /Subtype /Image /Width ' + wPx + ' /Height ' + hPx + ' /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ' + jpeg.length + ' >>\n', jpeg);
+  const xref = len;
+  add('xref\n0 6\n0000000000 65535 f \n' + [1, 2, 3, 4, 5].map(n => String(offs[n]).padStart(10, '0') + ' 00000 n \n').join(''));
+  add('trailer\n<< /Size 6 /Root 1 0 R >>\nstartxref\n' + xref + '\n%%EOF');
+  return new Blob(parts, { type: 'application/pdf' });
+}
+let pvCanvas = null;
+function openPreview() {
+  if (!sheetDay) return;
+  pvCanvas = sheetCanvas(sheetDay);
+  $('pvImg').src = pvCanvas.toDataURL('image/jpeg', 0.9);
+  const dt = toD(sheetDay.date); $('pvTitle').textContent = (dt.getMonth() + 1) + '月' + dt.getDate() + '日(' + WD[dt.getDay()] + ') の表';
+  // iPhone のホーム画面アプリでは印刷の命令が使えないので、印刷ボタンは出さない(PDF の共有メニューから印刷できる)
+  $('pvPrint').hidden = navigator.standalone === true;
+  $('pv').hidden = false; document.body.style.overflow = 'hidden';
+  pvRot = innerHeight > innerWidth; fitPreview(); // 縦向きのときは、表を横に倒して画面いっぱいに
+}
+let pvRot = false;
+/** 横に倒して表示するときの大きさ(画面に収まるいちばん大きいサイズ) */
+function fitPreview() {
+  const body = document.querySelector('.pv-body'), img = $('pvImg');
+  body.classList.toggle('rot', pvRot);
+  const ratio = 297 / 210;
+  if (!pvRot) { // そのままの向き: 幅と高さの両方に収まる大きさ(下の一文のぶんを空ける)
+    const hint = document.querySelector('.pv-hint'), H = body.clientHeight - (hint.offsetParent ? 44 : 8), Wd = body.clientWidth - 20;
+    img.style.width = Math.max(120, Math.min(Wd, H * ratio)) + 'px'; return;
+  }
+  const H = body.clientHeight - 12, Wd = body.clientWidth - 12;
+  img.style.width = Math.min(H, Wd * ratio) + 'px';
+}
+$('pvRot').onclick = () => { pvRot = !pvRot; fitPreview(); };
+addEventListener('resize', () => { if (!$('pv').hidden) { pvRot = innerHeight > innerWidth; fitPreview(); } });
+function closePreview() { $('pv').hidden = true; document.body.style.overflow = ''; }
+$('pvClose').onclick = closePreview;
+$('pvPrint').onclick = () => { closePreview(); window.print(); };
+$('pvPdf').onclick = async () => {
+  if (!pvCanvas) return;
+  const b64 = pvCanvas.toDataURL('image/jpeg', 0.9).split(',')[1], bin = atob(b64), jpeg = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) jpeg[i] = bin.charCodeAt(i);
+  const blob = jpegPdf(jpeg, pvCanvas.width, pvCanvas.height), name = '洗車予約_' + sheetDay.date + '.pdf';
+  const file = new File([blob], name, { type: 'application/pdf' });
+  try {
+    if (navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], title: name }); return; }
+  } catch (e) { if (e && e.name === 'AbortError') return; }
+  const url = URL.createObjectURL(blob), a = document.createElement('a');
+  a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 60000);
+};
 let sheetDate = null;
 function draw(d) {
   drawHead(); drawSheet(d);
@@ -384,6 +567,8 @@ $('reload').onclick = () => load();
 // (iPhone は押した直後でないと印刷の画面を開けないので、表示中の内容ですぐ印刷する。内容は1分ごとに自動で最新になる)
 $('print').onclick = () => {
   if (!sheetDate || sheetDate !== cur) return load();
+  // スマホ・タブレット: 画面いっぱいのプレビューから PDF で保存・共有(ホーム画面アプリでは印刷の命令が効かないため)
+  if (matchMedia('(pointer: coarse)').matches || navigator.standalone === true) return openPreview();
   const t = document.title; document.title = '洗車予約_' + sheetDate; // PDFのファイル名になる
   const back = () => { document.title = t; removeEventListener('afterprint', back); };
   addEventListener('afterprint', back); setTimeout(back, 60000);
