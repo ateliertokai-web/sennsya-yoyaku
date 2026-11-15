@@ -365,14 +365,21 @@ textarea:focus,input:focus{background:#fff;box-shadow:0 0 0 1.5px var(--ink);out
 
   <div id="t-login" class="pane" hidden>
     <section class="card pad" id="userCard">
-      <div class="hrow"><h3>管理画面・予約スタッフ画面に入れる人</h3><a class="btn sub sm" href="desk.html" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;text-decoration:none">予約スタッフ画面を開く</a></div>
+      <div class="hrow"><h3>管理画面に入れる人(管理者)</h3></div>
       <p class="note" style="margin:2px 0 12px" id="userNote"></p>
       <div id="userList"></div>
       <div id="userAdd">
-      <div class="newstore uadd" style="margin-top:8px"><input type="email" id="newUser" placeholder="追加する人のメールアドレス" aria-label="追加する人のメールアドレス" autocomplete="off"><input type="text" id="newUserPw" placeholder="パスワード(8文字以上)" aria-label="パスワード" autocomplete="new-password"><select id="newRole" aria-label="役割" class="rsel"><option>予約スタッフ</option><option>管理者</option></select><button class="btn sub sm" id="addUser" style="min-height:44px">追加</button></div>
+      <div class="newstore uadd" style="margin-top:8px"><input type="email" id="newUser" placeholder="追加する人のメールアドレス" aria-label="追加する人のメールアドレス" autocomplete="off"><input type="text" id="newUserPw" placeholder="パスワード(8文字以上)" aria-label="パスワード" autocomplete="new-password"><button class="btn sub sm" id="addUser" style="min-height:44px">追加</button></div>
       <p class="note" style="margin:6px 0 0" id="userPwNote"></p>
       </div>
       <div id="userSaveBar" style="display:flex;justify-content:flex-end;margin-top:16px"><button class="btn" id="saveUsers">ログイン管理を保存する</button></div>
+    </section>
+    <section class="card pad" id="deskBox" style="margin-top:16px" hidden>
+      <div class="hrow"><h3>予約スタッフ画面(電話予約の受付用)</h3><a class="btn sub sm" href="desk.html" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;text-decoration:none">予約スタッフ画面を開く</a></div>
+      <p class="note" style="margin:2px 0 0">お客様からのお電話で、予約を入れる・探す・日時を変える・取り消す画面です。お客様の電話番号やメールアドレスも見られるので、パスワードは6文字以上にしてください。会社のパソコンで一度開いて「この端末に保存する」にしておけば、デスクトップのショートカットからすぐ開けます。</p>
+      <label for="deskPw">予約スタッフ用パスワード <span class="note" id="deskState"></span></label>
+      <div style="display:flex;gap:8px"><input type="text" id="deskPw" autocomplete="off" placeholder="6文字以上"><button class="btn sm" id="deskSave" style="min-height:44px">設定</button></div>
+      <button class="btn danger sm" id="deskClear" style="margin-top:10px" hidden>予約スタッフ用パスワードを外す</button>
     </section>
     <section class="card pad" id="staffBox" style="margin-top:16px" hidden>
       <div class="hrow"><h3>従業員画面(洗車スタッフ用)</h3><a class="btn sub sm" href="staff.html" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;text-decoration:none">従業員画面を開く</a></div>
@@ -816,14 +823,14 @@ function drawUsers() {
   const on = usersOn(); $('userCard').hidden = !on; $('loginOld').hidden = on || $('staffBox').hidden === false; if (!on) return;
   const can = canUsers(), google = G.auth === 'google';
   $('userNote').textContent = (google ? 'パスワードを入れない人は、会社の Google アカウントで入ります。' : '各自のメールアドレスと、ここで決めたパスワードで入ります(パスワードのない人は入れません)。')
-    + '「管理者」は管理画面と予約スタッフ画面、「予約スタッフ」は予約スタッフ画面(お客様からの電話で予約を入れる・変える・取り消す)だけ使えます。洗車スタッフは、下の従業員画面の共通パスワードで入るので、ここへの登録はいりません。辞めた人や異動した人は削除してください。'
+    + 'ここに登録した人は管理画面に入れます。予約スタッフと洗車スタッフは、下のそれぞれの共通パスワードで入るので、ここへの登録はいりません。辞めた人や異動した人は削除してください。'
     + (can ? '' : ' ※追加・削除・パスワードの変更は、メイン管理者だけができます。');
   const fixed = (G.fixedAdmins || []).map(e => `<div class="urow"><span class="em">${esc(e)}</span><span class="tag l">メイン管理者</span></div>`).join('');
   const st = u => u.clearPw ? '保存するとパスワードを外します' : u.pw ? '保存すると新しいパスワードになります' : u.hasPw ? 'パスワード設定済み' : (google ? 'Google ログインのみ' : 'パスワード未設定(入れません)');
   $('userList').innerHTML = fixed + G.users.map((u, i) => `<div class="urow"><span class="em">${esc(u.email)}<br><span class="pws">${esc(st(u))}</span></span>`
-    + (can ? `<select class="rsel" data-ur="${i}" aria-label="${esc(u.email)}の役割"><option ${u.role !== '管理者' ? 'selected' : ''}>予約スタッフ</option><option ${u.role === '管理者' ? 'selected' : ''}>管理者</option></select>`
+    + (can ? (u.role === '管理者' ? '' : '<span class="tag">以前の予約スタッフ(今は使われていません)</span>')
       + (G.userPw ? `<button class="btn sub sm" data-up="${i}">パスワード</button>` : '') + `${u.hasPw && !u.clearPw ? `<button class="btn sub sm" data-uc="${i}">外す</button>` : ''}<button class="btn danger sm" data-ud="${i}">削除</button>`
-      : `<span class="tag">${esc(u.role || '')}</span>`) + '</div>').join('')
+      : '') + '</div>').join('')
     + (fixed || G.users.length ? '' : '<p class="note" style="margin:0">まだ登録がありません。</p>');
   $('userAdd').hidden = !can; $('userSaveBar').hidden = !can; $('newUserPw').hidden = !G.userPw; $('userPwNote').hidden = !G.userPw;
   $('userPwNote').textContent = google ? 'パスワードは、会社の Google アカウントがない人(アルバイトなど)に使えます。決めたパスワードは本人に直接伝えてください。' : 'パスワードは8文字以上。決めたパスワードは本人に直接伝えてください(保存後は管理画面でも見られません)。';
@@ -850,7 +857,7 @@ $('addUser').onclick = () => {
   if (G.auth === 'google' && !npw && dom && email.split('@')[1] !== dom) return alert('会社のアカウント(@' + dom + ')以外の人は、パスワードを入れてください');
   if (G.auth !== 'google' && !npw && !confirm('パスワードがないと、この人はログインできません。このまま追加しますか?')) return;
   if (G.users.some(u => u.email === email) || (G.fixedAdmins || []).includes(email)) return alert('すでに登録されています');
-  G.users.push({ email, role: $('newRole').value, pw: npw }); $('newUser').value = ''; $('newUserPw').value = ''; $('newRole').value = '予約スタッフ'; dirty = true; drawUsers();
+  G.users.push({ email, role: '管理者', pw: npw }); $('newUser').value = ''; $('newUserPw').value = ''; dirty = true; drawUsers();
 };
 /* 届くメールの見え方(差し込み項目を例の値に置き換えて表示) */
 function mailPreviews() {
@@ -869,12 +876,23 @@ function mailPreviews() {
 /* 従業員画面のパスワード(すぐ保存) */
 function drawStaff() {
   drawUsers();
-  const has = G.staffPw !== undefined && (!G.me || G.me.main); $('staffBox').hidden = !has; $('loginOld').hidden = has || !$('userCard').hidden; if (!has) return;
+  const has = G.staffPw !== undefined && (!G.me || G.me.main); $('staffBox').hidden = !has; $('loginOld').hidden = has || !$('userCard').hidden;
+  const hasD = G.deskPw !== undefined && (!G.me || G.me.main); $('deskBox').hidden = !hasD;
+  if (hasD) { $('deskState').textContent = G.deskPw ? '(設定済み)' : '(未設定)'; $('deskClear').hidden = !G.deskPw; $('deskPw').value = ''; }
+  if (!has) return;
   $('staffState').textContent = G.staffPw ? '(設定済み)' : '(未設定)'; $('staffClear').hidden = !G.staffPw; $('staffPw').value = '';
 }
 $('staffSave').onclick = busy($('staffSave'), async () => {
   const v = $('staffPw').value.trim(); if (v.length < 4) return alert('4文字以上で入力してください');
   await api('adminSave', { staffPw: v }); G.staffPw = true; drawStaff(); alert('従業員用パスワードを設定しました');
+});
+$('deskSave').onclick = busy($('deskSave'), async () => {
+  const v = $('deskPw').value.trim(); if (v.length < 6) return alert('6文字以上で入力してください');
+  await api('adminSave', { deskPw: v }); G.deskPw = true; drawStaff(); alert('予約スタッフ用パスワードを設定しました。予約スタッフの人に伝えてください');
+});
+$('deskClear').onclick = busy($('deskClear'), async () => {
+  if (!confirm('予約スタッフ用パスワードを外しますか?(外すと、予約スタッフは予約スタッフ画面に入れなくなります)')) return;
+  await api('adminSave', { deskPw: '' }); G.deskPw = false; drawStaff();
 });
 $('staffClear').onclick = busy($('staffClear'), async () => {
   if (!confirm('従業員用パスワードを外しますか?(外すと、洗車スタッフは従業員画面に入れなくなります)')) return;
