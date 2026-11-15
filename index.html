@@ -302,6 +302,8 @@ body.hasbar .toast{bottom:calc(100px + env(safe-area-inset-bottom))}
 .dlg-body .when small{display:block;font-size:12px;font-weight:500;color:#c7c7cc}
 .dlg-body .limit{padding:10px 12px;border-radius:12px;background:#fdf1dd;color:#7a4a00;font-size:13px}
 .dlg-body .limit b{font-variant-numeric:tabular-nums}
+.ico{display:inline-block;width:24px;height:24px;margin:0 1px;padding:2px;border-radius:6px;background:#f2f1ee;vertical-align:-6px;box-shadow:0 0 0 1px #e4e2dd}
+.dlg-body li small,.steps li small{color:var(--sub);font-size:12px}
 .dlg-body ol{margin:6px 0 10px;padding-left:1.4em;font-size:13.5px}
 .dlg-body .os{margin:10px 0 0;font-size:12px;font-weight:600;color:var(--sub)}
 .dlg-body .warn{padding:12px 14px;border-radius:12px;background:#fbefec;color:#8a2a1c;font-size:13.5px}
@@ -1102,15 +1104,23 @@ function ruleHtml() {
   return `<p>${nl(t)}</p><ul>${holdRules().map(r => `<li><span>${r[0]}</span><b>${r[1]}時間以内</b></li>`).join('')}</ul>`;
 }
 
+/* ---------- ホーム画面への追加の手順(iPhone は新旧どちらの Safari でも分かるように、画面のマークを添える) ---------- */
+const ICON_PAGEMENU = '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path fill="#a9a9ad" d="M5.5 2.5h6.2a1 1 0 0 1 1 1v1.6a1.7 1.7 0 1 1 0 3.2v1.4a1 1 0 0 1-1 1H5.5a1 1 0 0 1-1-1V8.4a1.6 1.6 0 1 0 0-3.1V3.5a1 1 0 0 1 1-1z"/><rect x="4.5" y="13.3" width="15" height="2.2" rx="1.1" fill="#1d1d1f"/><rect x="4.5" y="18.3" width="10.5" height="2.2" rx="1.1" fill="#1d1d1f"/></svg>';
+const ICON_SHARE = '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.5 9.5H7.3A2.3 2.3 0 0 0 5 11.8v7.4a2.3 2.3 0 0 0 2.3 2.3h9.4a2.3 2.3 0 0 0 2.3-2.3v-7.4a2.3 2.3 0 0 0-2.3-2.3h-1.2M12 2.8v12M8.6 6.2 12 2.8l3.4 3.4" fill="none" stroke="#1d1d1f" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+const IOS_STEPS = '<p class="os">iPhone(Safari)</p><ol>'
+  + '<li>画面下のアドレス欄の左にあるボタン ' + ICON_PAGEMENU + ' を押す<br><small>(このボタンがない iPhone は、画面下の共有ボタン ' + ICON_SHARE + ')</small></li>'
+  + '<li>「ホーム画面に追加」を選ぶ<br><small>(見当たらないときは「共有」' + ICON_SHARE + 'の中にあります)</small></li>'
+  + '<li>右上の「追加」を押す</li></ol>'
+  + '<p class="note" style="margin:4px 0 0">LINE などのアプリの中で開いている場合は、一度 Safari で開いてから追加してください。マークの形は、iPhone の設定によって少し違うことがあります。</p>';
+const ANDROID_STEPS = '<p class="os">Android(Chrome)</p><ol><li>右上のメニュー(︙)を押す</li><li>「ホーム画面に追加」または「アプリをインストール」を選ぶ</li></ol>';
+
 /* ---------- はじめて開いたときの案内(ホーム画面への追加) ---------- */
 const FIRST_TXT = 'ホーム画面に追加すると、アプリのようにすぐに開けます。\nアプリにしてからご入力いただくと、お名前や車両ナンバーがこの端末に保存され、次回からご入力の手間が省けます。';
 async function firstGuide() {
   const t = txt('はじめて', FIRST_TXT);
   if (!t || isStandalone() || load('wash_first_seen', false) || !$('dlg').hidden) return;
   save('wash_first_seen', true); // 一度出したら次からは出さない(すぐ閉じてもよいように)
-  const steps = isIOS
-    ? '<p class="os">iPhone(Safari)</p><ol><li>画面下の共有ボタン(□に↑)を押す</li><li>「ホーム画面に追加」を選ぶ</li></ol>'
-    : '<p class="os">Android(Chrome)</p><ol><li>右上のメニュー(︙)を押す</li><li>「ホーム画面に追加」を選ぶ</li></ol>';
+  const steps = isIOS ? IOS_STEPS : ANDROID_STEPS;
   const btns = (installEv ? [{ label: 'ホーム画面に追加する', value: 'install' }] : []).concat([{ label: '閉じる', cls: installEv ? 'ghost' : 'cta', value: 'close' }]);
   const v = await dialog('アプリとして使えます', `<p>${nl(t)}</p>${steps}<p class="note" style="margin:0">この案内は「洗車システムについて」からいつでも見られます。</p>`, btns);
   if (v === 'install' && installEv) { installEv.prompt(); await installEv.userChoice; installEv = null; }
@@ -1159,13 +1169,8 @@ function installHtml() {
   if (isStandalone()) return '<div class="inst"><img src="apple-touch-icon.png" alt=""><div><b>ホーム画面から開いています</b>このままアプリのようにお使いいただけます。</div></div>';
   return `<div class="inst"><img src="apple-touch-icon.png" alt=""><div><b>アプリのように使えます</b>ホーム画面に追加すると、すぐに開けて、登録したお車の情報も残りやすくなります。</div></div>
     ${installEv ? '<button class="inst-go" id="instGo">ホーム画面に追加する</button>' : ''}
-    <div class="steps">
-      <p class="os">iPhone(Safari)</p>
-      <ol><li>画面下の共有ボタン(□に↑のマーク)を押す</li><li>「ホーム画面に追加」を選び、右上の「追加」を押す</li></ol>
-      <p class="os">Android(Chrome)</p>
-      <ol><li>右上のメニュー(︙)を押す</li><li>「ホーム画面に追加」または「アプリをインストール」を選ぶ</li></ol>
-    </div>
-    ${isIOS ? '<p class="note">※ LINEなどのアプリ内で開いている場合は、一度Safariで開いてから追加してください。</p>' : ''}`;
+    <div class="steps">${IOS_STEPS}${ANDROID_STEPS}</div>
+`;
 }
 function openAbout() {
   const rules = rulesHtml();
