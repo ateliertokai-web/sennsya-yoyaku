@@ -63,6 +63,13 @@ button{font:inherit;color:inherit;letter-spacing:inherit;cursor:pointer}
 .tanto::before{content:"担当";font-size:10px;color:var(--mute);letter-spacing:.06em}
 .row.has-t .plate{grid-row:2;align-self:end}
 .row.past{opacity:.42}
+.row.todo{opacity:1}
+.mk{grid-column:1/-1;display:flex;gap:8px;margin-top:6px}
+.mk button{min-height:38px;padding:0 14px;border:0;border-radius:99px;background:var(--soft);font:inherit;font-size:13px;font-weight:600;color:var(--ink);cursor:pointer}
+.mk button.on{background:var(--ink);color:#fff}
+.mk button.on.ns{background:#c4412d}
+.memo{grid-column:1/-1;font-size:12.5px;color:#7a5a17}
+@media print{.mk{display:none}}
 .row.now{background:#fffaf0;box-shadow:inset 4px 0 0 var(--gold)}
 .brk{display:flex;align-items:center;gap:10px;padding:8px 18px;background:var(--soft);font-size:12px;font-weight:600;color:var(--sub);letter-spacing:.06em;border-bottom:1px solid var(--line)}
 .brk::before,.brk::after{content:"";flex:1;height:1px;background:#dcdad5}
@@ -325,12 +332,24 @@ function draw(d) {
     d.list.forEach(r => {
       if (!lunchShown && lunchE > lunchS && toM(r.start) >= lunchE && d.list.some(x => toM(x.start) < lunchS)) { h += `<div class="brk">昼休憩 ${d.lunch[0]}〜${d.lunch[1]}</div>`; lunchShown = true; }
       const st = isToday ? (toM(r.end) <= nm ? 'past' : toM(r.start) <= nm ? 'now' : '') : '';
-      h += `<div class="row ${st} ${r.staff ? 'has-t' : ''}">${r.staff ? `<div class="tanto" title="${esc((r.staffStore ? r.staffStore + ' ' : '') + r.staff)}">${esc(r.staff)}</div>` : ''}<div class="tm"><b>${r.start}</b><small>〜${r.end}</small></div>`
+      const canMk = d.canMark && r.id && !r.hold && d.date <= d.today;
+      h += `<div class="row ${st} ${r.staff ? 'has-t' : ''} ${canMk && !r.mark ? 'todo' : ''}">${r.staff ? `<div class="tanto" title="${esc((r.staffStore ? r.staffStore + ' ' : '') + r.staff)}">${esc(r.staff)}</div>` : ''}<div class="tm"><b>${r.start}</b><small>〜${r.end}</small></div>`
         + `<div class="model">${esc(r.model)}${r.large ? '<i>大型</i>' : ''}${r.hold ? '<i class="hold">案内中</i>' : ''}</div>`
         + `<div class="name"><b>${esc(r.name)}</b> 様</div>`
-        + `<div class="plate">${esc(r.plate)}</div></div>`;
+        + `<div class="plate">${esc(r.plate)}</div>`
+        + (r.memo ? `<div class="memo">メモ: ${esc(r.memo)}</div>` : '')
+        // 来店の記録(今日までの予約だけ)。もう一度押すと取り消し
+        + (canMk ? `<div class="mk"><button type="button" class="${r.mark === '来店' ? 'on' : ''}" data-mk="${esc(r.id)}" data-v="来店">${r.mark === '来店' ? '✓ ' : ''}来店</button><button type="button" class="ns ${r.mark === '未来店' ? 'on' : ''}" data-mk="${esc(r.id)}" data-v="未来店">${r.mark === '未来店' ? '✓ ' : ''}来られなかった</button></div>` : '')
+        + '</div>';
     });
     $('list').innerHTML = '<div class="list">' + h + '</div>';
+    $('list').querySelectorAll('[data-mk]').forEach(b => b.onclick = async () => {
+      const r = d.list.find(x => x.id === b.dataset.mk), v = r.mark === b.dataset.v ? '' : b.dataset.v;
+      if (v === '未来店' && !confirm(r.name + ' 様を「来られなかった」にしますか?')) return;
+      b.disabled = true;
+      try { await waiting(api({ action: 'staffMark', id: r.id, mark: v })); r.mark = v; draw(d); }
+      catch (e) { alert(e.message); b.disabled = false; }
+    });
   }
   const t = new Date();
   $('upd').textContent = pad(t.getHours()) + ':' + pad(t.getMinutes()) + ' 更新(1分ごとに自動で更新します)';
