@@ -576,6 +576,9 @@ function setBar(o) {
 let cfg, profile = load('wash_profile', {}), mine = load('wash_mine', []);
 /* この端末に登録したお車(複数台) */
 let cars = load('wash_cars', []);
+/* この端末で使ったメールアドレス(途中で変えても、お客様情報の削除で前のアドレスの登録も消せるように。5件まで) */
+const rememberMail = m => { m = String(m || '').trim().toLowerCase(); if (!m) return; const a = load('wash_mails', []).filter(x => x !== m); a.unshift(m); save('wash_mails', a.slice(0, 5)); };
+if (profile.email) rememberMail(profile.email);
 if (!cars.length && profile.plate && profile.model) { cars = [{ model: profile.model, plate: profile.plate }]; save('wash_cars', cars); }
 let large = false, curYm = null, monthCache = {}, pick = null;
 /* ナンバーの比較用(空白・ハイフンなどを無視) */
@@ -745,7 +748,7 @@ $('infoNext').onclick = () => {
     if (j >= 0) cars[j].model = p.model; else cars.push({ model: p.model, plate: p.plate });
     save('wash_cars', cars);
   }
-  profile = p; save('wash_profile', p); large = isLarge(p.model);
+  profile = p; save('wash_profile', p); rememberMail(p.email); large = isLarge(p.model);
   if (bookedKey !== np(p.plate) + '|' + p.email.toLowerCase()) refreshBooked();
   if (afterInfo === 'wait') openWait(); else openCal();
 };
@@ -960,7 +963,7 @@ function doneView(r, title) {
 $('lGo').onclick = busy($('lGo'), async () => {
   const email = $('lMail').value.trim(), plate = $('lPlate').value.trim();
   const r = await api('lookup', { email, plate });
-  profile.email = email; profile.plate = plate; save('wash_profile', profile);
+  profile.email = email; profile.plate = plate; save('wash_profile', profile); rememberMail(email);
   let h = '<h3>' + TH('look.res') + '</h3>';
   h += r.res.length ? r.res.map(x => `<div class="item"><div class="t">${dJa(x.date)} ${x.start}〜${x.end}</div><div class="s">${esc(x.model)} / ${TH('look.no')} ${esc(x.no)}</div><button class="danger" data-cr="${x.id}">${TH('look.cancelBtn')}</button></div>`).join('') : '<p class="note">' + TH('look.noRes') + '</p>';
   if (r.waits.length) h += '<h3>' + TH('look.waits') + '</h3>' + r.waits.map((x, i) => `<div class="item"><div class="t">${esc(x.summary)}</div><div class="s">${x.hold ? '<b>' + TH('look.waitHold', { '日時': dJa(x.hold.date) + ' ' + x.hold.start }) + '</b>' : TH('look.waitNormal')}</div>${x.hold ? `<button class="cta" style="grid-column:1/-1;margin-top:8px;min-height:44px" data-ho="${i}">${TH('look.waitHoldBtn')}</button>` : `<button class="danger" data-cw="${x.id}">${TH('look.waitStopBtn')}</button>`}</div>`).join('');
@@ -1157,14 +1160,15 @@ const DEL_Q = '当店でお預かりしている、この洗車予約アプリ�
 const DEL_TXT = 'この端末に保存したお客様情報と、当店でお預かりしているお客様の情報(お名前・電話番号・メールアドレス・車両ナンバー)を、すべて削除いたします。\nご予約中・キャンセル待ち中の内容も、すべて取り消し・削除されます。この操作は元に戻せません。';
 async function deleteMeFlow() {
   const plates = [...new Set(cars.map(c => c.plate).concat(profile.plate ? [profile.plate] : []))];
-  const has = !!(profile.email && plates.length);
-  const what = has ? `<div class="list">${TH('del.mail')}: ${esc(profile.email)}<br>${TH('del.car')}: ${plates.map(esc).join('、')}</div>` : '<p class="note">' + TH('del.noData') + '</p>';
+  const mails = [...new Set([profile.email].concat(load('wash_mails', [])).map(m => String(m || '').trim().toLowerCase()).filter(Boolean))].slice(0, 5);
+  const has = !!(mails.length && plates.length);
+  const what = has ? `<div class="list">${TH('del.mail')}: ${mails.map(esc).join('、')}<br>${TH('del.car')}: ${plates.map(esc).join('、')}</div>` : '<p class="note">' + TH('del.noData') + '</p>';
   const v = await dialog(T('del.title'), `<p style="font-weight:600;font-size:15px">${nl(txt('情報削除確認', DEL_Q))}</p><p class="warn">${nl(txt('情報削除', DEL_TXT))}</p>${what}`, [{ label: T('del.yes'), cls: 'cta red', value: 'yes' }, { label: T('del.no'), cls: 'ghost', value: 'no' }]);
   if (v !== 'yes') return;
   const sure = await dialog(T('del.sureTitle'), '<p>' + TH('del.sureText') + '</p>', [{ label: T('del.sureYes'), cls: 'cta red', value: 'yes' }, { label: T('app.cancel'), cls: 'ghost', value: 'no' }], { modal: true });
   if (sure !== 'yes') return;
   try {
-    if (has) await waiting(api('deleteMe', { email: profile.email, plates }));
+    if (has) await waiting(api('deleteMe', { email: mails[0], emails: mails.slice(1), plates }));
   } catch (e) { toast(e.message, true); return; } // サーバーで消せなかったときは、端末の情報も残しておく(もう一度試せるように)
   // 端末の情報はすべて消し、初めて開いたときと同じ状態に戻す(はじめての案内も、次に開いたときにまた出る)
   try { Object.keys(localStorage).filter(k => /^wash_/.test(k)).forEach(k => localStorage.removeItem(k)); } catch (e) {}
