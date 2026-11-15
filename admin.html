@@ -181,6 +181,59 @@ textarea:focus,input:focus{background:#fff;box-shadow:0 0 0 1.5px var(--ink);out
 .spedit input[type=date]{background:#fff;max-width:240px}
 .spedit .row2{display:flex;gap:8px;justify-content:flex-end;margin-top:14px}
 
+/* 画面で編集(お客様画面の見本) */
+.mode2{display:flex;gap:4px;width:max-content;margin:0 0 14px;padding:4px;border-radius:12px;background:#eae8e3}
+.mode2 button{min-height:36px;padding:0 16px;border:0;border-radius:9px;background:none;color:var(--sub);font-size:13.5px;font-weight:600}
+.mode2 button.on{background:#fff;color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.pvtabs{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 14px}
+.pvtabs button{min-height:34px;padding:0 13px;border:0;border-radius:99px;background:var(--card);box-shadow:inset 0 0 0 1px var(--line);font-size:12.5px;font-weight:600;color:var(--sub)}
+.pvtabs button.on{background:var(--ink);color:#fff;box-shadow:none}
+.pvgrid{display:grid;grid-template-columns:auto minmax(0,1fr);gap:18px;align-items:start}
+@media (max-width:760px){.pvgrid{grid-template-columns:1fr}.pvside{order:-1}}
+.phone{width:330px;max-width:100%;margin:0 auto;padding:10px;border-radius:44px;background:#1d1d1f;box-shadow:0 18px 50px rgba(0,0,0,.25)}
+.phone-in{position:relative;height:640px;overflow:auto;border-radius:34px;background:#f5f4f1;font-size:13.5px;line-height:1.7;color:var(--ink)}
+.pv-top{display:flex;align-items:center;gap:9px;padding:26px 18px 4px}
+.pv-top::before{content:"";flex:none;width:5px;height:24px;border-radius:3px;background:linear-gradient(#d6b46a,#a8853d)}
+.pv-top b{display:block;font-size:14px;letter-spacing:.1em}
+.pv-sub{margin:0;font-size:10.5px;color:var(--sub)}
+.pv-body{padding:14px 16px 20px}
+.pv-body h2{margin:6px 0 4px;font-size:19px;font-weight:600;letter-spacing:.04em}
+.pv-lead{margin:0 0 14px;font-size:12.5px;color:var(--sub);line-height:1.8}
+.pv-note{margin:8px 2px 0;font-size:11.5px;color:var(--sub)}
+.pv-card{margin:10px 0;padding:12px 14px;border-radius:16px;background:#fff;box-shadow:0 0 0 1px var(--line)}
+.pv-btn{display:flex;align-items:center;justify-content:center;min-height:46px;margin:10px 0 0;border-radius:99px;background:var(--ink);color:#fff;font-weight:600;letter-spacing:.1em}
+.pv-btn.ghost{background:#fff;color:var(--ink);box-shadow:inset 0 0 0 1px var(--line)}
+.pv-btn.red{background:#c4412d}
+.pv-row{display:flex;justify-content:space-between;align-items:center;min-height:44px;padding:0 14px;border-radius:16px;background:#fff;box-shadow:0 0 0 1px var(--line);font-size:13px}
+.pv-link{margin:14px 0 0;text-align:center;font-size:12px;font-weight:600;color:var(--sub);text-decoration:underline}
+.pv-tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.pv-tiles i{display:grid;place-items:center;height:40px;border-radius:10px;background:#f2f1ee;font-style:normal;font-weight:600;font-size:12px}
+.pv-tiles i.on{background:var(--ink);color:#fff}
+.pv-dim{position:absolute;inset:0;display:flex;align-items:center;padding:14px;background:rgba(20,20,22,.45)}
+.pv-dlg{width:100%;padding:18px 16px 14px;border-radius:18px;background:#fff;box-shadow:0 16px 40px rgba(0,0,0,.25)}
+.pv-dlg h4{margin:0 0 8px;font-size:15px;font-weight:600}
+.pv-when{margin:10px 0;padding:10px 12px;border-radius:12px;background:var(--ink);color:#fff;font-weight:600}
+.pv-when small{display:block;font-size:10.5px;font-weight:500;color:#c7c7cc}
+.pv-limit{padding:8px 10px;border-radius:10px;background:#fdf1dd;color:#7a4a00;font-size:11.5px}
+.pv-warn{padding:10px 12px;border-radius:10px;background:#fbefec;color:#8a2a1c;font-size:12px}
+.pv-rule{padding:10px 12px;border-radius:12px;background:#fdf1dd;color:#6b4300;font-size:11.5px}
+.pv-rule li{display:flex;justify-content:space-between;padding:2px 0;border-top:1px dashed #ecd3a6;list-style:none}
+.pv-rule ul{margin:6px 0 0;padding:0}
+.pv-sheet{position:absolute;left:0;right:0;bottom:0;top:60px;padding:14px 16px;border-radius:20px 20px 0 0;background:#f5f4f1;overflow:auto;box-shadow:0 -8px 30px rgba(0,0,0,.15)}
+.pv-notice{padding:10px 12px;border-radius:12px;background:var(--ink);color:#fff;font-size:12px;font-weight:600}
+.pv-h4{margin:14px 2px 6px;font-size:11px;font-weight:600;color:var(--sub);letter-spacing:.1em}
+.pv-steps{font-size:11.5px;color:var(--sub);margin:6px 0 0}
+/* 書き換えられる文字 */
+.ed{white-space:pre-line;border-radius:6px;outline:1.5px dashed #d6b46a;outline-offset:2px;cursor:text;min-height:1.4em}
+.ed:hover{background:rgba(214,180,106,.12)}
+.ed:focus{outline:2px solid #b8954a;background:#fffaf0;color:var(--ink)}
+.pv-btn .ed,.pv-when .ed{outline-color:#d6b46a}
+.pv-btn .ed:focus{background:transparent;color:#fff}
+.ed:empty::before{content:attr(data-ph);color:#b4b3ae;font-weight:400;font-size:11.5px}
+.pvside h3{margin:0 0 4px}
+.pvside .tags{margin-top:10px}
+.pvside .kv{margin:10px 0 0;font-size:12px;color:var(--sub)}
+
 /* メールの文章 */
 .sech{margin:26px 4px 10px;font-size:13px;color:var(--sub);letter-spacing:.1em}
 .sech:first-child{margin-top:0}
@@ -189,6 +242,10 @@ textarea:focus,input:focus{background:#fff;box-shadow:0 0 0 1.5px var(--ink);out
 .tags{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 0}
 .tags button{min-height:30px;padding:0 11px;border:0;border-radius:99px;background:#f3ecdc;color:#7a5a1e;font-size:12px;font-weight:600}
 .tags button:hover{background:#ece0c4}
+.mailpv{margin-top:14px;padding:14px 16px;border-radius:12px;background:var(--bg);box-shadow:inset 0 0 0 1px var(--line);font-size:13px;line-height:1.8}
+.mailpv .mh{margin:0 0 8px;padding-bottom:8px;border-bottom:1px solid var(--line);font-size:12px;color:var(--sub)}
+.mailpv .mh b{display:block;color:var(--ink);font-size:13.5px}
+.mailpv pre{margin:0;font:inherit;white-space:pre-wrap;overflow-wrap:anywhere}
 
 /* 台ごとの開始時間 */
 .lanesw{margin:14px 0 4px;font-size:14px}
@@ -324,8 +381,19 @@ textarea:focus,input:focus{background:#fff;box-shadow:0 0 0 1.5px var(--ink);out
 
   <div id="t-txt" class="pane" hidden>
     <h3 class="sech">画面の文章</h3>
-    <p class="note hint" style="margin-top:0">お客様の画面に出る文章です。空にすると、その文章は表示されなくなります。</p>
-    <div id="txtList" class="card pad" style="padding-top:4px"></div>
+    <div class="mode2" id="txtMode" role="tablist"><button type="button" class="on" data-m="screen">画面で編集</button><button type="button" data-m="list">一覧で編集</button></div>
+    <div id="pvWrap">
+      <p class="note hint" style="margin-top:0">お客様の画面と同じ見た目です。点線で囲まれた文字を押すと、その場で書き換えられます。書き換えたら下の「文章を保存する」を押してください。</p>
+      <div class="pvtabs" id="pvTabs" role="tablist" aria-label="画面を選ぶ"></div>
+      <div class="pvgrid">
+        <div class="phone"><div class="phone-in" id="pvScreen"></div></div>
+        <div class="card pad pvside" id="pvSide"></div>
+      </div>
+    </div>
+    <div id="listWrap" hidden>
+      <p class="note hint" style="margin-top:0">お客様の画面に出る文章です。空にすると、その文章は表示されなくなります(一部は最初の文に戻ります)。</p>
+      <div id="txtList" class="card pad" style="padding-top:4px"></div>
+    </div>
     <div id="mailBox" hidden>
       <h3 class="sech">メールの文章</h3>
       <p class="note hint" style="margin-top:0">お客様に届くメールです。下のタグを押すと、カーソルの位置に差し込み項目が入ります(送るときに、お名前や日時などに置き換わります)。件名の前には自動で【店名】が付きます。本文を空にすると、最初の文章に戻ります。</p>
@@ -599,6 +667,20 @@ $('addUser').onclick = () => {
   if (G.users.some(u => u.email === email) || (G.fixedAdmins || []).includes(email)) return alert('すでに登録されています');
   G.users.push({ email, role: $('newRole').value }); $('newUser').value = ''; dirty = true; drawUsers();
 };
+/* 届くメールの見え方(差し込み項目を例の値に置き換えて表示) */
+function mailPreviews() {
+  const shop = (sv('店舗名') || {}).v || '洗車予約', contact = (sv('問い合わせ先') || {}).v || shop;
+  const ex = { '氏名': '山田 太郎', '日時': '11月20日(金) 10:00〜10:45', '予約番号': '123456', 'お車': 'NX', 'ナンバー': '鹿児島 330 あ 12-34', '担当': '中村', '期限': '11月18日 16:00',
+    '対象': '11月20日(金)、11月21日(土)', '日数': '2', '店名': shop, '問い合わせ先': contact, 'リンク': '(予約サイトを開いてご確認ください)' };
+  const fill = t => String(t || '').replace(/\{([^{}\n]+)\}/g, (m, k) => ex[k] !== undefined ? ex[k] : m);
+  const sig = sv('メ_署名') ? fill(sv('メ_署名').v).trim() : '';
+  MAILS.forEach(m => {
+    const box = $('pv-' + m[0]); if (!box) return;
+    const subj = sv('メ_' + m[0] + '件名'), body = sv('メ_' + m[0]);
+    if (m[0] === '署名') { box.innerHTML = `<p class="mh">どのメールにも最後に付きます</p><pre>${esc(sig || '(署名なし)')}</pre>`; return; }
+    box.innerHTML = `<p class="mh">届くメールの見え方(例)<b>【${esc(shop)}】${esc(subj ? fill(subj.v) : '')}</b></p><pre>${body && body.v.trim() ? esc(fill(body.v)) : '(空欄のため、最初の文章が送られます)'}${sig ? '\n\n' + esc(sig) : ''}</pre>`;
+  });
+}
 /* 従業員画面のパスワード(すぐ保存) */
 function drawStaff() {
   drawUsers();
@@ -744,7 +826,77 @@ $('saveTime').onclick = busy($('saveTime'), async () => {
 
 /* 画面の文章 */
 const TXT_LABEL = { 'ヘッダー': '一番上(店名の下)', 'トップ見出し': 'トップ画面の見出し(洗車を予約する)', 'トップ': 'トップ画面の説明', '予約ボタン': 'トップ画面の予約ボタン', 'トップご案内': 'トップ画面の案内表', '洗車時間': '車種の下の洗車時間', 'お車の情報': 'お車の情報画面の注意書き', 'キャンセル待ち': 'キャンセル待ち画面の説明', '完了': '予約完了画面の注意書き', '空き案内': 'キャンセル待ちの順番が来たときの案内(予約サイトを開いたときに出る)', '空き案内期限': '上の案内の期限の説明({残り}・{期限}が置き換わる)', '空き案内取消': '「いいえ」を押したときの確認', 'はじめて': '初めて開いたときの案内(ホーム画面への追加)', '情報削除': '「お客様情報をすべて削除」の確認', '情報削除確認': '「お客様情報をすべて削除」の問いかけ(一番上)', '待ち期限案内': 'キャンセル待ちの期限の説明(キャンセル待ち画面・洗車システムについて。下に期限の時間が付く)', '待ち期限切れ': '案内の期限が過ぎたお客様へのお知らせ({期限}が置き換わる)' };
+/* ---------- 画面で編集: お客様画面の見本の上で、文章をその場で書き換える ---------- */
+// 空欄のときの扱い: hide = 表示されない / 既定の文に戻る(既定の文)
+const PV_EMPTY = { 'ヘッダー': 'hide', 'トップ見出し': 'hide', 'トップ': 'hide', 'トップご案内': 'hide', '洗車時間': 'hide', 'お車の情報': 'hide', 'キャンセル待ち': 'hide', '完了': 'hide', 'はじめて': 'hide', '待ち期限案内': 'hide',
+  '予約ボタン': '予約する', '空き案内': '最初の文', '空き案内期限': '最初の文', '空き案内取消': '最初の文', '待ち期限切れ': '最初の文', '情報削除確認': '最初の文', '情報削除': '最初の文' };
+const PV_TAGS = { '洗車時間': ['分'], 'トップご案内': ['普通分', '大型分', '昼休憩', '店名'], 'トップ': ['店名'], 'ヘッダー': ['店名'], '空き案内期限': ['残り', '期限'], '待ち期限切れ': ['期限'] };
+const PV_SCREENS = [
+  ['home', 'ホーム'], ['info', 'お車の情報'], ['wait', 'キャンセル待ち'], ['done', '予約完了'], ['offer', '空きのご案内'], ['offerNo', '取り消しの確認'],
+  ['expired', '期限切れ'], ['first', 'はじめての案内'], ['delete', '削除の確認'], ['about', '洗車システムについて']
+];
+let pvCur = 'home', txtMode = 'screen';
+/** 書き換えられる文字(設定にない古いサーバーでは出さない) */
+function ed(k, tag, cls) {
+  const s = sv('文_' + k); if (!s) return '';
+  const e = PV_EMPTY[k], ph = e === 'hide' ? '(空欄のため表示されません)' : '(空欄: ' + (e === '最初の文' ? '最初の文' : '「' + e + '」') + 'が表示されます)';
+  return `<${tag || 'div'} class="ed ${cls || ''}" data-k="文_${k}" data-ph="${esc(ph)}" tabindex="0">${esc(s.v)}</${tag || 'div'}>`;
+}
+function pvTop() { const shop = (sv('店舗名') || {}).v || '洗車予約'; return `<div class="pv-top"><div><b>${esc(shop)}</b>${ed('ヘッダー', 'p', 'pv-sub')}</div></div>`; }
+function pvHome(extra) {
+  return pvTop() + `<div class="pv-body">${ed('トップ見出し', 'h2')}${ed('トップ', 'p', 'pv-lead')}<div style="height:150px"></div>`
+    + `<p class="pv-link">洗車システムについて</p><div class="pv-btn">${ed('予約ボタン', 'span')}</div><div class="pv-row" style="margin-top:10px">予約の確認・キャンセル<span>›</span></div></div>` + (extra || '');
+}
+function pvRules() {
+  const v = k => +((sv(k) || {}).v) || '';
+  return sv('案内の期限(2週間以上先)') ? `<ul><li><span>ご予約日が2週間以上先</span><b>${v('案内の期限(2週間以上先)')}時間以内</b></li><li><span>ご予約日が2週間以内</span><b>${v('案内の期限(2週間以内)')}時間以内</b></li><li><span>ご予約日が3日以内</span><b>${v('案内の期限(3日以内)')}時間以内</b></li></ul>` : '';
+}
+const pvWhen = '<div class="pv-when">11月20日(金) 10:00〜10:45<small>NX ・ 鹿児島 330 あ 12-34 ・ 担当 中村</small></div>';
+const PV_RENDER = {
+  home: () => pvHome(),
+  info: () => pvTop() + `<div class="pv-body"><div class="pv-row" style="width:max-content;min-height:32px">‹ もどる</div><h2>お車の情報</h2><div class="pv-card"><div class="pv-note" style="margin:0 0 6px">車種</div><div class="pv-tiles"><i>UX</i><i class="on">NX</i><i>RX</i><i>IS</i></div></div>${ed('洗車時間', 'p', 'pv-note')}<p class="pv-note" style="font-weight:600;margin-top:14px">ご連絡先</p><div class="pv-card">山田 太郎 様<br><small style="color:#888">090-1234-5678 ・ yamada@example.com</small></div>${ed('お車の情報', 'p', 'pv-note')}<div class="pv-btn">日にちを選ぶ</div></div>`,
+  wait: () => pvTop() + `<div class="pv-body"><div class="pv-row" style="width:max-content;min-height:32px">‹ もどる</div><h2>キャンセル待ち</h2>${ed('キャンセル待ち', 'p', 'pv-lead')}${sv('文_待ち期限案内') ? `<div class="pv-rule">${ed('待ち期限案内', 'p')}${pvRules()}</div>` : ''}<p class="pv-note" style="font-weight:600;margin-top:14px">対象の選び方</p><div class="pv-tiles" style="grid-template-columns:1fr 1fr"><i class="on">日にちで選ぶ</i><i>曜日で選ぶ</i></div></div>`,
+  done: () => pvTop() + `<div class="pv-body" style="text-align:center"><div style="width:46px;height:46px;margin:16px auto 10px;border-radius:50%;background:#1d1d1f;color:#d6b46a;display:grid;place-items:center">✓</div><h2>予約が完了しました</h2><p class="pv-note">予約番号</p><div style="font-size:30px;font-weight:600;letter-spacing:.14em">123456</div><div class="pv-card" style="text-align:left">日時 11月20日(金) 10:00〜10:45<br>お車 NX</div><div style="text-align:left">${ed('完了', 'p', 'pv-note')}</div><div class="pv-btn">トップへ</div></div>`,
+  offer: () => pvHome(`<div class="pv-dim"><div class="pv-dlg"><h4>空きが出ました</h4>${ed('空き案内', 'p')}${pvWhen}<div class="pv-limit">${ed('空き案内期限', 'p')}</div><div class="pv-btn">はい(予約する)</div><div class="pv-btn ghost">いいえ</div></div></div>`),
+  offerNo: () => pvHome(`<div class="pv-dim"><div class="pv-dlg"><h4>キャンセル待ちの取り消し</h4>${ed('空き案内取消', 'p')}<div class="pv-btn red">取り消す</div><div class="pv-btn ghost">戻る</div></div></div>`),
+  expired: () => pvHome(`<div class="pv-dim"><div class="pv-dlg"><h4>ご案内の期限が過ぎました</h4>${ed('待ち期限切れ', 'p')}${pvWhen}<div class="pv-btn">閉じる</div></div></div>`),
+  first: () => pvHome(`<div class="pv-dim"><div class="pv-dlg"><h4>アプリとして使えます</h4>${ed('はじめて', 'p')}<p class="pv-steps">iPhone(Safari)<br>1. 画面下のアドレス欄の左のボタンを押す<br>2. 「ホーム画面に追加」を押す<br>3. 右上の「追加」を押す</p><div class="pv-btn">閉じる</div></div></div>`),
+  delete: () => pvHome(`<div class="pv-dim"><div class="pv-dlg"><h4>お客様情報の削除</h4>${ed('情報削除確認', 'p', '')}<div class="pv-warn" style="margin-top:8px">${ed('情報削除', 'p')}</div><div class="pv-card" style="font-size:11.5px">メール: yamada@example.com<br>お車: 鹿児島 330 あ 12-34</div><div class="pv-btn red">削除する</div><div class="pv-btn ghost">やめる</div></div></div>`),
+  about: () => pvHome(`<div class="pv-sheet"><b style="font-size:14px">洗車システムについて</b><div class="pv-notice" style="margin-top:10px">この予約はレクサス鹿児島東開でのみ有効です。</div><p class="pv-h4">ご案内(1行に1項目、「見出し:内容」の形)</p><div class="pv-card">${ed('トップご案内', 'div')}</div>${sv('文_待ち期限案内') ? `<p class="pv-h4">キャンセル待ちについて</p><div class="pv-rule">${ed('待ち期限案内', 'p')}${pvRules()}</div>` : ''}</div>`)
+};
+function drawPreview() {
+  $('pvTabs').innerHTML = PV_SCREENS.map(([k, n]) => `<button type="button" role="tab" class="${k === pvCur ? 'on' : ''}" data-pv="${k}">${n}</button>`).join('');
+  $('pvTabs').querySelectorAll('[data-pv]').forEach(b => b.onclick = () => { pvCur = b.dataset.pv; drawPreview(); });
+  $('pvScreen').innerHTML = PV_RENDER[pvCur](); $('pvScreen').scrollTop = 0;
+  const eds = [...$('pvScreen').querySelectorAll('.ed')];
+  eds.forEach(el => {
+    el.contentEditable = 'plaintext-only';
+    if (el.contentEditable !== 'plaintext-only') {
+      el.contentEditable = 'true';
+      el.addEventListener('paste', ev => { ev.preventDefault(); document.execCommand('insertText', false, (ev.clipboardData || window.clipboardData).getData('text')); });
+    }
+    el.oninput = () => { sv(el.dataset.k).v = el.innerText.replace(/\n$/, ''); dirty = true; };
+    el.onfocus = () => pvSide(el);
+    el.onkeydown = ev => { if (ev.key === 'Enter' && el.dataset.k === '文_予約ボタン') ev.preventDefault(); };
+  });
+  pvSide(null, eds.length);
+}
+/** 右側の説明: 選んだ文字の名前・空欄のときの扱い・差し込み項目 */
+function pvSide(el, n) {
+  if (!el) { $('pvSide').innerHTML = `<h3>${esc((PV_SCREENS.find(x => x[0] === pvCur) || [])[1] || '')}</h3><p class="note" style="margin:0">${n ? '点線の文字(' + n + 'か所)を押すと、ここに説明が出ます。改行もそのまま使えます。' : 'この画面には、書き換えられる文字がありません(サーバーの更新が必要な場合があります)。'}</p>`; return; }
+  const k = el.dataset.k.slice(2), s = sv(el.dataset.k), e = PV_EMPTY[k], tags = PV_TAGS[k] || [];
+  $('pvSide').innerHTML = `<h3>${esc(TXT_LABEL[k] || k)}</h3><p class="note" style="margin:0">${esc(s.d || '')}</p>`
+    + `<p class="kv">空欄にすると: ${e === 'hide' ? '表示されなくなります' : (e === '最初の文' ? '最初の文が表示されます' : '「' + esc(e) + '」が表示されます')}</p>`
+    + (tags.length ? `<p class="kv">差し込み項目(押すと入ります。お客様の画面では実際の値に置き換わります)</p><div class="tags">${tags.map(t => `<button type="button" data-tag="${t}">{${t}}</button>`).join('')}</div>` : '');
+  $('pvSide').querySelectorAll('[data-tag]').forEach(b => { b.onmousedown = ev => ev.preventDefault(); b.onclick = () => { el.focus(); document.execCommand('insertText', false, '{' + b.dataset.tag + '}'); el.oninput(); }; });
+}
+$('txtMode').querySelectorAll('[data-m]').forEach(b => b.onclick = () => {
+  txtMode = b.dataset.m; $('txtMode').querySelectorAll('[data-m]').forEach(x => x.classList.toggle('on', x === b));
+  $('pvWrap').hidden = txtMode !== 'screen'; $('listWrap').hidden = txtMode !== 'list';
+  drawTxt();
+});
 function drawTxt() {
+  drawPreview();
   const rows = G.settings.filter(s => s.k.indexOf('文_') === 0);
   $('txtList').innerHTML = rows.map(s => { const n = s.k.slice(2); return `<label for="x-${esc(s.k)}">${esc(TXT_LABEL[n] || n)}${s.d ? '<span class="note">' + esc(s.d) + '</span>' : ''}</label><textarea id="x-${esc(s.k)}" data-x="${esc(s.k)}" ${n === 'トップご案内' ? 'style="min-height:150px"' : ''}>${esc(s.v)}</textarea>`; }).join('') +
     '<p class="note" style="margin:16px 0 0">案内表では {普通分} {大型分} {昼休憩} と書くと、現在の設定の数字に自動で入れ替わります。</p>';
@@ -767,10 +919,12 @@ function drawMail() {
     return `<section class="card pad mail"><h3>${m[1]}</h3><p class="note" style="margin:0">${esc(m[2])}</p>`
       + (subj ? `<label for="m-${m[0]}-s">件名</label><input type="text" id="m-${m[0]}-s" data-x="メ_${m[0]}件名" value="${esc(subj.v)}">` : '')
       + `<label for="m-${m[0]}">本文</label><textarea id="m-${m[0]}" data-x="メ_${m[0]}" ${m[0] === '署名' ? 'style="min-height:100px"' : ''}>${esc(body.v)}</textarea>`
-      + `<div class="tags" data-for="m-${m[0]}">${m[3].map(t => `<button type="button" data-tag="${t}">{${t}}</button>`).join('')}</div></section>`;
+      + `<div class="tags" data-for="m-${m[0]}">${m[3].map(t => `<button type="button" data-tag="${t}">{${t}}</button>`).join('')}</div>`
+      + `<div class="mailpv" id="pv-${m[0]}" aria-live="polite"></div></section>`;
   }).join('');
   let last = null; // 最後に触った入力欄(件名か本文)に差し込む
-  $('mailList').querySelectorAll('[data-x]').forEach(e => { e.oninput = () => { sv(e.dataset.x).v = e.value; dirty = true; }; e.onfocus = () => last = e; });
+  $('mailList').querySelectorAll('[data-x]').forEach(e => { e.oninput = () => { sv(e.dataset.x).v = e.value; dirty = true; mailPreviews(); }; e.onfocus = () => last = e; });
+  mailPreviews();
   $('mailList').querySelectorAll('.tags').forEach(box => box.querySelectorAll('[data-tag]').forEach(b => b.onmousedown = ev => ev.preventDefault()));
   $('mailList').querySelectorAll('.tags').forEach(box => box.querySelectorAll('[data-tag]').forEach(b => b.onclick = () => {
     const sec = box.closest('.mail'), el = last && sec.contains(last) ? last : $(box.dataset.for), ins = '{' + b.dataset.tag + '}';
