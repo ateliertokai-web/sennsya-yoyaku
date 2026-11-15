@@ -6,6 +6,11 @@
 <meta name="robots" content="noindex,nofollow">
 <meta name="theme-color" content="#f5f4f1">
 <title>洗車予約 管理</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="洗車 管理">
+<link rel="apple-touch-icon" href="apple-touch-icon-admin.png">
+<link rel="icon" href="icon-admin-192.png">
+<link rel="manifest" href="manifest-admin.webmanifest">
 <style>
 :root{--ink:#1d1d1f;--sub:#6e6e73;--mute:#a1a1a6;--line:#e9e8e5;--bg:#f5f4f1;--card:#fff;--soft:#f2f1ee;--gold:#b8954a;--red:#c4412d;--r:10px;--rl:16px}
 *{box-sizing:border-box}
@@ -374,19 +379,12 @@ textarea:focus,input:focus{background:#fff;box-shadow:0 0 0 1.5px var(--ink);out
       </div>
       <div id="userSaveBar" style="display:flex;justify-content:flex-end;margin-top:16px"><button class="btn" id="saveUsers">ログイン管理を保存する</button></div>
     </section>
-    <section class="card pad" id="deskBox" style="margin-top:16px" hidden>
-      <div class="hrow"><h3>予約スタッフ画面(電話予約の受付用)</h3><a class="btn sub sm" href="desk.html" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;text-decoration:none">予約スタッフ画面を開く</a></div>
-      <p class="note" style="margin:2px 0 0">お客様からのお電話で、予約を入れる・探す・日時を変える・取り消す画面です。お客様の電話番号やメールアドレスも見られるので、パスワードは6文字以上にしてください。会社のパソコンで一度開いて「この端末に保存する」にしておけば、デスクトップのショートカットからすぐ開けます。</p>
-      <label for="deskPw">予約スタッフ用パスワード <span class="note" id="deskState"></span></label>
-      <div style="display:flex;gap:8px"><input type="text" id="deskPw" autocomplete="off" placeholder="6文字以上"><button class="btn sm" id="deskSave" style="min-height:44px">設定</button></div>
-      <button class="btn danger sm" id="deskClear" style="margin-top:10px" hidden>予約スタッフ用パスワードを外す</button>
-    </section>
     <section class="card pad" id="staffBox" style="margin-top:16px" hidden>
-      <div class="hrow"><h3>従業員画面(洗車スタッフ用)</h3><a class="btn sub sm" href="staff.html" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;text-decoration:none">従業員画面を開く</a></div>
-      <p class="note" style="margin:2px 0 0">その日の予約(時間・車種・ナンバー・お名前)を見て、「来店」「来られなかった」を付けるだけの画面です。電話番号やメールアドレスは出ず、予約の変更もできません。洗車スタッフ全員で、下の<b>共通のパスワード</b>を使って入ります。</p>
-      <label for="staffPw">従業員用パスワード <span class="note" id="staffState"></span></label>
-      <div style="display:flex;gap:8px"><input type="text" id="staffPw" autocomplete="off" placeholder="4文字以上"><button class="btn sm" id="staffSave" style="min-height:44px">設定</button></div>
-      <button class="btn danger sm" id="staffClear" style="margin-top:10px" hidden>従業員用パスワードを外す</button>
+      <div class="hrow"><h3>スタッフ画面(洗車・予約受付)</h3><a class="btn sub sm" href="staff.html" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;text-decoration:none">スタッフ画面を開く</a></div>
+      <p class="note" style="margin:2px 0 0">洗車スタッフと予約受付スタッフが使う画面です。「予定表」(その日の予約・来店の記録・印刷/PDF)と「電話予約・検索」(お客様からのお電話で予約を入れる・探す・変える・取り消す)の2つがあります。スタッフ全員で、下の<b>共通のパスワード</b>を使って入ります。お客様の電話番号なども見られるので、6文字以上にしてください。会社のパソコンやお店の端末で一度「この端末に保存する」にしておけば、次からすぐ開けます。</p>
+      <label for="staffPw">スタッフ用パスワード <span class="note" id="staffState"></span></label>
+      <div style="display:flex;gap:8px"><input type="text" id="staffPw" autocomplete="off" placeholder="6文字以上"><button class="btn sm" id="staffSave" style="min-height:44px">設定</button></div>
+      <button class="btn danger sm" id="staffClear" style="margin-top:10px" hidden>スタッフ用パスワードを外す</button>
     </section>
     <p class="note" id="loginOld" hidden>サーバー(Code.gs)の更新が必要です。</p>
   </div>
@@ -823,7 +821,7 @@ function drawUsers() {
   const on = usersOn(); $('userCard').hidden = !on; $('loginOld').hidden = on || $('staffBox').hidden === false; if (!on) return;
   const can = canUsers(), google = G.auth === 'google';
   $('userNote').textContent = (google ? 'パスワードを入れない人は、会社の Google アカウントで入ります。' : '各自のメールアドレスと、ここで決めたパスワードで入ります(パスワードのない人は入れません)。')
-    + 'ここに登録した人は管理画面に入れます。予約スタッフと洗車スタッフは、下のそれぞれの共通パスワードで入るので、ここへの登録はいりません。辞めた人や異動した人は削除してください。'
+    + 'ここに登録した人は管理画面に入れます。洗車スタッフ・予約受付スタッフは、下のスタッフ用パスワードで入るので、ここへの登録はいりません。辞めた人や異動した人は削除してください。'
     + (can ? '' : ' ※追加・削除・パスワードの変更は、メイン管理者だけができます。');
   const fixed = (G.fixedAdmins || []).map(e => `<div class="urow"><span class="em">${esc(e)}</span><span class="tag l">メイン管理者</span></div>`).join('');
   const st = u => u.clearPw ? '保存するとパスワードを外します' : u.pw ? '保存すると新しいパスワードになります' : u.hasPw ? 'パスワード設定済み' : (google ? 'Google ログインのみ' : 'パスワード未設定(入れません)');
@@ -877,25 +875,15 @@ function mailPreviews() {
 function drawStaff() {
   drawUsers();
   const has = G.staffPw !== undefined && (!G.me || G.me.main); $('staffBox').hidden = !has; $('loginOld').hidden = has || !$('userCard').hidden;
-  const hasD = G.deskPw !== undefined && (!G.me || G.me.main); $('deskBox').hidden = !hasD;
-  if (hasD) { $('deskState').textContent = G.deskPw ? '(設定済み)' : '(未設定)'; $('deskClear').hidden = !G.deskPw; $('deskPw').value = ''; }
   if (!has) return;
   $('staffState').textContent = G.staffPw ? '(設定済み)' : '(未設定)'; $('staffClear').hidden = !G.staffPw; $('staffPw').value = '';
 }
 $('staffSave').onclick = busy($('staffSave'), async () => {
-  const v = $('staffPw').value.trim(); if (v.length < 4) return alert('4文字以上で入力してください');
-  await api('adminSave', { staffPw: v }); G.staffPw = true; drawStaff(); alert('従業員用パスワードを設定しました');
-});
-$('deskSave').onclick = busy($('deskSave'), async () => {
-  const v = $('deskPw').value.trim(); if (v.length < 6) return alert('6文字以上で入力してください');
-  await api('adminSave', { deskPw: v }); G.deskPw = true; drawStaff(); alert('予約スタッフ用パスワードを設定しました。予約スタッフの人に伝えてください');
-});
-$('deskClear').onclick = busy($('deskClear'), async () => {
-  if (!confirm('予約スタッフ用パスワードを外しますか?(外すと、予約スタッフは予約スタッフ画面に入れなくなります)')) return;
-  await api('adminSave', { deskPw: '' }); G.deskPw = false; drawStaff();
+  const v = $('staffPw').value.trim(); if (v.length < 6) return alert('6文字以上で入力してください');
+  await api('adminSave', { staffPw: v }); G.staffPw = true; drawStaff(); alert('スタッフ用パスワードを設定しました。スタッフの人に伝えてください');
 });
 $('staffClear').onclick = busy($('staffClear'), async () => {
-  if (!confirm('従業員用パスワードを外しますか?(外すと、洗車スタッフは従業員画面に入れなくなります)')) return;
+  if (!confirm('スタッフ用パスワードを外しますか?(外すと、スタッフはスタッフ画面に入れなくなります)')) return;
   await api('adminSave', { staffPw: '' }); G.staffPw = false; drawStaff();
 });
 $('addModel').onclick = () => { G.models.push({ name: '', large: false }); dirty = true; drawSet(); };

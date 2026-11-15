@@ -7,7 +7,9 @@
 <meta name="theme-color" content="#f5f4f1">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="洗車スタッフ">
-<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="apple-touch-icon" href="apple-touch-icon-staff.png">
+<link rel="icon" href="icon-staff-192.png">
+<link rel="manifest" href="manifest-staff.webmanifest">
 <title>洗車予約 スタッフ</title>
 <style>
 :root{--ink:#1d1d1f;--sub:#6e6e73;--mute:#a1a1a6;--line:#e9e8e5;--bg:#f5f4f1;--card:#fff;--soft:#f2f1ee;--gold:#d6b46a;--red:#c4412d;--rl:18px}
@@ -167,6 +169,55 @@ button{font:inherit;color:inherit;letter-spacing:inherit;cursor:pointer}
 .loader.long small{display:block}
 @keyframes spin{to{transform:rotate(360deg)}}
 @media print{.loader{display:none!important}}
+/* 予定表 / 電話予約・検索 の切り替え */
+.vtabs{display:flex;gap:6px;max-width:720px;margin:0 auto;padding:2px 16px 10px}
+.vtabs button{flex:1;min-height:40px;border:0;border-radius:99px;background:#ebe9e4;font-size:14px;font-weight:600;color:var(--sub)}
+.vtabs button.on{background:var(--ink);color:#fff}
+body.desk .dnav,body.desk #print{display:none}
+/* 電話予約・検索 */
+#deskView .dbtn,#dForm .dbtn{min-height:44px;padding:0 18px;border:0;border-radius:99px;background:var(--ink);color:#fff;font-weight:600;letter-spacing:.06em;white-space:nowrap}
+.dbtn.sub{background:var(--card)!important;color:var(--ink)!important;box-shadow:inset 0 0 0 1px var(--line)}
+.dbtn.sm{min-height:36px!important;padding:0 14px!important;font-size:13px}
+.dbtn.danger{background:#fbefec!important;color:var(--red)!important}
+.dbtn.big{display:block;width:100%;min-height:56px;font-size:16px}
+.dbtn:disabled{opacity:.5}
+#deskView label,#dForm label{display:block;margin:14px 2px 6px;font-size:12.5px;font-weight:600;color:var(--sub);letter-spacing:.04em}
+#deskView input,#deskView select,#dForm input,#dForm select{display:block;width:100%;min-width:0;max-width:100%;height:46px;padding:0 14px;border:0;border-radius:10px;background:var(--soft);font:inherit;font-size:16px;color:var(--ink)}
+#deskView input[type=date],#dForm input[type=date]{-webkit-appearance:none;appearance:none}
+#deskView input:focus,#dForm input:focus,#dForm select:focus{outline:none;background:#fff;box-shadow:0 0 0 1.5px var(--ink)}
+.dcard{margin-top:14px;padding:4px 16px 16px;background:var(--card);border-radius:var(--rl);box-shadow:0 0 0 1px var(--line)}
+.dfind{display:grid;grid-template-columns:1fr auto;gap:8px}
+.drange{display:grid;grid-template-columns:1fr auto 1fr;gap:6px;align-items:center;margin-top:8px}
+.drange span{color:var(--sub);font-size:13px}
+.dfind>*,.drange>*,.dgrid2>*{min-width:0}
+.dcount{margin:18px 4px 0;font-size:12.5px;color:var(--sub)}
+.dday{margin-top:18px}
+.dday h4{margin:0 4px 8px;font-size:14px;font-weight:600}
+.dday h4 span{margin-left:8px;font-size:12px;font-weight:500;color:var(--mute)}
+.dit{display:grid;grid-template-columns:58px 1fr;gap:4px 14px;padding:14px 16px;border-bottom:1px solid var(--line)}
+.dit:last-child{border-bottom:0}
+.dit .tm{font-size:16px;font-weight:600;line-height:1.3;font-variant-numeric:tabular-nums}
+.dit .tm small{display:block;font-size:11.5px;font-weight:500;color:var(--mute)}
+.dit .nm{font-weight:600}
+.dit .s{font-size:13px}
+.dit .s2{font-size:12.5px;color:var(--sub);overflow-wrap:anywhere}
+.dit .s2 a{color:var(--ink)}
+.dit .s3{font-size:12px;color:#7a5a17}
+.dit .acts{grid-column:1/-1;display:flex;gap:8px;justify-content:flex-end;margin-top:6px}
+.dtag{display:inline-block;margin-left:6px;padding:0 8px;border-radius:99px;background:var(--soft);font-size:11px;font-weight:600;line-height:1.75;color:var(--sub);vertical-align:2px}
+.dtag.l{background:#f3ecdc;color:#8a6a2a}.dtag.w{background:#fdecd2;color:#9a5300}.dtag.ph{background:#e8f0fb;color:#2a5590}
+.dsheet-bg{position:fixed;inset:0;z-index:20;background:rgba(0,0,0,.35)}
+#dForm{position:fixed;left:0;right:0;bottom:0;z-index:21;max-width:640px;max-height:92vh;margin:0 auto;overflow:auto;padding:18px 18px calc(18px + env(safe-area-inset-bottom));background:var(--card);border-radius:20px 20px 0 0;box-shadow:0 -10px 40px rgba(0,0,0,.2)}
+#dForm .hd{display:flex;justify-content:space-between;align-items:center;gap:10px}
+#dForm h3{margin:0;font-size:17px}
+.dgrid2{display:grid;grid-template-columns:1fr 1fr;gap:0 12px}
+@media (max-width:520px){.dgrid2{grid-template-columns:1fr}}
+.dslots{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+.dslots button{min-width:76px;min-height:44px;border:0;border-radius:10px;background:var(--soft);font-size:14.5px;font-weight:600;font-variant-numeric:tabular-nums}
+.dslots button.on{background:var(--ink);color:#fff}
+.dslots button:disabled{color:#c2c1bc;text-decoration:line-through}
+.dnote{font-size:12.5px;color:var(--sub)}
+@media print{#deskView,#dForm,.dsheet-bg,.vtabs{display:none!important}}
 </style>
 </head>
 <body>
@@ -181,15 +232,16 @@ button{font:inherit;color:inherit;letter-spacing:inherit;cursor:pointer}
     </div>
     <button id="next" aria-label="次の日">›</button>
   </nav>
+  <div class="vtabs" role="tablist" aria-label="画面を選ぶ"><button type="button" role="tab" data-v="day" class="on">予定表</button><button type="button" role="tab" data-v="desk">電話予約・検索</button></div>
 </div>
 
 <main class="wrap">
   <div class="login" id="login">
     <h2>スタッフ</h2>
-    <p>その日の予約を、時間の早い順に確認できます。<br>パスワードは管理者に聞いてください。</p>
+    <p>洗車の予定表と、お客様からのお電話での予約の受付ができます。<br>パスワードは管理者に聞いてください。</p>
     <div id="pwLogin">
-      <input type="password" id="pw" placeholder="従業員用パスワード" autocomplete="current-password" aria-label="従業員用パスワード">
-      <label class="chk"><input type="checkbox" id="keep" checked>この端末に保存する</label>
+      <input type="password" id="pw" placeholder="スタッフ用パスワード" autocomplete="current-password" aria-label="スタッフ用パスワード">
+      <label class="chk"><input type="checkbox" id="keep" checked>この端末に保存する(会社のパソコン・お店の端末など)</label>
       <button class="btn" id="go">ひらく</button>
     </div>
     <p class="err" id="err" hidden></p>
@@ -199,7 +251,32 @@ button{font:inherit;color:inherit;letter-spacing:inherit;cursor:pointer}
     <div id="list"></div>
     <p class="upd" id="upd"></p>
   </div>
+  <div id="deskView" hidden>
+    <button class="dbtn big" id="dAdd" style="margin-top:16px">＋ 電話の予約を入れる</button>
+    <div class="dcard">
+      <label for="dQ">予約を探す(お名前・電話番号・ナンバー・予約番号)</label>
+      <div class="dfind"><input type="search" id="dQ" placeholder="例: 山田 / 090 / 1234" enterkeyhint="search"><button class="dbtn" id="dGo">探す</button></div>
+      <div class="drange"><input type="date" id="dFrom" aria-label="期間のはじめ"><span>〜</span><input type="date" id="dTo" aria-label="期間のおわり"></div>
+    </div>
+    <div id="dList"></div>
+  </div>
 </main>
+<div class="dsheet-bg" id="dBg" hidden></div>
+<div id="dForm" role="dialog" aria-modal="true" aria-labelledby="fTitle" hidden>
+  <div class="hd"><h3 id="fTitle">電話の予約を入れる</h3><button class="dbtn sub sm" id="fClose">閉じる</button></div>
+  <p class="dnote" id="fNote" style="margin:6px 0 0"></p>
+  <div id="fCar"><label for="fModel">車種</label><select id="fModel"></select></div>
+  <label for="fDate">日付</label><input type="date" id="fDate">
+  <label>開始時間</label><div class="dslots" id="fSlots"><span class="dnote">日付を選ぶと空き時間が出ます</span></div>
+  <div id="fCust">
+    <div class="dgrid2"><div><label for="fName">お名前</label><input type="text" id="fName" autocomplete="off"></div><div><label for="fPhone">電話番号</label><input type="tel" id="fPhone" autocomplete="off"></div></div>
+    <label for="fPlate">車両ナンバー</label><input type="text" id="fPlate" placeholder="鹿児島 330 あ 12-34" autocomplete="off">
+    <label for="fMail">メールアドレス <span class="dnote">(任意。入れると確認メールが届きます)</span></label><input type="email" id="fMail" autocomplete="off">
+    <div id="fStaffBox"><label for="fStaff">担当スタッフ</label><select id="fStaff"></select></div>
+    <label for="fMemo">メモ <span class="dnote">(予定表にも出ます)</span></label><input type="text" id="fMemo" maxlength="200" autocomplete="off">
+  </div>
+  <button class="dbtn big" id="fGo" style="margin-top:18px">この内容で入れる</button>
+</div>
 <!-- 印刷用(画面には出さない) -->
 <section id="sheet" class="sheet" aria-hidden="true"></section>
 <div class="pv" id="pv" role="dialog" aria-modal="true" aria-label="印刷用の表" hidden>
@@ -528,11 +605,11 @@ function draw(d) {
   $('upd').textContent = pad(t.getHours()) + ':' + pad(t.getMinutes()) + ' 更新(1分ごとに自動で更新します)';
 }
 
-function enter() { $('login').hidden = true; $('app').hidden = false; $('head').hidden = false; load(); }
+function enter() { $('login').hidden = true; $('app').hidden = view !== 'day'; $('head').hidden = false; load(); }
 function logout(msg) {
   pw = ''; setPw('');
   msg = String(msg || '').replace(/^パスワード:/, '');
-  $('app').hidden = true; $('head').hidden = true; $('login').hidden = false; $('list').innerHTML = '';
+  $('app').hidden = true; $('deskView').hidden = true; $('head').hidden = true; $('login').hidden = false; $('list').innerHTML = ''; D = null; closeForm && closeForm();
   $('err').hidden = !msg; $('err').textContent = msg || '';
   $('pw').value = '';
   $('pw').focus();
@@ -541,13 +618,13 @@ function logout(msg) {
 $('go').onclick = async () => {
   const v = $('pw').value.trim(); if (!v) return;
   pw = v; $('go').disabled = true; $('err').hidden = true;
-  try { const d = await waiting(api({})); setPw(pw, $('keep').checked); cur = d.date; today = d.today; $('login').hidden = true; $('app').hidden = false; $('head').hidden = false; draw(d); }
+  try { const d = await waiting(api({})); setPw(pw, $('keep').checked); cur = d.date; today = d.today; $('login').hidden = true; $('app').hidden = false; $('head').hidden = false; draw(d); setView(view); }
   catch (e) { pw = ''; $('err').hidden = false; $('err').textContent = e.message; }
   finally { $('go').disabled = false; }
 };
 $('pw').addEventListener('keydown', e => { if (e.key === 'Enter') $('go').click(); });
 $('logout').onclick = () => logout();
-$('reload').onclick = () => load();
+$('reload').onclick = () => view === 'desk' ? deskList().catch(e => alert(e.message)) : load();
 // 印刷・PDF: 印刷の画面を開く(PDFはそこから保存できる)
 // (iPhone は押した直後でないと印刷の画面を開けないので、表示中の内容ですぐ印刷する。内容は1分ごとに自動で最新になる)
 $('print').onclick = () => {
@@ -576,7 +653,108 @@ $('app').addEventListener('touchend', e => {
 setInterval(() => { if (pw && !document.hidden && !$('app').hidden) load(null, true); }, 60000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden && pw && !$('app').hidden) load(null, true); });
 
-if (pw) enter();
+/* ---------- 予定表 / 電話予約・検索 の切り替え(この端末で最後に開いたほうを覚えておく) ---------- */
+let view = 'day';
+try { view = localStorage.getItem('wash_staff_view') === 'desk' ? 'desk' : 'day'; } catch (e) {}
+if (/[?&]v=desk/.test(location.search)) view = 'desk'; // 以前の予約スタッフ画面(desk.html)から来たとき
+function setView(v) {
+  view = v; try { localStorage.setItem('wash_staff_view', v); } catch (e) {}
+  document.querySelectorAll('.vtabs [data-v]').forEach(b => { b.classList.toggle('on', b.dataset.v === v); b.setAttribute('aria-selected', b.dataset.v === v); });
+  document.body.classList.toggle('desk', v === 'desk');
+  $('app').hidden = v !== 'day'; $('deskView').hidden = v !== 'desk';
+  if (v === 'desk') deskOpen().catch(e => { $('dList').innerHTML = '<p class="empty">' + esc(/不明な操作/.test(e.message) ? 'サーバー(Code.gs)の更新が必要です' : e.message) + '</p>'; });
+  else if (cur) load(null, true);
+}
+document.querySelectorAll('.vtabs [data-v]').forEach(b => b.onclick = () => setView(b.dataset.v));
+
+/* ---------- 電話予約・検索(お客様からのお電話で、予約を入れる・探す・日時を変える・取り消す) ---------- */
+let D = null, DLIST = [];
+const dJa2 = d => { const a = d.split('-'); return (+a[1]) + '/' + (+a[2]) + '(' + WD[new Date(+a[0], a[1] - 1, +a[2]).getDay()] + ')'; };
+const dcall = (action, data) => waiting(api(Object.assign({ action }, data || {})));
+async function deskOpen() {
+  if (!D) D = await dcall('deskInit');
+  if (!$('dFrom').value) { $('dFrom').value = D.today; const t = toD(D.today); t.setMonth(t.getMonth() + 3); $('dTo').value = fmt(t); }
+  await deskList();
+}
+async function deskList() {
+  $('dList').innerHTML = '<p class="empty">読み込み中…</p>';
+  const q = $('dQ').value.trim();
+  DLIST = await dcall('deskRes', { from: $('dFrom').value, to: $('dTo').value, q });
+  const by = {}; DLIST.forEach(r => (by[r.date] = by[r.date] || []).push(r));
+  $('dList').innerHTML = DLIST.length ? `<p class="dcount">${q ? '「' + esc(q) + '」で ' : ''}${DLIST.length}件</p>` + Object.keys(by).map(d => `<section class="dday"><h4>${dJa2(d)}<span>${by[d].length}件</span></h4><div class="list">` + by[d].map(r =>
+    `<div class="dit"><div class="tm">${r.start}<small>〜${r.end}</small></div><div><div class="nm">${esc(r.name)} 様${r.large ? '<span class="dtag l">大型</span>' : ''}${r.status === '保留' ? '<span class="dtag w">キャンセル待ちの案内中</span>' : ''}${r.source === '管理画面' ? '<span class="dtag ph">電話など</span>' : ''}</div>`
+    + `<div class="s">${esc(r.model)} ・ ${esc(r.plate)}${r.staff ? ' ・ 担当 ' + esc(r.staff) : ''}</div>`
+    + `<div class="s2">${r.phone ? `<a href="tel:${esc(r.phone.replace(/[^\d+]/g, ''))}">${esc(r.phone)}</a> ・ ` : ''}${r.email ? esc(r.email) + ' ・ ' : ''}No.${esc(r.no || '-')}</div>${r.memo ? `<div class="s3">メモ: ${esc(r.memo)}</div>` : ''}</div>`
+    + (r.status === '予約' ? `<div class="acts"><button class="dbtn sub sm" data-ch="${r.id}">日時を変更</button><button class="dbtn danger sm" data-cx="${r.id}">取り消す</button></div>` : '')
+    + '</div>').join('') + '</div></section>').join('') : `<p class="empty">${q ? '見つかりませんでした。' : 'この期間の予約はありません。'}</p>`;
+  $('dList').querySelectorAll('[data-ch]').forEach(b => b.onclick = () => openForm(DLIST.find(x => x.id === b.dataset.ch)));
+  $('dList').querySelectorAll('[data-cx]').forEach(b => b.onclick = async () => {
+    const r = DLIST.find(x => x.id === b.dataset.cx);
+    if (!confirm(`${r.name} 様の ${dJa2(r.date)} ${r.start} のご予約を取り消しますか?\n${r.email ? 'お客様にキャンセルのメールが届きます。' : ''}空いた枠はキャンセル待ちの方へご案内します。`)) return;
+    b.disabled = true;
+    try { await dcall('deskCancel', { id: r.id }); await deskList(); } catch (e) { alert(e.message.replace(/^パスワード:/, '')); b.disabled = false; }
+  });
+}
+$('dGo').onclick = () => deskList().catch(e => alert(e.message));
+$('dQ').addEventListener('keydown', e => { if (e.key === 'Enter') $('dGo').click(); });
+$('dFrom').onchange = $('dTo').onchange = () => deskList().catch(e => alert(e.message));
+let fMode = null, fPick = null;
+function openForm(chg) {
+  fMode = chg || null; fPick = null;
+  $('fTitle').textContent = chg ? '日時を変更する' : '電話の予約を入れる';
+  $('fNote').textContent = chg ? `${chg.name} 様 ・ ${chg.model} ・ ${chg.plate}(いま: ${dJa2(chg.date)} ${chg.start}〜)。${chg.email ? 'お客様に変更のお知らせメールが届きます。' : ''}` : 'お客様に、車種・ご希望の日時・お名前・電話番号・ナンバーを伺って入れてください。';
+  $('fCust').hidden = !!chg; $('fCar').hidden = !!chg;
+  $('fModel').innerHTML = D.models.map(m => `<option>${esc(m.name)}</option>`).join('');
+  const st = D.staff || []; $('fStaffBox').hidden = !st.length;
+  $('fStaff').innerHTML = '<option value="">(指定なし)</option>' + st.map((x, i) => `<option value="${i}">${esc(x.name)}</option>`).join('');
+  if (!chg) ['fName', 'fPhone', 'fPlate', 'fMail', 'fMemo'].forEach(id => $(id).value = '');
+  $('fDate').min = D.today; $('fDate').value = chg ? chg.date : '';
+  $('fGo').textContent = chg ? 'この日時に変更する' : 'この内容で入れる';
+  $('fSlots').innerHTML = '<span class="dnote">日付を選ぶと空き時間が出ます</span>';
+  $('dBg').hidden = false; $('dForm').hidden = false; $('dForm').scrollTop = 0;
+  if (chg) loadSlots();
+}
+function closeForm() { $('dBg').hidden = true; $('dForm').hidden = true; }
+$('dAdd').onclick = () => openForm(null);
+$('fClose').onclick = closeForm; $('dBg').onclick = closeForm;
+async function loadSlots() {
+  const d = $('fDate').value; fPick = null; if (!d) return;
+  $('fSlots').innerHTML = '<span class="dnote">読み込み中…</span>';
+  const large = (D.models.find(m => m.name === $('fModel').value) || {}).large;
+  try {
+    const r = await dcall('deskSlots', Object.assign({ date: d, large: !!large }, fMode ? { exceptId: fMode.id } : {}));
+    if (r.closed) { $('fSlots').innerHTML = '<span class="dnote">休業日です</span>'; return; }
+    $('fSlots').innerHTML = r.all.length ? r.all.map(x => `<button type="button" data-s="${x.s}" ${x.ok ? '' : 'disabled'}>${x.s}</button>`).join('') : '<span class="dnote">受付できる時間がありません</span>';
+    if (r.all.length && !r.all.some(x => x.ok)) $('fSlots').insertAdjacentHTML('beforeend', '<p class="dnote" style="width:100%;margin:6px 0 0">この日は満席です。</p>');
+    $('fSlots').querySelectorAll('[data-s]').forEach(b => b.onclick = () => { fPick = b.dataset.s; $('fSlots').querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b)); });
+  } catch (e) { $('fSlots').innerHTML = '<span class="dnote">' + esc(e.message) + '</span>'; }
+}
+$('fDate').onchange = loadSlots; $('fModel').onchange = loadSlots;
+$('fGo').onclick = async () => {
+  if (!fPick) return alert('開始時間を選んでください');
+  if (!fMode && (!$('fName').value.trim() || !$('fPlate').value.trim() || !$('fPhone').value.trim())) return alert('お名前・電話番号・車両ナンバーを入れてください');
+  const send = async force => {
+    try {
+      if (fMode) return await dcall('deskChange', { id: fMode.id, date: $('fDate').value, start: fPick, force });
+      const sv0 = $('fStaff').value, st = sv0 === '' ? null : D.staff[+sv0];
+      return await dcall('deskReserve', { date: $('fDate').value, start: fPick, model: $('fModel').value, name: $('fName').value.trim(), phone: $('fPhone').value.trim(), plate: $('fPlate').value.trim(), custEmail: $('fMail').value.trim(), memo: $('fMemo').value.trim(), staff: st ? st.name : '', staffStore: st ? st.store || '' : '', force });
+    } catch (e) {
+      const m = e.message.replace(/^MONTH:/, '');
+      if (!force && /月1回/.test(m) && confirm(m + '\n\nそれでも入れますか?')) return send(true);
+      throw new Error(m);
+    }
+  };
+  $('fGo').disabled = true;
+  try {
+    const r = await send(false); if (!r) return;
+    closeForm();
+    alert(fMode ? '日時を変更しました' : '予約を入れました。\n予約番号: ' + r.no + '\nお客様に予約番号をお伝えください。');
+    await deskList();
+  } catch (e) { alert(e.message.replace(/^パスワード:/, '')); }
+  finally { $('fGo').disabled = false; }
+};
+
+if (pw) { enter(); setView(view); }
 </script>
 </body>
 </html>
