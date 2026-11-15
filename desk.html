@@ -211,7 +211,7 @@ function openForm(chg) {
   $('fCust').hidden = !!chg; $('fCar').hidden = !!chg;
   $('fModel').innerHTML = D.models.map(m => `<option>${esc(m.name)}</option>`).join('');
   const st = D.staff || []; $('fStaffBox').hidden = !st.length;
-  $('fStaff').innerHTML = '<option value="">(指定なし)</option>' + st.map((x, i) => `<option value="${i}">${esc((x.store ? x.store + ' ・ ' : '') + x.name)}</option>`).join('');
+  $('fStaff').innerHTML = '<option value="">(指定なし)</option>' + st.map((x, i) => `<option value="${i}">${esc(x.name)}</option>`).join('');
   if (!chg) ['fName', 'fPhone', 'fPlate', 'fMail', 'fMemo'].forEach(id => $(id).value = '');
   $('fDate').min = D.today; $('fDate').value = chg ? chg.date : '';
   $('fGo').textContent = chg ? 'この日時に変更する' : 'この内容で入れる';
