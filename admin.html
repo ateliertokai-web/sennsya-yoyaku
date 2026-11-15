@@ -379,9 +379,19 @@ textarea:focus,input:focus{background:#fff;box-shadow:0 0 0 1.5px var(--ink);out
       </div>
       <div id="userSaveBar" style="display:flex;justify-content:flex-end;margin-top:16px"><button class="btn" id="saveUsers">ログイン管理を保存する</button></div>
     </section>
+    <section class="card pad" id="sidCard" style="margin-top:16px" hidden>
+      <div class="hrow"><h3>スタッフのID・パスワード</h3><a class="btn sub sm" href="staff.html" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;text-decoration:none">スタッフ画面を開く</a></div>
+      <p class="note" style="margin:2px 0 12px">洗車スタッフ・予約受付スタッフ一人ひとりの ID とパスワードです。スタッフ画面で「スタッフID」と「パスワード」を入れて入ります。<b>辞めた人は削除するだけ</b>で入れなくなり、ほかの人のパスワードは変えなくて済みます。操作ログにも、誰が予約を入れた・取り消したかが残ります。</p>
+      <div id="sidList"></div>
+      <div id="sidAdd">
+      <div class="newstore uadd" style="margin-top:8px"><input type="text" id="newSid" placeholder="スタッフID(例: tanaka)" aria-label="スタッフID" autocomplete="off" autocapitalize="off"><input type="text" id="newSidName" placeholder="お名前(例: 田中)" aria-label="お名前" autocomplete="off"><input type="text" id="newSidPw" placeholder="パスワード(6文字以上)" aria-label="パスワード" autocomplete="new-password"><button class="btn sub sm" id="addSid" style="min-height:44px">追加</button></div>
+      <p class="note" style="margin:6px 0 0">ID は半角の英小文字・数字・. _ - で3文字以上。決めたパスワードは本人に直接伝えてください(保存後は管理画面でも見られません)。</p>
+      </div>
+      <div id="sidSaveBar" style="display:flex;justify-content:flex-end;margin-top:16px"><button class="btn" id="saveSids">ログイン管理を保存する</button></div>
+    </section>
     <section class="card pad" id="staffBox" style="margin-top:16px" hidden>
-      <div class="hrow"><h3>スタッフ画面(洗車・予約受付)</h3><a class="btn sub sm" href="staff.html" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;text-decoration:none">スタッフ画面を開く</a></div>
-      <p class="note" style="margin:2px 0 0">洗車スタッフと予約受付スタッフが使う画面です。「予定表」(その日の予約・来店の記録・印刷/PDF)と「電話予約・検索」(お客様からのお電話で予約を入れる・探す・変える・取り消す)の2つがあります。スタッフ全員で、下の<b>共通のパスワード</b>を使って入ります。お客様の電話番号なども見られるので、6文字以上にしてください。会社のパソコンやお店の端末で一度「この端末に保存する」にしておけば、次からすぐ開けます。</p>
+      <div class="hrow"><h3>共通のスタッフ用パスワード(任意)</h3></div>
+      <p class="note" style="margin:2px 0 0">ID を持たないスタッフが、全員同じパスワードで入るためのものです。<b>全員に上の ID を配ったら、外すことをお勧めします</b>(共通パスワードは、人が辞めるたびに変える必要があります)。お客様の電話番号なども見られるので、使う場合は6文字以上にしてください。</p>
       <label for="staffPw">スタッフ用パスワード <span class="note" id="staffState"></span></label>
       <div style="display:flex;gap:8px"><input type="text" id="staffPw" autocomplete="off" placeholder="6文字以上"><button class="btn sm" id="staffSave" style="min-height:44px">設定</button></div>
       <button class="btn danger sm" id="staffClear" style="margin-top:10px" hidden>スタッフ用パスワードを外す</button>
@@ -821,15 +831,16 @@ function drawUsers() {
   const on = usersOn(); $('userCard').hidden = !on; $('loginOld').hidden = on || $('staffBox').hidden === false; if (!on) return;
   const can = canUsers(), google = G.auth === 'google';
   $('userNote').textContent = (google ? 'パスワードを入れない人は、会社の Google アカウントで入ります。' : '各自のメールアドレスと、ここで決めたパスワードで入ります(パスワードのない人は入れません)。')
-    + 'ここに登録した人は管理画面に入れます。洗車スタッフ・予約受付スタッフは、下のスタッフ用パスワードで入るので、ここへの登録はいりません。辞めた人や異動した人は削除してください。'
+    + 'ここに登録した人は管理画面に入れます。洗車スタッフ・予約受付スタッフは、下の「スタッフのID・パスワード」で登録してください。辞めた人や異動した人は削除してください。'
     + (can ? '' : ' ※追加・削除・パスワードの変更は、メイン管理者だけができます。');
   const fixed = (G.fixedAdmins || []).map(e => `<div class="urow"><span class="em">${esc(e)}</span><span class="tag l">メイン管理者</span></div>`).join('');
   const st = u => u.clearPw ? '保存するとパスワードを外します' : u.pw ? '保存すると新しいパスワードになります' : u.hasPw ? 'パスワード設定済み' : (google ? 'Google ログインのみ' : 'パスワード未設定(入れません)');
-  $('userList').innerHTML = fixed + G.users.map((u, i) => `<div class="urow"><span class="em">${esc(u.email)}<br><span class="pws">${esc(st(u))}</span></span>`
+  drawSids(can);
+  $('userList').innerHTML = fixed + G.users.map((u, i) => u.role === 'スタッフ' ? '' : `<div class="urow"><span class="em">${esc(u.email)}<br><span class="pws">${esc(st(u))}</span></span>`
     + (can ? (u.role === '管理者' ? '' : '<span class="tag">以前の予約スタッフ(今は使われていません)</span>')
       + (G.userPw ? `<button class="btn sub sm" data-up="${i}">パスワード</button>` : '') + `${u.hasPw && !u.clearPw ? `<button class="btn sub sm" data-uc="${i}">外す</button>` : ''}<button class="btn danger sm" data-ud="${i}">削除</button>`
       : '') + '</div>').join('')
-    + (fixed || G.users.length ? '' : '<p class="note" style="margin:0">まだ登録がありません。</p>');
+    + (fixed || G.users.some(u => u.role !== 'スタッフ') ? '' : '<p class="note" style="margin:0">まだ登録がありません。</p>');
   $('userAdd').hidden = !can; $('userSaveBar').hidden = !can; $('newUserPw').hidden = !G.userPw; $('userPwNote').hidden = !G.userPw;
   $('userPwNote').textContent = google ? 'パスワードは、会社の Google アカウントがない人(アルバイトなど)に使えます。決めたパスワードは本人に直接伝えてください。' : 'パスワードは8文字以上。決めたパスワードは本人に直接伝えてください(保存後は管理画面でも見られません)。';
   $('userList').querySelectorAll('[data-ur]').forEach(e => e.onchange = () => { G.users[+e.dataset.ur].role = e.value; dirty = true; });
@@ -848,6 +859,35 @@ function drawUsers() {
   });
 }
 const okPw = v => v.length >= 8 && v.length <= 100 && !/^\s|\s$/.test(v);
+const okSpw = v => v.length >= 6 && v.length <= 100 && !/^\s|\s$/.test(v);
+/* スタッフのID・パスワード(G.users の役割「スタッフ」。ID は「メール」の欄に入れて保存) */
+function drawSids(can) {
+  $('sidCard').hidden = !G.userPw; if (!G.userPw) return;
+  const rows = G.users.map((u, i) => [u, i]).filter(([u]) => u.role === 'スタッフ');
+  const st = u => u.pw ? '保存すると新しいパスワードになります' : u.hasPw ? 'パスワード設定済み' : 'パスワード未設定';
+  $('sidList').innerHTML = rows.map(([u, i]) => `<div class="urow"><span class="em"><b>${esc(u.note || '(名前なし)')}</b>　ID: ${esc(u.email)}<br><span class="pws">${esc(st(u))}</span></span>`
+    + (can ? `<button class="btn sub sm" data-sp="${i}">パスワード</button><button class="btn danger sm" data-sd="${i}">削除</button>` : '') + '</div>').join('')
+    || '<p class="note" style="margin:0">まだ登録がありません。</p>';
+  $('sidAdd').hidden = !can; $('sidSaveBar').hidden = !can;
+  $('sidList').querySelectorAll('[data-sp]').forEach(e => e.onclick = () => {
+    const u = G.users[+e.dataset.sp], v = prompt((u.note || u.email) + ' さんの新しいパスワード(6文字以上)。「ログイン管理を保存する」を押すと変わります', '');
+    if (v === null) return; if (!okSpw(v)) return alert('パスワードは6〜100文字で、最初と最後に空白を入れないでください');
+    u.pw = v; dirty = true; drawUsers();
+  });
+  $('sidList').querySelectorAll('[data-sd]').forEach(e => e.onclick = () => {
+    const u = G.users[+e.dataset.sd]; if (!confirm((u.note || u.email) + ' さん(ID: ' + u.email + ')を削除しますか?(保存すると、この人はスタッフ画面に入れなくなります)')) return;
+    G.users.splice(+e.dataset.sd, 1); dirty = true; drawUsers();
+  });
+}
+$('addSid').onclick = () => {
+  const id = $('newSid').value.trim().toLowerCase(), name = $('newSidName').value.trim(), npw = $('newSidPw').value;
+  if (!/^[a-z0-9._@-]{3,60}$/.test(id)) return alert('スタッフIDは、半角の英小文字・数字・. _ - で3文字以上にしてください');
+  if (!name) return alert('お名前を入れてください');
+  if (!okSpw(npw)) return alert('パスワードは6〜100文字で、最初と最後に空白を入れないでください');
+  if (G.users.some(u => u.email === id)) return alert('その ID はすでに使われています');
+  G.users.push({ email: id, role: 'スタッフ', note: name.slice(0, 100), pw: npw });
+  $('newSid').value = ''; $('newSidName').value = ''; $('newSidPw').value = ''; dirty = true; drawUsers();
+};
 $('addUser').onclick = () => {
   const email = $('newUser').value.trim().toLowerCase(), npw = $('newUserPw').value, dom = (window.WASH_CONFIG || {}).domain;
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return alert('メールアドレスを確認してください');
@@ -1247,6 +1287,7 @@ async function saveAll() {
   alert('保存しました'); await reloadG();
 }
 $('saveSet').onclick = busy($('saveSet'), saveAll);
+$('saveSids').onclick = () => $('saveUsers').click();
 $('saveUsers').onclick = busy($('saveUsers'), async () => {
   await api('adminSave', { users: G.users.map(u => ({ email: u.email, role: u.role, note: u.note || '', pw: u.pw || undefined, clearPw: u.clearPw || undefined })) });
   alert('保存しました'); await reloadG();

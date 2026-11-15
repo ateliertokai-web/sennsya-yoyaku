@@ -152,6 +152,7 @@ button{font:inherit;color:inherit;letter-spacing:inherit;cursor:pointer}
 .login{max-width:360px;margin:14vh auto 0;padding:30px 26px 26px;background:var(--card);border-radius:var(--rl);box-shadow:0 0 0 1px var(--line)}
 .login h2{margin:0 0 4px;font-size:20px;font-weight:600;letter-spacing:.06em}
 .login p{margin:0 0 14px;font-size:12.5px;color:var(--sub)}
+.login input#sid{display:block;width:100%;height:48px;padding:0 14px;margin-bottom:10px;border:0;border-radius:10px;background:var(--soft);font:inherit;font-size:16px}
 .login input[type=email]{display:block;width:100%;height:48px;padding:0 14px;margin-bottom:10px;border:0;border-radius:10px;background:var(--soft);font:inherit;font-size:16px}
 .login .alt{display:block;margin:14px auto 0;padding:8px;border:0;background:none;font:inherit;font-size:13px;color:var(--sub);text-decoration:underline;cursor:pointer}
 .login input[type=password]{display:block;width:100%;height:48px;padding:0 14px;border:0;border-radius:10px;background:var(--soft);font:inherit;font-size:16px}
@@ -222,7 +223,7 @@ body.desk .dnav,body.desk #print{display:none}
 </head>
 <body>
 <div class="head" id="head" hidden>
-  <header class="top"><h1>洗車予約 <small>スタッフ</small></h1><div><button class="tbtn pbtn" id="print" aria-label="この日の一覧を印刷・PDFにする"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V3h12v6"/><rect x="6" y="14" width="12" height="7" rx="1"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/></svg>印刷<span class="wide">・PDF</span></button><button class="tbtn" id="reload">更新</button><button class="tbtn" id="logout">ログアウト</button></div></header>
+  <header class="top"><h1>洗車予約 <small id="who">スタッフ</small></h1><div><button class="tbtn pbtn" id="print" aria-label="この日の一覧を印刷・PDFにする"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V3h12v6"/><rect x="6" y="14" width="12" height="7" rx="1"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/></svg>印刷<span class="wide">・PDF</span></button><button class="tbtn" id="reload">更新</button><button class="tbtn" id="logout">ログアウト</button></div></header>
   <nav class="dnav" aria-label="日付">
     <button id="prev" aria-label="前の日">‹</button>
     <div class="dmid">
@@ -240,7 +241,8 @@ body.desk .dnav,body.desk #print{display:none}
     <h2>スタッフ</h2>
     <p>洗車の予定表と、お客様からのお電話での予約の受付ができます。<br>パスワードは管理者に聞いてください。</p>
     <div id="pwLogin">
-      <input type="password" id="pw" placeholder="スタッフ用パスワード" autocomplete="current-password" aria-label="スタッフ用パスワード">
+      <input type="text" id="sid" placeholder="スタッフID(共通パスワードの人は空欄)" autocomplete="username" autocapitalize="off" autocorrect="off" spellcheck="false" aria-label="スタッフID">
+      <input type="password" id="pw" placeholder="パスワード" autocomplete="current-password" aria-label="パスワード">
       <label class="chk"><input type="checkbox" id="keep" checked>この端末に保存する(会社のパソコン・お店の端末など)</label>
       <button class="btn" id="go">ひらく</button>
     </div>
@@ -307,17 +309,20 @@ const pad = n => String(n).padStart(2, '0');
 const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const KEY = 'wash_staff_pw';
 const getPw = () => { try { return localStorage.getItem(KEY) || sessionStorage.getItem(KEY) || ''; } catch (e) { return ''; } };
+const SKEY = 'wash_staff_sid';
+const getSid = () => { try { return localStorage.getItem(SKEY) || sessionStorage.getItem(SKEY) || ''; } catch (e) { return ''; } };
+const setSid = (v, keep) => { try { localStorage.removeItem(SKEY); sessionStorage.removeItem(SKEY); if (v) (keep ? localStorage : sessionStorage).setItem(SKEY, v); } catch (e) {} };
 const setPw = (v, keep) => { try { [KEY, 'wash_staff_email'].forEach(k => { localStorage.removeItem(k); sessionStorage.removeItem(k); }); if (v) (keep ? localStorage : sessionStorage).setItem(KEY, v); } catch (e) {} };
 const toD = s => { const a = s.split('-'); return new Date(+a[0], a[1] - 1, +a[2]); };
 const fmt = d => d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
 const addDay = (s, n) => { const d = toD(s); d.setDate(d.getDate() + n); return fmt(d); };
 const toM = t => +t.slice(0, 2) * 60 + +t.slice(3, 5);
 
-let pw = getPw(), cur = null, today = null, busy = false;
+let pw = getPw(), sid = getSid(), cur = null, today = null, busy = false;
 
 async function api(data, retried) {
   let r;
-  const cred = { pw }; // 従業員画面は、共通の従業員用パスワードだけで入る
+  const cred = sid ? { sid, pw } : { pw }; // スタッフID+パスワード、または共通のスタッフ用パスワード
   try { r = await fetch(API, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(Object.assign({ action: 'staffDay' }, cred, data)) }); }
   catch (e) { throw new Error('通信できませんでした。電波の良い場所で「更新」を押してください。'); }
   const j = await r.json();
@@ -568,6 +573,7 @@ $('pvPdf').onclick = async () => {
 };
 let sheetDate = null;
 function draw(d) {
+  if (d.me) $('who').textContent = d.me.name ? d.me.name + ' さん' : (d.me.id || 'スタッフ'); // 誰が使っているか
   drawHead(); drawSheet(d);
   const n = d.list.length, big = d.list.filter(x => x.large).length;
   $('cnt').innerHTML = n + '<small>台</small>';
@@ -607,7 +613,7 @@ function draw(d) {
 
 function enter() { $('login').hidden = true; $('app').hidden = view !== 'day'; $('head').hidden = false; load(); }
 function logout(msg) {
-  pw = ''; setPw('');
+  pw = ''; sid = ''; setPw(''); setSid('');
   msg = String(msg || '').replace(/^パスワード:/, '');
   $('app').hidden = true; $('deskView').hidden = true; $('head').hidden = true; $('login').hidden = false; $('list').innerHTML = ''; D = null; closeForm && closeForm();
   $('err').hidden = !msg; $('err').textContent = msg || '';
@@ -617,12 +623,13 @@ function logout(msg) {
 
 $('go').onclick = async () => {
   const v = $('pw').value.trim(); if (!v) return;
-  pw = v; $('go').disabled = true; $('err').hidden = true;
-  try { const d = await waiting(api({})); setPw(pw, $('keep').checked); cur = d.date; today = d.today; $('login').hidden = true; $('app').hidden = false; $('head').hidden = false; draw(d); setView(view); }
-  catch (e) { pw = ''; $('err').hidden = false; $('err').textContent = e.message; }
+  pw = v; sid = $('sid').value.trim().toLowerCase(); $('go').disabled = true; $('err').hidden = true;
+  try { const d = await waiting(api({})); setPw(pw, $('keep').checked); setSid(sid, $('keep').checked); cur = d.date; today = d.today; $('login').hidden = true; $('app').hidden = false; $('head').hidden = false; draw(d); setView(view); }
+  catch (e) { pw = ''; sid = ''; $('err').hidden = false; $('err').textContent = e.message.replace(/^パスワード:/, ''); }
   finally { $('go').disabled = false; }
 };
 $('pw').addEventListener('keydown', e => { if (e.key === 'Enter') $('go').click(); });
+$('sid').addEventListener('keydown', e => { if (e.key === 'Enter') $('pw').focus(); });
 $('logout').onclick = () => logout();
 $('reload').onclick = () => view === 'desk' ? deskList().catch(e => alert(e.message)) : load();
 // 印刷・PDF: 印刷の画面を開く(PDFはそこから保存できる)
