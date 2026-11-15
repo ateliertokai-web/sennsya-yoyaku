@@ -1151,7 +1151,8 @@ async function deleteMeFlow() {
   try {
     if (has) await waiting(api('deleteMe', { email: profile.email, plates }));
   } catch (e) { toast(e.message, true); return; } // サーバーで消せなかったときは、端末の情報も残しておく(もう一度試せるように)
-  try { Object.keys(localStorage).filter(k => /^wash_/.test(k) && k !== 'wash_first_seen').forEach(k => localStorage.removeItem(k)); } catch (e) {}
+  // 端末の情報はすべて消し、初めて開いたときと同じ状態に戻す(はじめての案内も、次に開いたときにまた出る)
+  try { Object.keys(localStorage).filter(k => /^wash_/.test(k)).forEach(k => localStorage.removeItem(k)); } catch (e) {}
   profile = {}; cars = []; mine = []; booked = new Set(); bookedKey = ''; monthCache = {};
   renderHome(); show('home');
   await dialog('削除しました', '<p>お客様情報をすべて削除いたしました。ご利用ありがとうございました。</p>', [{ label: '閉じる', value: 1 }]);
