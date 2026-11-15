@@ -303,6 +303,13 @@ body.hasbar .toast{bottom:calc(100px + env(safe-area-inset-bottom))}
 .dlg-body .limit{padding:10px 12px;border-radius:12px;background:#fdf1dd;color:#7a4a00;font-size:13px}
 .dlg-body .limit b{font-variant-numeric:tabular-nums}
 .ico{display:inline-block;width:24px;height:24px;margin:0 1px;padding:2px;border-radius:6px;background:#f2f1ee;vertical-align:-6px;box-shadow:0 0 0 1px #e4e2dd}
+.ico.bare{width:20px;height:20px;padding:0;margin:0 8px 0 0;background:none;box-shadow:none;vertical-align:-5px}
+.mock{margin:8px 0 4px;padding:4px 10px;border-radius:14px;background:#f2f1ee;font-size:12.5px;color:var(--sub);max-width:260px}
+.mock-row{display:flex;align-items:center;gap:8px;padding:7px 4px;border-bottom:1px solid #e4e2dd}
+.mock-row:last-child{border-bottom:0}
+.mock-row span{width:20px;text-align:center;color:var(--mute)}
+.mock-row.hit{position:relative;margin:2px -6px;padding:7px 10px;border-radius:9px;background:#fff;color:var(--ink);font-weight:600;box-shadow:0 0 0 2.5px #f08a24}
+.mock-row.hit b{margin-left:auto;color:#f08a24;font-size:14px}
 .dlg-body li small,.steps li small{color:var(--sub);font-size:12px}
 .dlg-body ol{margin:6px 0 10px;padding-left:1.4em;font-size:13.5px}
 .dlg-body .os{margin:10px 0 0;font-size:12px;font-weight:600;color:var(--sub)}
@@ -1107,9 +1114,13 @@ function ruleHtml() {
 /* ---------- ホーム画面への追加の手順(iPhone は新旧どちらの Safari でも分かるように、画面のマークを添える) ---------- */
 const ICON_PAGEMENU = '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path fill="#a9a9ad" d="M5.5 2.5h6.2a1 1 0 0 1 1 1v1.6a1.7 1.7 0 1 1 0 3.2v1.4a1 1 0 0 1-1 1H5.5a1 1 0 0 1-1-1V8.4a1.6 1.6 0 1 0 0-3.1V3.5a1 1 0 0 1 1-1z"/><rect x="4.5" y="13.3" width="15" height="2.2" rx="1.1" fill="#1d1d1f"/><rect x="4.5" y="18.3" width="10.5" height="2.2" rx="1.1" fill="#1d1d1f"/></svg>';
 const ICON_SHARE = '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.5 9.5H7.3A2.3 2.3 0 0 0 5 11.8v7.4a2.3 2.3 0 0 0 2.3 2.3h9.4a2.3 2.3 0 0 0 2.3-2.3v-7.4a2.3 2.3 0 0 0-2.3-2.3h-1.2M12 2.8v12M8.6 6.2 12 2.8l3.4 3.4" fill="none" stroke="#1d1d1f" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+const ICON_ADDHOME = '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="4" fill="none" stroke="#1d1d1f" stroke-width="1.7"/><path d="M12 8.2v7.6M8.2 12h7.6" stroke="#1d1d1f" stroke-width="1.7" stroke-linecap="round"/></svg>';
+/* 共有メニューの見本(「ホーム画面に追加」の場所を示す) */
+const IOS_MENU_MOCK = '<div class="mock" aria-hidden="true"><div class="mock-row"><span>□</span>ブックマークの追加先…</div><div class="mock-row"><span>☆</span>お気に入りに追加</div><div class="mock-row"><span>⌕</span>ページを検索</div>'
+  + '<div class="mock-row hit">' + ICON_ADDHOME.replace('class="ico"', 'class="ico bare"') + 'ホーム画面に追加<b>◀</b></div></div>';
 const IOS_STEPS = '<p class="os">iPhone(Safari)</p><ol>'
   + '<li>画面下のアドレス欄の左にあるボタン ' + ICON_PAGEMENU + ' を押す<br><small>(このボタンがない iPhone は、画面下の共有ボタン ' + ICON_SHARE + ')</small></li>'
-  + '<li>「ホーム画面に追加」を選ぶ<br><small>(見当たらないときは「共有」' + ICON_SHARE + 'の中にあります)</small></li>'
+  + '<li>出てきたメニューを下へ動かし、「ホーム画面に追加」' + ICON_ADDHOME + 'を押す<br><small>(見当たらないときは「共有」' + ICON_SHARE + 'の中にあります)</small>' + IOS_MENU_MOCK + '</li>'
   + '<li>右上の「追加」を押す</li></ol>'
   + '<p class="note" style="margin:4px 0 0">LINE などのアプリの中で開いている場合は、一度 Safari で開いてから追加してください。マークの形は、iPhone の設定によって少し違うことがあります。</p>';
 const ANDROID_STEPS = '<p class="os">Android(Chrome)</p><ol><li>右上のメニュー(︙)を押す</li><li>「ホーム画面に追加」または「アプリをインストール」を選ぶ</li></ol>';
