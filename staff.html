@@ -125,6 +125,8 @@ button{font:inherit;color:inherit;letter-spacing:inherit;cursor:pointer}
 .login{max-width:360px;margin:14vh auto 0;padding:30px 26px 26px;background:var(--card);border-radius:var(--rl);box-shadow:0 0 0 1px var(--line)}
 .login h2{margin:0 0 4px;font-size:20px;font-weight:600;letter-spacing:.06em}
 .login p{margin:0 0 14px;font-size:12.5px;color:var(--sub)}
+.login input[type=email]{display:block;width:100%;height:48px;padding:0 14px;margin-bottom:10px;border:0;border-radius:10px;background:var(--soft);font:inherit;font-size:16px}
+.login .alt{display:block;margin:14px auto 0;padding:8px;border:0;background:none;font:inherit;font-size:13px;color:var(--sub);text-decoration:underline;cursor:pointer}
 .login input[type=password]{display:block;width:100%;height:48px;padding:0 14px;border:0;border-radius:10px;background:var(--soft);font:inherit;font-size:16px}
 .login input:focus{background:#fff;box-shadow:0 0 0 1.5px var(--ink);outline:none}
 .login label.chk{display:flex;align-items:center;gap:8px;margin:12px 2px 0;font-size:13px;color:var(--sub)}
@@ -161,11 +163,12 @@ button{font:inherit;color:inherit;letter-spacing:inherit;cursor:pointer}
     <h2>スタッフ</h2>
     <p>その日の予約を、時間の早い順に確認できます。</p>
     <div id="pwLogin">
+      <input type="email" id="em" placeholder="メールアドレス(個人のパスワードの人)" autocomplete="username" aria-label="メールアドレス">
       <input type="password" id="pw" placeholder="パスワード" autocomplete="current-password" aria-label="パスワード">
       <label class="chk"><input type="checkbox" id="keep" checked>この端末に保存する</label>
       <button class="btn" id="go">ひらく</button>
     </div>
-    <div id="gLogin" hidden><p style="margin:0 0 14px">会社の Google アカウントでログインしてください。</p><div id="gBtn" style="display:flex;justify-content:center;min-height:44px"></div></div>
+    <div id="gLogin" hidden><p style="margin:0 0 14px">会社の Google アカウントでログインしてください。</p><div id="gBtn" style="display:flex;justify-content:center;min-height:44px"></div><button type="button" class="alt" id="toPw">メールアドレスとパスワードで入る</button></div>
     <p class="err" id="err" hidden></p>
   </div>
   <div id="app" hidden>
@@ -201,17 +204,21 @@ const pad = n => String(n).padStart(2, '0');
 const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const KEY = 'wash_staff_pw';
 const getPw = () => { try { return localStorage.getItem(KEY) || sessionStorage.getItem(KEY) || ''; } catch (e) { return ''; } };
-const setPw = (v, keep) => { try { localStorage.removeItem(KEY); sessionStorage.removeItem(KEY); if (v) (keep ? localStorage : sessionStorage).setItem(KEY, v); } catch (e) {} };
+const EKEY = 'wash_staff_email';
+const getEm = () => { try { return localStorage.getItem(EKEY) || sessionStorage.getItem(EKEY) || ''; } catch (e) { return ''; } };
+const setPw = (v, keep, em) => { try { [KEY, EKEY].forEach(k => { localStorage.removeItem(k); sessionStorage.removeItem(k); }); if (v) { const st = keep ? localStorage : sessionStorage; st.setItem(KEY, v); if (em) st.setItem(EKEY, em); } } catch (e) {} };
 const toD = s => { const a = s.split('-'); return new Date(+a[0], a[1] - 1, +a[2]); };
 const fmt = d => d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
 const addDay = (s, n) => { const d = toD(s); d.setDate(d.getDate() + n); return fmt(d); };
 const toM = t => +t.slice(0, 2) * 60 + +t.slice(3, 5);
 
-let pw = getPw(), cur = null, today = null, busy = false;
+let pw = getPw(), email = getEm(), cur = null, today = null, busy = false;
+/* 個人のメールアドレス+パスワードで入っているか(Google ログインのときも、メールアドレスを入れれば使える) */
+const usePw = () => !GA.enabled || !!email;
 
 async function api(data, retried) {
   let r;
-  const cred = GA.enabled ? { idToken: GA.token } : { pw };
+  const cred = usePw() ? Object.assign({ pw }, email ? { email } : {}) : { idToken: GA.token };
   try { r = await fetch(API, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(Object.assign({ action: 'staffDay' }, cred, data)) }); }
   catch (e) { throw new Error('通信できませんでした。電波の良い場所で「更新」を押してください。'); }
   const j = await r.json();
@@ -219,7 +226,7 @@ async function api(data, retried) {
     if (/^LOGIN:/.test(j.error)) {
       const msg = j.error.slice(6);
       // ログインが切れたときは自動で取り直して、もう一度試す(お店の端末を開きっぱなしでも使えるように)
-      if (GA.enabled && !retried && GA.token && /期限|し直/.test(msg)) { try { await GA.refresh(); return api(data, true); } catch (e) {} }
+      if (!usePw() && !retried && GA.token && /期限|し直/.test(msg)) { try { await GA.refresh(); return api(data, true); } catch (e) {} }
       throw new Error('パスワード:' + msg);
     }
     throw new Error(j.error);
@@ -331,22 +338,27 @@ function draw(d) {
 
 function enter() { $('login').hidden = true; $('app').hidden = false; $('head').hidden = false; load(); }
 function logout(msg) {
-  pw = ''; setPw('');
+  pw = ''; email = ''; setPw('');
   msg = String(msg || '').replace(/^パスワード:/, '');
   $('app').hidden = true; $('head').hidden = true; $('login').hidden = false; $('list').innerHTML = '';
   $('err').hidden = !msg; $('err').textContent = msg || '';
-  if (GA.enabled) { GA.clear(); $('pwLogin').hidden = true; $('gLogin').hidden = false; GA.button($('gBtn')); }
-  else { $('pw').value = ''; $('pw').focus(); }
+  $('pw').value = '';
+  if (GA.enabled && !pwForm) { GA.clear(); $('pwLogin').hidden = true; $('gLogin').hidden = false; GA.button($('gBtn')); }
+  else { $('pwLogin').hidden = false; $('gLogin').hidden = true; $('pw').focus(); }
 }
 
+let pwForm = false;
+$('toPw').onclick = () => { pwForm = true; $('gLogin').hidden = true; $('pwLogin').hidden = false; $('em').focus(); };
 $('go').onclick = async () => {
-  const v = $('pw').value.trim(); if (!v) return;
-  pw = v; $('go').disabled = true; $('err').hidden = true;
-  try { const d = await waiting(api({})); setPw(pw, $('keep').checked); cur = d.date; today = d.today; $('login').hidden = true; $('app').hidden = false; $('head').hidden = false; draw(d); }
-  catch (e) { pw = ''; $('err').hidden = false; $('err').textContent = e.message; }
+  const v = $('pw').value.trim(), em = $('em').value.trim().toLowerCase(); if (!v) return;
+  if (GA.enabled && !em) { $('err').hidden = false; $('err').textContent = 'メールアドレスを入れてください'; return; }
+  pw = v; email = em; $('go').disabled = true; $('err').hidden = true;
+  try { const d = await waiting(api({})); setPw(pw, $('keep').checked, email); cur = d.date; today = d.today; $('login').hidden = true; $('app').hidden = false; $('head').hidden = false; draw(d); }
+  catch (e) { pw = ''; email = ''; $('err').hidden = false; $('err').textContent = e.message; }
   finally { $('go').disabled = false; }
 };
 $('pw').addEventListener('keydown', e => { if (e.key === 'Enter') $('go').click(); });
+$('em').addEventListener('keydown', e => { if (e.key === 'Enter') $('pw').focus(); });
 $('logout').onclick = () => { if (GA.enabled) GA.signOut(); logout(); };
 $('reload').onclick = () => load();
 // 印刷・PDF: 印刷の画面を開く(PDFはそこから保存できる)
@@ -372,13 +384,13 @@ $('app').addEventListener('touchend', e => {
   if (Math.abs(dx) > 70 && Math.abs(dx) > Math.abs(dy) * 1.5) load(addDay(cur, dx < 0 ? 1 : -1));
 });
 // 1分ごと・画面に戻ったときに更新
-setInterval(() => { if (pw && !document.hidden && !$('app').hidden) load(null, true); }, 60000);
-document.addEventListener('visibilitychange', () => { if (!document.hidden && pw && !$('app').hidden) load(null, true); });
+setInterval(() => { if ((pw || GA.enabled) && !document.hidden && !$('app').hidden) load(null, true); }, 60000);
+document.addEventListener('visibilitychange', () => { if (!document.hidden && (pw || GA.enabled) && !$('app').hidden) load(null, true); });
 
 if (GA.enabled) {
   // Google ログイン: ログインできたら一覧へ
   GA.onSignIn = () => { $('err').hidden = true; enter(); };
-  if (GA.token) enter(); else logout('');
+  if (email && pw) enter(); else if (GA.token) enter(); else logout('');
 } else if (pw) enter();
 </script>
 </body>

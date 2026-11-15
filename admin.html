@@ -72,6 +72,7 @@ textarea:focus,input:focus{background:#fff;box-shadow:0 0 0 1.5px var(--ink);out
 @media (max-width:560px){.it{align-items:flex-start;gap:12px;padding:14px 14px 14px 16px}.it .tm{width:48px}.it .num{margin-top:2px}}
 #login h2{margin:0 0 4px;font-size:20px;font-weight:600;letter-spacing:.06em}
 #login .btn{width:100%;margin-top:18px;min-height:48px}
+#login .linkbtn{display:block;margin:16px auto 0;padding:8px;border:0;background:none;font:inherit;font-size:13px;color:var(--sub);text-decoration:underline;cursor:pointer}
 
 /* 予約一覧 */
 .tool{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px 10px;align-items:center;padding:6px 16px 16px}
@@ -113,6 +114,10 @@ textarea:focus,input:focus{background:#fff;box-shadow:0 0 0 1.5px var(--ink);out
 .newstore{display:flex;gap:8px;margin-top:4px}
 .urow{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--line)}
 .urow .em{flex:1;min-width:0;font-size:14px;overflow-wrap:anywhere}
+.urow{flex-wrap:wrap}
+.urow .pwin{flex:1 1 180px;min-width:0;height:40px;padding:0 10px;border:0;border-radius:var(--r);background:var(--soft);font:inherit;font-size:14px}
+.urow .pws{font-size:12px;color:var(--sub);white-space:nowrap}
+.uadd{flex-wrap:wrap}.uadd input{flex:1 1 200px}
 .rsel{height:40px;padding:0 10px;border:0;border-radius:var(--r);background:var(--soft);font:inherit;font-size:14px!important;color:var(--ink)}
 .newstore input{flex:1}
 .mrow{display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;gap:8px;align-items:center;margin-bottom:8px;padding:4px;border-radius:12px;background:var(--card);transition:box-shadow .15s}
@@ -230,6 +235,16 @@ textarea:focus,input:focus{background:#fff;box-shadow:0 0 0 1.5px var(--ink);out
 .pv-btn .ed,.pv-when .ed{outline-color:#d6b46a}
 .pv-btn .ed:focus{background:transparent;color:#fff}
 .ed:empty::before{content:attr(data-ph);color:#b4b3ae;font-weight:400;font-size:11.5px}
+.ed.u{outline-style:dotted;outline-color:#c9c7c0}
+.txs{position:sticky;top:0;z-index:2;display:flex;gap:8px;align-items:center;padding:10px 0;background:var(--bg)}
+.txs input[type=search]{flex:1;height:44px;padding:0 14px;border:0;border-radius:var(--r);background:var(--card);box-shadow:0 0 0 1px var(--line);font:inherit;font-size:15px}
+.txg{margin:18px 0 6px;font-size:13px;font-weight:600;letter-spacing:.06em;color:var(--sub)}
+.txr{padding:10px 0;border-bottom:1px solid var(--line)}
+.txr label{display:flex;justify-content:space-between;gap:8px;margin:0 0 6px;font-size:13px}
+.txr label .ch{color:#b8954a;font-size:11.5px;white-space:nowrap}
+.txr input,.txr textarea{width:100%}
+.txr .def{margin:4px 0 0;font-size:11.5px;color:var(--sub)}
+.txr .def button{margin-left:6px;padding:2px 8px;border:0;border-radius:6px;background:var(--soft);font:inherit;font-size:11.5px;cursor:pointer}
 .pvside h3{margin:0 0 4px}
 .pvside .tags{margin-top:10px}
 .pvside .kv{margin:10px 0 0;font-size:12px;color:var(--sub)}
@@ -284,13 +299,16 @@ textarea:focus,input:focus{background:#fff;box-shadow:0 0 0 1.5px var(--ink);out
 <div class="card" id="login">
   <h2>ログイン</h2>
   <div id="pwLogin">
-    <label for="pw">管理者パスワード</label>
+    <label for="lEmail">メールアドレス <span class="note">(個人のパスワードをもらった人。メイン管理者は空欄)</span></label>
+    <input type="email" id="lEmail" autocomplete="username">
+    <label for="pw">パスワード</label>
     <input type="password" id="pw" autocomplete="current-password">
     <button class="btn" id="loginBtn">ログイン</button>
   </div>
   <div id="gLogin" hidden>
     <p class="note" style="margin:6px 0 16px">会社の Google アカウントでログインしてください。</p>
     <div id="gBtn" class="gbtn"></div>
+    <button type="button" class="linkbtn" id="toPw">メールアドレスとパスワードでログイン</button>
   </div>
   <p class="err" id="loginErr"></p>
 </div>
@@ -358,9 +376,12 @@ textarea:focus,input:focus{background:#fff;box-shadow:0 0 0 1.5px var(--ink);out
     </section>
     <section class="card pad" id="userCard" style="margin-top:16px" hidden>
       <div class="hrow"><h3>ログインできる人</h3><a class="btn sub sm" href="staff.html" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;text-decoration:none">従業員画面を開く</a></div>
-      <p class="note" style="margin:2px 0 12px">会社の Google アカウントで入れる人です。「管理者」は管理画面と従業員画面、「スタッフ」は従業員画面(その日の予約の確認・印刷)だけ使えます。辞めた人や異動した人は削除してください。</p>
+      <p class="note" style="margin:2px 0 12px" id="userNote">「管理者」は管理画面と従業員画面、「スタッフ」は従業員画面(その日の予約の確認・印刷)だけ使えます。辞めた人や異動した人は削除してください。</p>
       <div id="userList"></div>
-      <div class="newstore" style="margin-top:8px"><input type="email" id="newUser" placeholder="追加する人のメールアドレス" aria-label="追加する人のメールアドレス" autocomplete="off"><select id="newRole" aria-label="役割" class="rsel"><option>スタッフ</option><option>管理者</option></select><button class="btn sub sm" id="addUser" style="min-height:44px">追加</button></div>
+      <div id="userAdd">
+      <div class="newstore uadd" style="margin-top:8px"><input type="email" id="newUser" placeholder="追加する人のメールアドレス" aria-label="追加する人のメールアドレス" autocomplete="off"><input type="text" id="newUserPw" placeholder="パスワード(任意・8文字以上)" aria-label="パスワード" autocomplete="new-password"><select id="newRole" aria-label="役割" class="rsel"><option>スタッフ</option><option>管理者</option></select><button class="btn sub sm" id="addUser" style="min-height:44px">追加</button></div>
+      <p class="note" style="margin:6px 0 0" id="userPwNote"></p>
+      </div>
     </section>
     <section class="card pad" id="staffBox" style="margin-top:16px" hidden>
       <div class="hrow"><h3>従業員画面</h3><a class="btn sub sm" href="staff.html" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;text-decoration:none">開く</a></div>
@@ -391,7 +412,8 @@ textarea:focus,input:focus{background:#fff;box-shadow:0 0 0 1.5px var(--ink);out
       </div>
     </div>
     <div id="listWrap" hidden>
-      <p class="note hint" style="margin-top:0">お客様の画面に出る文章です。空にすると、その文章は表示されなくなります(一部は最初の文に戻ります)。</p>
+      <p class="note hint" style="margin-top:0">お客様の画面に出る文字の一覧です(ボタン・見出し・お知らせなど、すべて)。画面ごとに並んでいます。上の欄で探せます。<br>薄い字は最初の文です。空欄に戻すと最初の文が使われます。{〜} の部分はお客様の画面で実際の値に置き換わるので、消さないでください。</p>
+      <div class="txs"><input type="search" id="txtQ" placeholder="文字で探す(例: キャンセル)" aria-label="文字で探す"><label class="note" style="display:flex;align-items:center;gap:6px;white-space:nowrap"><input type="checkbox" id="txtChanged">変えたものだけ</label></div>
       <div id="txtList" class="card pad" style="padding-top:4px"></div>
     </div>
     <div id="mailBox" hidden>
@@ -405,6 +427,7 @@ textarea:focus,input:focus{background:#fff;box-shadow:0 0 0 1.5px var(--ink);out
 </div>
 
 <div class="loader" id="loader" role="status" aria-live="polite"><i aria-hidden="true"></i><div>読み込み中…<small>通信に数秒かかることがあります。そのままお待ちください。</small></div></div>
+<script src="texts.js"></script>
 <script src="config.js"></script>
 <script src="auth.js"></script>
 <script>
@@ -426,12 +449,14 @@ async function waiting(p) { Loading.start(); try { return await p; } finally { L
 const WD = ['日','月','火','水','木','金','土'];
 const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const dJa = d => { const a = d.split('-'); return (+a[1]) + '/' + (+a[2]) + '(' + WD[new Date(+a[0], a[1]-1, +a[2]).getDay()] + ')'; };
-let pw = sessionStorage.getItem('wash_admin_pw') || '', G = null;
+let pw = sessionStorage.getItem('wash_admin_pw') || '', email = sessionStorage.getItem('wash_admin_email') || '', G = null;
+/* 個人のメールアドレス+パスワードで入っているか(Google ログインのときも、メールアドレスを入れれば使える) */
+const usePw = () => !GA.enabled || !!email;
 
 async function api(action, data) { return waiting(apiRaw(action, data)); }
 async function apiRaw(action, data, retried) {
   let r;
-  const cred = GA.enabled ? { idToken: GA.token } : { pw };
+  const cred = usePw() ? Object.assign({ pw }, email ? { email } : {}) : { idToken: GA.token };
   try { r = await fetch(API, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(Object.assign({ action }, cred, data || {})) }); }
   catch (e) { throw new Error('通信できませんでした'); }
   const j = await r.json();
@@ -439,8 +464,9 @@ async function apiRaw(action, data, retried) {
     if (/^LOGIN:/.test(j.error)) {
       const msg = j.error.slice(6);
       // ログインが切れたときは、まず自動で取り直してもう一度試す
-      if (GA.enabled && !retried && GA.token && /期限|し直/.test(msg)) { try { await GA.refresh(); return apiRaw(action, data, true); } catch (e) {} }
-      if (GA.enabled) GA.clear();
+      if (!usePw() && !retried && GA.token && /期限|し直/.test(msg)) { try { await GA.refresh(); return apiRaw(action, data, true); } catch (e) {} }
+      if (usePw()) { pw = ''; email = ''; sessionStorage.removeItem('wash_admin_pw'); sessionStorage.removeItem('wash_admin_email'); }
+      else if (GA.enabled) GA.clear();
       showLogin(msg);
       throw new Error(msg);
     }
@@ -452,8 +478,11 @@ async function apiRaw(action, data, retried) {
 function showLogin(msg) {
   $('app').hidden = true; $('tabs').hidden = true; $('logout').hidden = true; $('whoName').textContent = '';
   $('login').hidden = false; $('loginErr').textContent = msg || '';
-  if (GA.enabled) { $('pwLogin').hidden = true; $('gLogin').hidden = false; GA.button($('gBtn')); }
+  if (GA.enabled && !pwForm) { $('pwLogin').hidden = true; $('gLogin').hidden = false; GA.button($('gBtn')); }
+  else { $('pwLogin').hidden = false; $('gLogin').hidden = true; }
 }
+let pwForm = false;
+$('toPw').onclick = () => { pwForm = true; $('gLogin').hidden = true; $('pwLogin').hidden = false; $('lEmail').focus(); };
 function busy(btn, fn) { return async () => { btn.disabled = true; try { await fn(); } catch (e) { alert(e.message); } finally { btn.disabled = false; } }; }
 
 async function enter() {
@@ -462,15 +491,18 @@ async function enter() {
   $('from').value = f(t); const e = new Date(t); e.setMonth(e.getMonth() + 3); $('to').value = f(e);
   await loadRes();
   ensureG().then(dot).catch(() => {});
-  if (GA.enabled) api('whoami').then(w => { $('whoName').textContent = w.email || ''; }).catch(() => {});
+  if (email) $('whoName').textContent = email;
+  else if (GA.enabled) api('whoami').then(w => { $('whoName').textContent = w.email || ''; }).catch(() => {});
 }
 $('loginBtn').onclick = busy($('loginBtn'), async () => {
-  pw = $('pw').value; $('loginErr').textContent = '';
-  try { await api('adminGet'); sessionStorage.setItem('wash_admin_pw', pw); await enter(); }
-  catch (e) { $('loginErr').textContent = e.message; pw = ''; }
+  pw = $('pw').value; email = $('lEmail').value.trim().toLowerCase(); $('loginErr').textContent = '';
+  if (GA.enabled && !email) { $('loginErr').textContent = 'メールアドレスを入れてください'; return; }
+  try { await api('adminGet'); sessionStorage.setItem('wash_admin_pw', pw); if (email) sessionStorage.setItem('wash_admin_email', email); else sessionStorage.removeItem('wash_admin_email'); await enter(); }
+  catch (e) { $('loginErr').textContent = e.message; pw = ''; email = ''; }
 });
 $('pw').addEventListener('keydown', e => { if (e.key === 'Enter') $('loginBtn').click(); });
-$('logout').onclick = () => { sessionStorage.removeItem('wash_admin_pw'); if (GA.enabled) GA.signOut(); location.reload(); };
+$('lEmail').addEventListener('keydown', e => { if (e.key === 'Enter') $('pw').focus(); });
+$('logout').onclick = () => { sessionStorage.removeItem('wash_admin_pw'); sessionStorage.removeItem('wash_admin_email'); if (GA.enabled) GA.signOut(); location.reload(); };
 document.querySelectorAll('.tab').forEach(b => b.onclick = () => {
   document.querySelectorAll('.tab').forEach(x => x.classList.toggle('on', x === b));
   ['res', 'wait', 'hol', 'time', 'set', 'txt'].forEach(k => $('t-' + k).hidden = k !== b.dataset.t);
@@ -648,24 +680,50 @@ function sortable(row, key) {
     const g = $(id) && $(id).querySelector(`.mrow[data-i="${b}"] .grip`); if (g) g.focus();
   };
 }
-/* ログインできる人(Google ログインのとき)。「設定を保存する」で保存 */
+/* ログインできる人。「設定を保存する」で保存。
+   追加・削除・パスワードはメイン管理者だけが変えられる(ほかの管理者には一覧だけ見せる)。
+   パスワードは任意: 入れた人は「メールアドレス+パスワード」で、入れない人は Google ログインで入る */
+const usersOn = () => !!G && Array.isArray(G.users) && (G.auth === 'google' || !!G.userPw);
+const canUsers = () => usersOn() && (!G.me || G.me.main);
 function drawUsers() {
-  const on = G.auth === 'google' && Array.isArray(G.users); $('userCard').hidden = !on; if (!on) return;
-  const fixed = (G.fixedAdmins || []).map(e => `<div class="urow"><span class="em">${esc(e)}</span><span class="tag l">管理者(固定)</span></div>`).join('');
-  $('userList').innerHTML = fixed + G.users.map((u, i) => `<div class="urow"><span class="em">${esc(u.email)}</span><select class="rsel" data-ur="${i}" aria-label="${esc(u.email)}の役割"><option ${u.role !== '管理者' ? 'selected' : ''}>スタッフ</option><option ${u.role === '管理者' ? 'selected' : ''}>管理者</option></select><button class="btn danger sm" data-ud="${i}">削除</button></div>`).join('')
+  const on = usersOn(); $('userCard').hidden = !on; if (!on) return;
+  const can = canUsers(), google = G.auth === 'google';
+  $('userNote').textContent = (google ? 'パスワードを入れない人は、会社の Google アカウントで入ります。' : '各自のメールアドレスと、ここで決めたパスワードで入ります(パスワードのない人は入れません)。')
+    + '「管理者」は管理画面と従業員画面、「スタッフ」は従業員画面(その日の予約の確認・印刷)だけ使えます。辞めた人や異動した人は削除してください。'
+    + (can ? '' : ' ※追加・削除・パスワードの変更は、メイン管理者だけができます。');
+  const fixed = (G.fixedAdmins || []).map(e => `<div class="urow"><span class="em">${esc(e)}</span><span class="tag l">メイン管理者</span></div>`).join('');
+  const st = u => u.clearPw ? '保存するとパスワードを外します' : u.pw ? '保存すると新しいパスワードになります' : u.hasPw ? 'パスワード設定済み' : (google ? 'Google ログインのみ' : 'パスワード未設定(入れません)');
+  $('userList').innerHTML = fixed + G.users.map((u, i) => `<div class="urow"><span class="em">${esc(u.email)}<br><span class="pws">${esc(st(u))}</span></span>`
+    + (can ? `<select class="rsel" data-ur="${i}" aria-label="${esc(u.email)}の役割"><option ${u.role !== '管理者' ? 'selected' : ''}>スタッフ</option><option ${u.role === '管理者' ? 'selected' : ''}>管理者</option></select>`
+      + (G.userPw ? `<button class="btn sub sm" data-up="${i}">パスワード</button>` : '') + `${u.hasPw && !u.clearPw ? `<button class="btn sub sm" data-uc="${i}">外す</button>` : ''}<button class="btn danger sm" data-ud="${i}">削除</button>`
+      : `<span class="tag">${esc(u.role || '')}</span>`) + '</div>').join('')
     + (fixed || G.users.length ? '' : '<p class="note" style="margin:0">まだ登録がありません。</p>');
+  $('userAdd').hidden = !can; $('newUserPw').hidden = !G.userPw; $('userPwNote').hidden = !G.userPw;
+  $('userPwNote').textContent = google ? 'パスワードは、会社の Google アカウントがない人(アルバイトなど)に使えます。決めたパスワードは本人に直接伝えてください。' : 'パスワードは8文字以上。決めたパスワードは本人に直接伝えてください(保存後は管理画面でも見られません)。';
   $('userList').querySelectorAll('[data-ur]').forEach(e => e.onchange = () => { G.users[+e.dataset.ur].role = e.value; dirty = true; });
+  $('userList').querySelectorAll('[data-up]').forEach(e => e.onclick = () => {
+    const u = G.users[+e.dataset.up], v = prompt(u.email + ' の新しいパスワード(8文字以上)。「設定を保存する」を押すと変わります', '');
+    if (v === null) return; if (!okPw(v)) return alert('パスワードは8〜100文字で、最初と最後に空白を入れないでください');
+    u.pw = v; u.clearPw = false; dirty = true; drawUsers();
+  });
+  $('userList').querySelectorAll('[data-uc]').forEach(e => e.onclick = () => {
+    const u = G.users[+e.dataset.uc]; if (!confirm(u.email + ' のパスワードを外しますか?(保存すると、この人はパスワードで入れなくなります)')) return;
+    u.clearPw = true; u.pw = ''; dirty = true; drawUsers();
+  });
   $('userList').querySelectorAll('[data-ud]').forEach(e => e.onclick = () => {
     const u = G.users[+e.dataset.ud]; if (!confirm(u.email + ' を削除しますか?(保存すると、この人はログインできなくなります)')) return;
     G.users.splice(+e.dataset.ud, 1); dirty = true; drawUsers();
   });
 }
+const okPw = v => v.length >= 8 && v.length <= 100 && !/^\s|\s$/.test(v);
 $('addUser').onclick = () => {
-  const email = $('newUser').value.trim().toLowerCase(), dom = (window.WASH_CONFIG || {}).domain;
+  const email = $('newUser').value.trim().toLowerCase(), npw = $('newUserPw').value, dom = (window.WASH_CONFIG || {}).domain;
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return alert('メールアドレスを確認してください');
-  if (dom && email.split('@')[1] !== dom) return alert('会社のアカウント(@' + dom + ')を入れてください');
+  if (npw && !okPw(npw)) return alert('パスワードは8〜100文字で、最初と最後に空白を入れないでください');
+  if (G.auth === 'google' && !npw && dom && email.split('@')[1] !== dom) return alert('会社のアカウント(@' + dom + ')以外の人は、パスワードを入れてください');
+  if (G.auth !== 'google' && !npw && !confirm('パスワードがないと、この人はログインできません。このまま追加しますか?')) return;
   if (G.users.some(u => u.email === email) || (G.fixedAdmins || []).includes(email)) return alert('すでに登録されています');
-  G.users.push({ email, role: $('newRole').value }); $('newUser').value = ''; dirty = true; drawUsers();
+  G.users.push({ email, role: $('newRole').value, pw: npw }); $('newUser').value = ''; $('newUserPw').value = ''; $('newRole').value = 'スタッフ'; dirty = true; drawUsers();
 };
 /* 届くメールの見え方(差し込み項目を例の値に置き換えて表示) */
 function mailPreviews() {
@@ -684,7 +742,7 @@ function mailPreviews() {
 /* 従業員画面のパスワード(すぐ保存) */
 function drawStaff() {
   drawUsers();
-  const has = G.staffPw !== undefined && G.auth !== 'google'; $('staffBox').hidden = !has; if (!has) return;
+  const has = G.staffPw !== undefined && G.auth !== 'google' && (!G.me || G.me.main); $('staffBox').hidden = !has; if (!has) return;
   $('staffState').textContent = G.staffPw ? '(設定済み)' : '(未設定)'; $('staffClear').hidden = !G.staffPw; $('staffPw').value = '';
 }
 $('staffSave').onclick = busy($('staffSave'), async () => {
@@ -832,10 +890,27 @@ const PV_EMPTY = { 'ヘッダー': 'hide', 'トップ見出し': 'hide', 'トッ
   '予約ボタン': '予約する', '空き案内': '最初の文', '空き案内期限': '最初の文', '空き案内取消': '最初の文', '待ち期限切れ': '最初の文', '情報削除確認': '最初の文', '情報削除': '最初の文' };
 const PV_TAGS = { '洗車時間': ['分'], 'トップご案内': ['普通分', '大型分', '昼休憩', '店名'], 'トップ': ['店名'], 'ヘッダー': ['店名'], '空き案内期限': ['残り', '期限'], '待ち期限切れ': ['期限'] };
 const PV_SCREENS = [
-  ['home', 'ホーム'], ['info', 'お車の情報'], ['wait', 'キャンセル待ち'], ['done', '予約完了'], ['offer', '空きのご案内'], ['offerNo', '取り消しの確認'],
+  ['home', 'ホーム'], ['info', 'お車の情報'], ['cal', '日にち'], ['slots', '時間'], ['lookup', '予約の確認'], ['wait', 'キャンセル待ち'], ['done', '予約完了'], ['offer', '空きのご案内'], ['offerNo', '取り消しの確認'],
   ['expired', '期限切れ'], ['first', 'はじめての案内'], ['delete', '削除の確認'], ['about', '洗車システムについて']
 ];
 let pvCur = 'home', txtMode = 'screen';
+/* ---- 画面の文言(texts.js の一覧。設定「画面の文言」に、書き換えたものだけを JSON で保存する) ---- */
+const TXC = (window.WASH_TEXTS || []), TXD = {}; TXC.forEach(r => { TXD[r[0]] = r; });
+const uiOn = () => !!sv('画面の文言');
+function uiMap() { try { const o = JSON.parse((sv('画面の文言') || {}).v || '{}'); return o && typeof o === 'object' && !Array.isArray(o) ? o : {}; } catch (e) { return {}; } }
+const uiGet = k => uiMap()[k] || (TXD[k] ? TXD[k][3] : '');
+function uiSet(k, v) {
+  const o = uiMap(); v = String(v || '');
+  if (!v.trim() || (TXD[k] && v === TXD[k][3])) delete o[k]; else o[k] = v;
+  sv('画面の文言').v = Object.keys(o).length ? JSON.stringify(o) : ''; dirty = true;
+}
+/** 見本の中の、書き換えられる文字(画面の文言)。古いサーバーでは書き換えられないので、ただの文字にする */
+function u(k, tag, cls) {
+  tag = tag || 'span';
+  if (!uiOn()) return `<${tag} class="${cls || ''}">${esc(uiGet(k))}</${tag}>`;
+  return `<${tag} class="ed u ${cls || ''}" data-u="${k}" data-ph="${esc('(空欄: 最初の文「' + (TXD[k] ? TXD[k][3] : '') + '」)')}" tabindex="0">${esc(uiGet(k))}</${tag}>`;
+}
+const uFill = (k, v) => { let t = uiGet(k); Object.keys(v).forEach(n => { t = t.split('{' + n + '}').join(v[n]); }); return esc(t); };
 /** 書き換えられる文字(設定にない古いサーバーでは出さない) */
 function ed(k, tag, cls) {
   const s = sv('文_' + k); if (!s) return '';
@@ -845,24 +920,27 @@ function ed(k, tag, cls) {
 function pvTop() { const shop = (sv('店舗名') || {}).v || '洗車予約'; return `<div class="pv-top"><div><b>${esc(shop)}</b>${ed('ヘッダー', 'p', 'pv-sub')}</div></div>`; }
 function pvHome(extra) {
   return pvTop() + `<div class="pv-body">${ed('トップ見出し', 'h2')}${ed('トップ', 'p', 'pv-lead')}<div style="height:150px"></div>`
-    + `<p class="pv-link">洗車システムについて</p><div class="pv-btn">${ed('予約ボタン', 'span')}</div><div class="pv-row" style="margin-top:10px">予約の確認・キャンセル<span>›</span></div></div>` + (extra || '');
+    + `<p class="pv-link">${u('home.about')}</p><div class="pv-btn">${ed('予約ボタン', 'span')}</div><div class="pv-row" style="margin-top:10px">${u('home.lookup')}<span>›</span></div></div>` + (extra || '');
 }
 function pvRules() {
   const v = k => +((sv(k) || {}).v) || '';
-  return sv('案内の期限(2週間以上先)') ? `<ul><li><span>ご予約日が2週間以上先</span><b>${v('案内の期限(2週間以上先)')}時間以内</b></li><li><span>ご予約日が2週間以内</span><b>${v('案内の期限(2週間以内)')}時間以内</b></li><li><span>ご予約日が3日以内</span><b>${v('案内の期限(3日以内)')}時間以内</b></li></ul>` : '';
+  return sv('案内の期限(2週間以上先)') ? `<ul><li>${u('wait.rule1')}<b>${uFill('wait.within', { '時間': v('案内の期限(2週間以上先)') })}</b></li><li>${u('wait.rule2')}<b>${uFill('wait.within', { '時間': v('案内の期限(2週間以内)') })}</b></li><li>${u('wait.rule3')}<b>${uFill('wait.within', { '時間': v('案内の期限(3日以内)') })}</b></li></ul>` : '';
 }
 const pvWhen = '<div class="pv-when">11月20日(金) 10:00〜10:45<small>NX ・ 鹿児島 330 あ 12-34 ・ 担当 中村</small></div>';
 const PV_RENDER = {
   home: () => pvHome(),
-  info: () => pvTop() + `<div class="pv-body"><div class="pv-row" style="width:max-content;min-height:32px">‹ もどる</div><h2>お車の情報</h2><div class="pv-card"><div class="pv-note" style="margin:0 0 6px">車種</div><div class="pv-tiles"><i>UX</i><i class="on">NX</i><i>RX</i><i>IS</i></div></div>${ed('洗車時間', 'p', 'pv-note')}<p class="pv-note" style="font-weight:600;margin-top:14px">ご連絡先</p><div class="pv-card">山田 太郎 様<br><small style="color:#888">090-1234-5678 ・ yamada@example.com</small></div>${ed('お車の情報', 'p', 'pv-note')}<div class="pv-btn">日にちを選ぶ</div></div>`,
-  wait: () => pvTop() + `<div class="pv-body"><div class="pv-row" style="width:max-content;min-height:32px">‹ もどる</div><h2>キャンセル待ち</h2>${ed('キャンセル待ち', 'p', 'pv-lead')}${sv('文_待ち期限案内') ? `<div class="pv-rule">${ed('待ち期限案内', 'p')}${pvRules()}</div>` : ''}<p class="pv-note" style="font-weight:600;margin-top:14px">対象の選び方</p><div class="pv-tiles" style="grid-template-columns:1fr 1fr"><i class="on">日にちで選ぶ</i><i>曜日で選ぶ</i></div></div>`,
-  done: () => pvTop() + `<div class="pv-body" style="text-align:center"><div style="width:46px;height:46px;margin:16px auto 10px;border-radius:50%;background:#1d1d1f;color:#d6b46a;display:grid;place-items:center">✓</div><h2>予約が完了しました</h2><p class="pv-note">予約番号</p><div style="font-size:30px;font-weight:600;letter-spacing:.14em">123456</div><div class="pv-card" style="text-align:left">日時 11月20日(金) 10:00〜10:45<br>お車 NX</div><div style="text-align:left">${ed('完了', 'p', 'pv-note')}</div><div class="pv-btn">トップへ</div></div>`,
-  offer: () => pvHome(`<div class="pv-dim"><div class="pv-dlg"><h4>空きが出ました</h4>${ed('空き案内', 'p')}${pvWhen}<div class="pv-limit">${ed('空き案内期限', 'p')}</div><div class="pv-btn">はい(予約する)</div><div class="pv-btn ghost">いいえ</div></div></div>`),
-  offerNo: () => pvHome(`<div class="pv-dim"><div class="pv-dlg"><h4>キャンセル待ちの取り消し</h4>${ed('空き案内取消', 'p')}<div class="pv-btn red">取り消す</div><div class="pv-btn ghost">戻る</div></div></div>`),
-  expired: () => pvHome(`<div class="pv-dim"><div class="pv-dlg"><h4>ご案内の期限が過ぎました</h4>${ed('待ち期限切れ', 'p')}${pvWhen}<div class="pv-btn">閉じる</div></div></div>`),
-  first: () => pvHome(`<div class="pv-dim"><div class="pv-dlg"><h4>アプリとして使えます</h4>${ed('はじめて', 'p')}<p class="pv-steps">iPhone(Safari)<br>1. 画面下のアドレス欄の左のボタンを押す<br>2. 「ホーム画面に追加」を押す<br>3. 右上の「追加」を押す</p><div class="pv-btn">閉じる</div></div></div>`),
-  delete: () => pvHome(`<div class="pv-dim"><div class="pv-dlg"><h4>お客様情報の削除</h4>${ed('情報削除確認', 'p', '')}<div class="pv-warn" style="margin-top:8px">${ed('情報削除', 'p')}</div><div class="pv-card" style="font-size:11.5px">メール: yamada@example.com<br>お車: 鹿児島 330 あ 12-34</div><div class="pv-btn red">削除する</div><div class="pv-btn ghost">やめる</div></div></div>`),
-  about: () => pvHome(`<div class="pv-sheet"><b style="font-size:14px">洗車システムについて</b><div class="pv-notice" style="margin-top:10px">この予約はレクサス鹿児島東開でのみ有効です。</div><p class="pv-h4">ご案内(1行に1項目、「見出し:内容」の形)</p><div class="pv-card">${ed('トップご案内', 'div')}</div>${sv('文_待ち期限案内') ? `<p class="pv-h4">キャンセル待ちについて</p><div class="pv-rule">${ed('待ち期限案内', 'p')}${pvRules()}</div>` : ''}</div>`)
+  cal: () => pvTop() + `<div class="pv-body"><div class="pv-row" style="width:max-content;min-height:32px">‹ ${u('cal.back')}</div>${u('cal.title', 'h2')}<p class="pv-note">NX ・ 鹿児島 330 あ 12-34 ・ ${uFill('cal.minutes', { '分': (sv('洗車分(普通)') || {}).v || 45 })}</p><div class="pv-card" style="text-align:center;color:#888">(カレンダー)</div><p class="pv-note">● ${u('cal.free')}　● ${u('cal.few')}　● ${u('cal.full')}</p><div class="pv-row">${u('cal.toWait')}<span>›</span></div><div class="pv-card" style="margin-top:12px"><b>${uFill('cal.booked', { '月': '12月' })}</b><br>${u('cal.bookedNote')}</div><div class="pv-card"><b>${uFill('cal.fullDay', { '日付': '11/20(金)' })}</b><br><small>${u('cal.fullDaySub')}</small><div class="pv-btn" style="margin-top:8px">${u('cal.toWaitBtn')}</div></div><p class="pv-note"><small>({月}・{日付} の入った文は「一覧で編集」で書き換えられます)</small></p></div>`,
+  slots: () => pvTop() + `<div class="pv-body"><div class="pv-row" style="width:max-content;min-height:32px">‹ ${u('slot.back')}</div><h2>11月20日(金)</h2><p class="pv-lead">${u('slot.sub')}</p><div class="pv-card"><b style="font-size:12px">${u('slot.hint')}</b></div><p class="pv-note" style="font-weight:600">${u('slot.am')} <small>${uFill('slot.open', { '数': 3 })}</small></p><div class="pv-tiles"><i>10:00</i><i>10:45</i><i style="color:#aaa">11:30<br><small>${u('slot.booked')}</small></i></div><p class="pv-note" style="font-weight:600">${u('slot.pm')}</p><div class="pv-btn">${u('slot.reserve')}</div></div>`,
+  lookup: () => pvTop() + `<div class="pv-body"><div class="pv-row" style="width:max-content;min-height:32px">‹ ${u('app.back')}</div>${u('look.title', 'h2')}<div class="pv-card"><div class="pv-note" style="margin:0">${u('look.email')}</div><div class="pv-note" style="margin:8px 0 0">${u('look.plate')}</div></div><div class="pv-btn">${u('look.go')}</div><p class="pv-note" style="font-weight:600;margin-top:14px">${u('look.res')}</p><div class="pv-card">11月20日(金) 10:00〜10:45<br><small>NX / ${u('look.no')} 123456</small><div class="pv-btn red" style="margin-top:8px">${u('look.cancelBtn')}</div></div><p class="pv-note" style="font-weight:600">${u('look.waits')}</p><div class="pv-card"><small>${u('look.waitNormal')}</small><div class="pv-btn ghost" style="margin-top:8px">${u('look.waitStopBtn')}</div></div></div>`,
+  info: () => pvTop() + `<div class="pv-body"><div class="pv-row" style="width:max-content;min-height:32px">‹ ${u('app.back')}</div>${u('info.title', 'h2')}<div class="pv-card"><div class="pv-note" style="margin:0 0 6px">${u('info.model')}</div><div class="pv-tiles"><i>UX</i><i class="on">NX</i><i>RX</i><i>IS</i></div><div class="pv-note" style="margin:10px 0 0">${u('info.plate')}</div></div>${ed('洗車時間', 'p', 'pv-note')}<p class="pv-note" style="font-weight:600;margin-top:14px">${u('info.staff')}</p><p class="pv-note" style="font-weight:600;margin-top:14px">${u('info.contact')}</p><div class="pv-card">山田 太郎 ${u('app.sama')}<br><small style="color:#888">090-1234-5678 ・ yamada@example.com</small></div>${ed('お車の情報', 'p', 'pv-note')}<div class="pv-btn">${u('info.next')}</div></div>`,
+  wait: () => pvTop() + `<div class="pv-body"><div class="pv-row" style="width:max-content;min-height:32px">‹ ${u('app.back')}</div>${u('wait.title', 'h2')}${ed('キャンセル待ち', 'p', 'pv-lead')}${sv('文_待ち期限案内') ? `<div class="pv-rule">${ed('待ち期限案内', 'p')}${pvRules()}</div>` : ''}<p class="pv-note" style="font-weight:600;margin-top:14px">${u('wait.mode')}</p><div class="pv-tiles" style="grid-template-columns:1fr 1fr"><i class="on">${u('wait.modeDates')}</i><i>${u('wait.modeWd')}</i></div><p class="pv-note" style="font-weight:600;margin-top:14px">${u('wait.dates')}</p></div>`,
+  done: () => pvTop() + `<div class="pv-body" style="text-align:center"><div style="width:46px;height:46px;margin:16px auto 10px;border-radius:50%;background:#1d1d1f;color:#d6b46a;display:grid;place-items:center">✓</div>${u('done.title', 'h2')}<p class="pv-note">${u('done.no')}</p><div style="font-size:30px;font-weight:600;letter-spacing:.14em">123456</div><div class="pv-card" style="text-align:left">${u('done.when')} 11月20日(金) 10:00〜10:45<br>${u('done.car')} NX<br>${u('done.staff')} 中村</div><div style="text-align:left">${ed('完了', 'p', 'pv-note')}</div><div class="pv-btn">${u('app.toTop')}</div></div>`,
+  offer: () => pvHome(`<div class="pv-dim"><div class="pv-dlg">${u('hold.title', 'h4')}${ed('空き案内', 'p')}${pvWhen}<div class="pv-limit">${ed('空き案内期限', 'p')}</div><div class="pv-btn">${u('hold.yes')}</div><div class="pv-btn ghost">${u('hold.no')}</div></div></div>`),
+  offerNo: () => pvHome(`<div class="pv-dim"><div class="pv-dlg">${u('hold.noTitle', 'h4')}${ed('空き案内取消', 'p')}<div class="pv-btn red">${u('hold.noYes')}</div><div class="pv-btn ghost">${u('app.cancel')}</div></div></div>`),
+  expired: () => pvHome(`<div class="pv-dim"><div class="pv-dlg">${u('hold.expiredTitle', 'h4')}${ed('待ち期限切れ', 'p')}${pvWhen}<div class="pv-btn">${u('app.close')}</div></div></div>`),
+  first: () => pvHome(`<div class="pv-dim"><div class="pv-dlg">${u('first.title', 'h4')}${ed('はじめて', 'p')}<p class="pv-steps">${u('ios.title')}<br>1. ${uFill('ios.s1', { 'ボタン': '▢' })}<br>2. ${uFill('ios.s2', { '追加': '⊞' })}<br>3. ${u('ios.s3')}<br><small style="color:#888">(手順の文は「一覧で編集」で書き換えられます)</small></p><p class="pv-note">${u('first.later')}</p><div class="pv-btn">${u('app.close')}</div></div></div>`),
+  delete: () => pvHome(`<div class="pv-dim"><div class="pv-dlg">${u('del.title', 'h4')}${ed('情報削除確認', 'p', '')}<div class="pv-warn" style="margin-top:8px">${ed('情報削除', 'p')}</div><div class="pv-card" style="font-size:11.5px">${u('del.mail')}: yamada@example.com<br>${u('del.car')}: 鹿児島 330 あ 12-34</div><div class="pv-btn red">${u('del.yes')}</div><div class="pv-btn ghost">${u('del.no')}</div></div></div>`),
+  about: () => pvHome(`<div class="pv-sheet">${u('about.title', 'b')}<div class="pv-notice" style="margin-top:10px">${u('about.notice')}</div><p class="pv-h4">${u('about.info')} <small>(1行に1項目、「見出し:内容」の形)</small></p><div class="pv-card">${ed('トップご案内', 'div')}</div><p class="pv-h4">${u('about.window')}</p><p class="pv-note">${u('about.once')}<br>${u('about.waitInfo')}<br><small>(ほかの説明は「一覧で編集」で書き換えられます)</small></p>${sv('文_待ち期限案内') ? `<p class="pv-h4">${u('about.wait')}</p><div class="pv-rule">${ed('待ち期限案内', 'p')}${pvRules()}</div>` : ''}<p class="pv-h4">${u('about.install')}</p><p class="pv-link" style="color:#b0413e">${u('about.delete')}</p></div>`)
 };
 function drawPreview() {
   $('pvTabs').innerHTML = PV_SCREENS.map(([k, n]) => `<button type="button" role="tab" class="${k === pvCur ? 'on' : ''}" data-pv="${k}">${n}</button>`).join('');
@@ -875,15 +953,25 @@ function drawPreview() {
       el.contentEditable = 'true';
       el.addEventListener('paste', ev => { ev.preventDefault(); document.execCommand('insertText', false, (ev.clipboardData || window.clipboardData).getData('text')); });
     }
-    el.oninput = () => { sv(el.dataset.k).v = el.innerText.replace(/\n$/, ''); dirty = true; };
+    el.oninput = () => { const t = el.innerText.replace(/\n$/, ''); if (el.dataset.u) uiSet(el.dataset.u, t); else { sv(el.dataset.k).v = t; dirty = true; } };
     el.onfocus = () => pvSide(el);
-    el.onkeydown = ev => { if (ev.key === 'Enter' && el.dataset.k === '文_予約ボタン') ev.preventDefault(); };
+    el.onkeydown = ev => { if (ev.key === 'Enter' && (el.dataset.u || el.dataset.k === '文_予約ボタン')) ev.preventDefault(); };
+    if (el.dataset.u) el.onblur = () => { if (!el.innerText.trim()) el.textContent = uiGet(el.dataset.u); };
   });
   pvSide(null, eds.length);
 }
 /** 右側の説明: 選んだ文字の名前・空欄のときの扱い・差し込み項目 */
 function pvSide(el, n) {
-  if (!el) { $('pvSide').innerHTML = `<h3>${esc((PV_SCREENS.find(x => x[0] === pvCur) || [])[1] || '')}</h3><p class="note" style="margin:0">${n ? '点線の文字(' + n + 'か所)を押すと、ここに説明が出ます。改行もそのまま使えます。' : 'この画面には、書き換えられる文字がありません(サーバーの更新が必要な場合があります)。'}</p>`; return; }
+  if (!el) { $('pvSide').innerHTML = `<h3>${esc((PV_SCREENS.find(x => x[0] === pvCur) || [])[1] || '')}</h3><p class="note" style="margin:0">${n ? '点線の文字(' + n + 'か所)を押すと、その場で書き換えられ、ここに説明が出ます。金色の点線は長い文章(改行できます)、灰色の点線はボタン・見出しなどの短い文字です。' : 'この画面には、書き換えられる文字がありません(サーバーの更新が必要な場合があります)。'}</p>`; return; }
+  if (el.dataset.u) {
+    const r = TXD[el.dataset.u] || ['', '', el.dataset.u, ''], tg = [...new Set((r[3].match(/\{[^{}]+\}/g) || []))];
+    $('pvSide').innerHTML = `<h3>${esc(r[2])}</h3><p class="note" style="margin:0">画面: ${esc(r[1])}</p><p class="kv">最初の文: 「${esc(r[3])}」<br>空欄にすると最初の文に戻ります。</p>`
+      + (tg.length ? `<p class="kv">差し込み項目(消さないでください。押すと入ります)</p><div class="tags">${tg.map(t => `<button type="button" data-tag="${esc(t.slice(1, -1))}">${esc(t)}</button>`).join('')}</div>` : '')
+      + `<button type="button" class="btn sub sm" id="pvReset" style="margin-top:12px">最初の文に戻す</button>`;
+    $('pvSide').querySelectorAll('[data-tag]').forEach(b => { b.onmousedown = ev => ev.preventDefault(); b.onclick = () => { el.focus(); document.execCommand('insertText', false, '{' + b.dataset.tag + '}'); el.oninput(); }; });
+    $('pvReset').onclick = () => { uiSet(el.dataset.u, ''); el.textContent = uiGet(el.dataset.u); };
+    return;
+  }
   const k = el.dataset.k.slice(2), s = sv(el.dataset.k), e = PV_EMPTY[k], tags = PV_TAGS[k] || [];
   $('pvSide').innerHTML = `<h3>${esc(TXT_LABEL[k] || k)}</h3><p class="note" style="margin:0">${esc(s.d || '')}</p>`
     + `<p class="kv">空欄にすると: ${e === 'hide' ? '表示されなくなります' : (e === '最初の文' ? '最初の文が表示されます' : '「' + esc(e) + '」が表示されます')}</p>`
@@ -897,12 +985,37 @@ $('txtMode').querySelectorAll('[data-m]').forEach(b => b.onclick = () => {
 });
 function drawTxt() {
   drawPreview();
-  const rows = G.settings.filter(s => s.k.indexOf('文_') === 0);
-  $('txtList').innerHTML = rows.map(s => { const n = s.k.slice(2); return `<label for="x-${esc(s.k)}">${esc(TXT_LABEL[n] || n)}${s.d ? '<span class="note">' + esc(s.d) + '</span>' : ''}</label><textarea id="x-${esc(s.k)}" data-x="${esc(s.k)}" ${n === 'トップご案内' ? 'style="min-height:150px"' : ''}>${esc(s.v)}</textarea>`; }).join('') +
-    '<p class="note" style="margin:16px 0 0">案内表では {普通分} {大型分} {昼休憩} と書くと、現在の設定の数字に自動で入れ替わります。</p>';
-  $('txtList').querySelectorAll('[data-x]').forEach(e => e.oninput = () => { sv(e.dataset.x).v = e.value; dirty = true; });
+  drawTxtList();
   drawMail();
 }
+/* 一覧で編集: texts.js の一覧を画面ごとに並べる。「文_」で始まるものは設定の文章、ほかは「画面の文言」 */
+function drawTxtList() {
+  const q = $('txtQ').value.trim(), only = $('txtChanged').checked, on = uiOn(), o = uiMap();
+  const known = new Set(TXC.map(r => r[0]));
+  const extra = G.settings.filter(x => x.k.indexOf('文_') === 0 && !known.has(x.k)).map(x => [x.k, 'その他', TXT_LABEL[x.k.slice(2)] || x.k.slice(2), '']);
+  const rows = TXC.concat(extra).filter(r => r[0].indexOf('文_') === 0 ? !!sv(r[0]) : on);
+  const val = r => r[0].indexOf('文_') === 0 ? sv(r[0]).v : (o[r[0]] || '');
+  const changed = r => r[0].indexOf('文_') === 0 ? false : !!o[r[0]];
+  const hit = r => (!q || [r[1], r[2], r[3], val(r)].some(t => String(t).indexOf(q) >= 0)) && (!only || changed(r));
+  let h = '', grp = '';
+  rows.filter(hit).forEach(r => {
+    if (r[1] !== grp) { grp = r[1]; h += `<p class="txg">${esc(grp)}</p>`; }
+    const isSet = r[0].indexOf('文_') === 0, v = val(r), id = 'tx-' + r[0].replace(/[^\w]/g, '_') + (isSet ? '_' + encodeURIComponent(r[0]).replace(/%/g, '') : '');
+    const long = isSet || r[3].length > 34 || v.length > 34;
+    const field = long ? `<textarea id="${id}" ${isSet ? `data-x="${esc(r[0])}"` : `data-tu="${esc(r[0])}"`} placeholder="${esc(isSet ? '' : r[3])}" ${r[0] === '文_トップご案内' ? 'style="min-height:150px"' : 'style="min-height:64px"'}>${esc(v)}</textarea>`
+      : `<input type="text" id="${id}" data-tu="${esc(r[0])}" placeholder="${esc(r[3])}" value="${esc(v)}">`;
+    const d = isSet ? ((sv(r[0]) || {}).d || '') : '';
+    h += `<div class="txr"><label for="${id}"><span>${esc(r[2])}</span>${changed(r) ? '<span class="ch">変更あり</span>' : ''}</label>${field}`
+      + (isSet ? (d ? `<p class="def">${esc(d)}</p>` : '') : `<p class="def">最初の文: ${esc(r[3])}${changed(r) ? ` <button type="button" data-tr="${esc(r[0])}">最初の文に戻す</button>` : ''}</p>`) + '</div>';
+  });
+  if (!on) h = '<p class="warn" style="margin:12px 0">ボタンや見出しなど、すべての文字を書き換えるには、サーバー(Code.gs)の更新が必要です。いまは長い文章だけ書き換えられます。</p>' + h;
+  $('txtList').innerHTML = h || '<p class="note" style="margin:12px 0">見つかりませんでした。</p>';
+  $('txtList').querySelectorAll('[data-x]').forEach(e => e.oninput = () => { sv(e.dataset.x).v = e.value; dirty = true; });
+  $('txtList').querySelectorAll('[data-tu]').forEach(e => e.oninput = () => { uiSet(e.dataset.tu, e.value); });
+  $('txtList').querySelectorAll('[data-tr]').forEach(b => b.onclick = () => { uiSet(b.dataset.tr, ''); drawTxtList(); });
+}
+$('txtQ').oninput = () => drawTxtList();
+$('txtChanged').onchange = () => drawTxtList();
 /* メールの文章: [設定のキー(メ_〜), 見出し, いつ届くか, 使える差し込み項目] */
 const MAILS = [
   ['予約確認', '予約の確認', '予約を受け付けたとき', ['氏名', '日時', '予約番号', 'お車', 'ナンバー', '担当', '店名']],
@@ -914,7 +1027,7 @@ const MAILS = [
 ];
 function drawMail() {
   const has = !!sv('メ_予約確認'); $('mailBox').hidden = !has; if (!has) return;
-  $('mailList').innerHTML = MAILS.map(m => {
+  $('mailList').innerHTML = MAILS.filter(m => sv('メ_' + m[0])).map(m => {
     const subj = sv('メ_' + m[0] + '件名'), body = sv('メ_' + m[0]);
     return `<section class="card pad mail"><h3>${m[1]}</h3><p class="note" style="margin:0">${esc(m[2])}</p>`
       + (subj ? `<label for="m-${m[0]}-s">件名</label><input type="text" id="m-${m[0]}-s" data-x="メ_${m[0]}件名" value="${esc(subj.v)}">` : '')
@@ -995,7 +1108,7 @@ async function saveHol() {
 /* 設定・文章の保存 */
 async function saveAll() {
   const settings = {}; G.settings.forEach(s => settings[s.k] = s.v);
-  await api('adminSave', Object.assign({ settings, models: G.models, holidays: G.holidays, confirmed: G.confirmed, special: G.special || [] }, Array.isArray(G.staff) ? { staff: G.staff } : {}, G.auth === 'google' && Array.isArray(G.users) ? { users: G.users } : {}));
+  await api('adminSave', Object.assign({ settings, models: G.models, holidays: G.holidays, confirmed: G.confirmed, special: G.special || [] }, Array.isArray(G.staff) ? { staff: G.staff } : {}, canUsers() ? { users: G.users.map(u => ({ email: u.email, role: u.role, note: u.note || '', pw: u.pw || undefined, clearPw: u.clearPw || undefined })) } : {}));
   alert('保存しました'); await reloadG();
 }
 $('saveSet').onclick = busy($('saveSet'), saveAll);
@@ -1004,7 +1117,7 @@ $('saveTxt').onclick = busy($('saveTxt'), saveAll);
 if (GA.enabled) {
   // Google ログイン: ログインできたら管理画面へ(タブの中にトークンが残っていればそのまま入る)
   GA.onSignIn = () => { $('loginErr').textContent = ''; api('adminGet').then(enter).catch(e => { $('loginErr').textContent = e.message; }); };
-  if (GA.token) api('adminGet').then(enter).catch(() => {}); else showLogin('');
+  if (email && pw) api('adminGet').then(enter).catch(() => {}); else if (GA.token) api('adminGet').then(enter).catch(() => {}); else showLogin('');
 } else if (pw) api('adminGet').then(enter).catch(() => { sessionStorage.removeItem('wash_admin_pw'); pw = ''; });
 </script>
 </body>

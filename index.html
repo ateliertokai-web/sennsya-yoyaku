@@ -339,9 +339,9 @@ body.hasbar .toast{bottom:calc(100px + env(safe-area-inset-bottom))}
 <div class="app">
 <header class="top"><div><h1 id="shop">洗車予約</h1><p id="subline"></p></div></header>
 <nav class="prog" id="prog" hidden aria-label="予約の手順">
-  <button data-step="1"><i></i><span><em>1</em>お車の情報</span></button>
-  <button data-step="2"><i></i><span><em>2</em>日にち</span></button>
-  <button data-step="3"><i></i><span><em>3</em>時間</span></button>
+  <button data-step="1"><i></i><span><em>1</em><span data-t="step.car">お車の情報</span></span></button>
+  <button data-step="2"><i></i><span><em>2</em><span data-t="step.date">日にち</span></span></button>
+  <button data-step="3"><i></i><span><em>3</em><span data-t="step.time">時間</span></span></button>
 </nav>
 
 <main>
@@ -354,58 +354,58 @@ body.hasbar .toast{bottom:calc(100px + env(safe-area-inset-bottom))}
 
 <!-- お車の情報 -->
 <section id="info" class="view form" hidden>
-  <button class="back" data-go="home"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>もどる</button>
-  <h2>お車の情報</h2>
+  <button class="back" data-go="home"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg><span data-t="app.back">もどる</span></button>
+  <h2 data-t="info.title">お車の情報</h2>
   <div id="garage" hidden>
-    <h3 class="sec">お車を選ぶ<button type="button" class="link" id="carEdit">編集</button></h3>
+    <h3 class="sec"><span data-t="info.pickCar">お車を選ぶ</span><button type="button" class="link" id="carEdit">編集</button></h3>
     <div class="cars" id="carList" role="radiogroup" aria-label="登録済みのお車"></div>
   </div>
   <div class="card fields" id="carForm">
-  <label id="fModelLbl">車種</label>
+  <label id="fModelLbl" data-t="info.model">車種</label>
   <div class="mgrid" id="fModel" role="radiogroup" aria-labelledby="fModelLbl"></div>
-  <label for="fPlate">車両ナンバー</label>
-  <input type="text" id="fPlate" placeholder="鹿児島 330 あ 12-34" autocomplete="off">
+  <label for="fPlate" data-t="info.plate">車両ナンバー</label>
+  <input type="text" id="fPlate" data-tp="info.platePh" placeholder="鹿児島 330 あ 12-34" autocomplete="off">
   </div>
   <p class="note" id="durNote" hidden></p>
   <div id="staffSec" hidden>
-    <h3 class="sec">担当スタッフ</h3>
+    <h3 class="sec" data-t="info.staff">担当スタッフ</h3>
     <div class="card fields" style="padding-top:16px"><div id="fStaff" role="radiogroup" aria-label="担当スタッフ"></div></div>
   </div>
-  <h3 class="sec">ご連絡先<button type="button" class="link" id="contactEdit" hidden>変更</button></h3>
+  <h3 class="sec"><span data-t="info.contact">ご連絡先</span><button type="button" class="link" id="contactEdit" data-t="info.change" hidden>変更</button></h3>
   <div class="card contact-sum" id="contactSum" hidden></div>
   <div class="card fields" id="contactForm">
-  <label for="fName">お名前(登録名義)</label>
+  <label for="fName" data-t="info.name">お名前(登録名義)</label>
   <input type="text" id="fName" autocomplete="name">
-  <label for="fPhone">電話番号</label>
+  <label for="fPhone" data-t="info.phone">電話番号</label>
   <input type="tel" id="fPhone" autocomplete="tel">
-  <label for="fMail">メールアドレス</label>
+  <label for="fMail" data-t="info.email">メールアドレス</label>
   <input type="email" id="fMail" autocomplete="email">
   </div>
   <p class="note" id="infoNote" hidden></p>
-  <button class="cta" id="infoNext">日にちを選ぶ</button>
+  <button class="cta" id="infoNext" data-t="info.next">日にちを選ぶ</button>
 </section>
 
 <!-- 日にち -->
 <section id="cal" class="view" hidden>
-  <button class="back" id="calBack"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>お車の情報</button>
-  <h2>日にちを選ぶ</h2>
+  <button class="back" id="calBack"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg><span data-t="cal.back">お車の情報</span></button>
+  <h2 data-t="cal.title">日にちを選ぶ</h2>
   <span class="car" id="calNote"></span>
   <div class="cwarn" id="calWarn" hidden></div>
   <div class="card calcard" id="calCard">
   <div class="mnav"><button id="calPrev" aria-label="前の月">‹</button><b id="calLabel"></b><button id="calNext" aria-label="次の月">›</button></div>
   <div class="cal-swipe"><div id="calBody"></div></div>
   <div class="legend">
-    <span><i style="background:var(--ok)"></i>空きあり</span>
-    <span><i style="background:var(--few)"></i>残りわずか</span>
-    <span><i style="background:#cfcec9"></i>満席</span>
+    <span><i style="background:var(--ok)"></i><span data-t="cal.free">空きあり</span></span>
+    <span><i style="background:var(--few)"></i><span data-t="cal.few">残りわずか</span></span>
+    <span><i style="background:#cfcec9"></i><span data-t="cal.full">満席</span></span>
   </div>
   </div>
-  <div class="list"><button class="rowbtn" id="calWait"><span>満席の日をキャンセル待ちする</span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button></div>
+  <div class="list"><button class="rowbtn" id="calWait"><span data-t="cal.toWait">満席の日をキャンセル待ちする</span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button></div>
 </section>
 
 <!-- 時間 -->
 <section id="slots" class="view" hidden>
-  <button class="back" id="slotBack"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>日にち</button>
+  <button class="back" id="slotBack"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg><span data-t="slot.back">日にち</span></button>
   <h2 id="slotTitle"></h2>
   <p class="lead" id="slotSub"></p>
   <div id="slotList"></div>
@@ -416,41 +416,41 @@ body.hasbar .toast{bottom:calc(100px + env(safe-area-inset-bottom))}
   <div class="done">
     <div class="tick"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div>
     <h2 id="doneTitle">予約が完了しました</h2>
-    <p class="noL">予約番号</p>
+    <p class="noL" data-t="done.no">予約番号</p>
     <div class="noV" id="doneNo"></div>
   </div>
   <dl class="facts" id="doneFacts"></dl>
   <p class="note" id="doneNote" style="margin:0 4px 24px" hidden></p>
-  <button class="cta" data-go="home">トップへ</button>
+  <button class="cta" data-go="home" data-t="app.toTop">トップへ</button>
 </section>
 
 <!-- 確認・キャンセル -->
 <section id="lookup" class="view form" hidden>
-  <button class="back" data-go="home"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>もどる</button>
-  <h2>予約の確認・キャンセル</h2>
+  <button class="back" data-go="home"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg><span data-t="app.back">もどる</span></button>
+  <h2 data-t="look.title">予約の確認・キャンセル</h2>
   <div class="card fields">
-  <label for="lMail">メールアドレス</label>
+  <label for="lMail" data-t="look.email">メールアドレス</label>
   <input type="email" id="lMail">
-  <label for="lPlate">車両ナンバー</label>
+  <label for="lPlate" data-t="look.plate">車両ナンバー</label>
   <div class="pchips" id="lCars" hidden></div>
-  <input type="text" id="lPlate" placeholder="鹿児島 330 あ 12-34">
+  <input type="text" id="lPlate" data-tp="info.platePh" placeholder="鹿児島 330 あ 12-34">
   </div>
-  <button class="cta" id="lGo">確認する</button>
+  <button class="cta" id="lGo" data-t="look.go">確認する</button>
   <div id="lRes"></div>
 </section>
 
 <!-- キャンセル待ち -->
 <section id="wait" class="view" hidden>
-  <button class="back" data-go="home"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>もどる</button>
-  <h2>キャンセル待ち</h2>
+  <button class="back" data-go="home"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg><span data-t="app.back">もどる</span></button>
+  <h2 data-t="wait.title">キャンセル待ち</h2>
   <p class="lead" id="waitLead" hidden></p>
   <div class="wrule" id="waitRule" hidden></div>
-  <h3>対象の選び方</h3>
+  <h3 data-t="wait.mode">対象の選び方</h3>
   <div class="segs" id="wMode"></div>
-  <div id="wMonthsBox"><h3>月</h3><div class="chips" id="wMonths"></div></div>
-  <div id="wWdBox" hidden><h3>曜日</h3><div class="wds" id="wWd"></div></div>
+  <div id="wMonthsBox"><h3 data-t="wait.month">月</h3><div class="chips" id="wMonths"></div></div>
+  <div id="wWdBox" hidden><h3 data-t="wait.wd">曜日</h3><div class="wds" id="wWd"></div></div>
   <div id="wDatesBox" hidden>
-    <h3>日にち(複数選べます)</h3>
+    <h3 data-t="wait.dates">日にち(複数選べます)</h3>
     <div class="card calcard" id="wCard">
     <div class="mnav"><button id="wPrev" aria-label="前の月">‹</button><b id="wLabel"></b><button id="wNext" aria-label="次の月">›</button></div>
     <div class="cal-swipe"><div id="wCal"></div></div>
@@ -460,22 +460,22 @@ body.hasbar .toast{bottom:calc(100px + env(safe-area-inset-bottom))}
 
 <!-- 空き案内メールからの確定 -->
 <section id="hold" class="view" hidden>
-  <h2>空きが出ました</h2>
-  <div id="holdBody"><p class="lead">読み込み中…</p></div>
+  <h2 data-t="hold.title">空きが出ました</h2>
+  <div id="holdBody"><p class="lead" data-t="app.loading">読み込み中…</p></div>
 </section>
 </main>
 </div>
 
 <div class="bar-fixed homebar" id="homeBar" hidden><div class="bar-in">
-  <button class="textlink" id="aboutBtn" aria-haspopup="dialog">洗車システムについて</button>
+  <button class="textlink" id="aboutBtn" aria-haspopup="dialog" data-t="home.about">洗車システムについて</button>
   <button class="cta" id="goReserve">予約する</button>
   <div class="list hlist">
-    <button class="rowbtn" id="goLookup"><span>予約の確認・キャンセル</span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>
+    <button class="rowbtn" id="goLookup"><span data-t="home.lookup">予約の確認・キャンセル</span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>
   </div>
 </div></div>
 <div class="about-bg" id="aboutBg" hidden></div>
 <div class="about" id="about" role="dialog" aria-modal="true" aria-labelledby="aboutTitle" hidden>
-  <div class="about-head"><h3 id="aboutTitle">洗車システムについて</h3><button class="about-x" id="aboutX" aria-label="閉じる">×</button></div>
+  <div class="about-head"><h3 id="aboutTitle" data-t="about.title">洗車システムについて</h3><button class="about-x" id="aboutX" aria-label="閉じる">×</button></div>
   <div class="about-body" id="aboutBody"></div>
 </div>
 <div class="bar-fixed" id="bar" hidden><div class="bar-in"><div class="sum"><b id="barMain"></b><span id="barSub"></span></div><button class="cta" id="barBtn"></button></div></div>
@@ -489,13 +489,27 @@ body.hasbar .toast{bottom:calc(100px + env(safe-area-inset-bottom))}
   <div class="dlg-btns" id="dlgBtns"></div>
 </div>
 
-<div class="loader" id="loader" role="status" aria-live="polite"><i aria-hidden="true"></i><div>読み込み中…<small>通信に数秒かかることがあります。そのままお待ちください。</small></div></div>
+<div class="loader" id="loader" role="status" aria-live="polite"><i aria-hidden="true"></i><div><span data-t="app.loading">読み込み中…</span><small data-t="app.loadingLong">通信に数秒かかることがあります。そのままお待ちください。</small></div></div>
+<script src="texts.js"></script>
 <script src="config.js"></script>
 <script>
 /* GASのウェブアプリURL(config.js の値を優先) */
 const API = (window.WASH_CONFIG && window.WASH_CONFIG.api) || 'https://script.google.com/macros/s/AKfycbzHj9e15-2k4kkNa63ctM0P2KBXVbKfzGJGvhBNKXl0Er2u5_75qR7Kmev8Z0TzTdcg/exec';
 
 const $ = id => document.getElementById(id);
+/* 画面の文言: 管理画面で書き換えた文(cfg.ui)があればそれを、なければ texts.js の最初の文を使う。{名前} は vars の値に置き換える */
+const TX = {}; (window.WASH_TEXTS || []).forEach(r => { TX[r[0]] = r[3]; });
+const sub_ = (s, v) => { if (v) Object.keys(v).forEach(n => { s = s.split('{' + n + '}').join(v[n]); }); return s; };
+function T(k, v) { let o = null; try { o = cfg && cfg.ui; } catch (e) {} return sub_(String((o && o[k]) || TX[k] || ''), v); }
+/** HTML に入れる文言。文言そのものはエスケープし、vars(HTML)はそのまま差し込む */
+const TH = (k, v) => sub_(esc(T(k)), v);
+/** 「洗車システムについて」用: **文字** を太字にする */
+const TB = (k, v) => TH(k, v).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
+/** HTML に書いた文字(data-t / data-tp)を文言に入れ替える */
+function applyTexts() {
+  document.querySelectorAll('[data-t]').forEach(e => { e.textContent = T(e.dataset.t); });
+  document.querySelectorAll('[data-tp]').forEach(e => { e.placeholder = T(e.dataset.tp); });
+}
 /* 読み込み中のお知らせ: 待っている処理がある間だけ出す(0.25秒以内に終われば出さない) */
 const Loading = (() => {
   let n = 0, t1 = 0, t2 = 0;
@@ -519,7 +533,7 @@ async function api(action, data) {
   let r;
   try {
     r = await fetch(API, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(Object.assign({ action }, action === 'config' ? { site: location.origin + location.pathname } : {}, data || {})) });
-  } catch (e) { throw new Error('通信できませんでした。電波の良い場所で、もう一度お試しください。'); }
+  } catch (e) { throw new Error(T('app.netError')); }
   const j = await r.json();
   if (!j.ok) throw new Error(j.error);
   return j.data;
@@ -585,7 +599,7 @@ async function init() {
   try { cfg = await (cached && !hold ? api('config') : waiting(api('config'))); save('wash_cfg', cfg); }
   catch (e) {
     if (cached && !hold) return;
-    $('home').innerHTML = '<p class="err">読み込めませんでした。ページを開き直してください。<br>' + esc(e.message) + '</p>'; show('home'); return;
+    $('home').innerHTML = '<p class="err">' + TH('app.loadFail') + '<br>' + esc(e.message) + '</p>'; show('home'); return;
   }
   applyCfg();
   if (hold) return holdView(hold);
@@ -595,9 +609,10 @@ async function init() {
 }
 function applyCfg() {
   $('shop').textContent = cfg.name; document.title = cfg.name;
-  const T = cfg.texts || {};
-  setText('subline', T['ヘッダー']); setText('homeTitle', T['トップ見出し']); setText('homeLead', T['トップ']); $('goReserve').textContent = T['予約ボタン'] || '予約する'; setText('infoNote', T['お車の情報']);
-  setText('waitLead', T['キャンセル待ち']); setText('doneNote', T['完了']);
+  applyTexts();
+  const X = cfg.texts || {};
+  setText('subline', X['ヘッダー']); setText('homeTitle', X['トップ見出し']); setText('homeLead', X['トップ']); $('goReserve').textContent = X['予約ボタン'] || '予約する'; setText('infoNote', X['お車の情報']);
+  setText('waitLead', X['キャンセル待ち']); setText('doneNote', X['完了']);
 }
 /** 前回のお車がわかっていれば、カレンダーと予約済みの月を先に読み込んでおく */
 function warmUp() {
@@ -618,7 +633,7 @@ function rulesHtml() {
 }
 function renderHome() {
   const up = mine.filter(r => r.date >= cfg.today).sort((a, b) => (a.date + a.start) < (b.date + b.start) ? -1 : 1);
-  $('mine').innerHTML = up.length ? '<h3 style="margin-top:0">ご予約中</h3>' + up.map(r => `<div class="res"><div><div class="dt">${dJa(r.date)} ${r.start}〜${r.end}</div><div class="sub">${esc(r.model)}</div></div><div class="no">No.${esc(r.no)}</div></div>`).join('') + '<p class="note">変更・キャンセルは「予約の確認・キャンセル」から。</p>' : '';
+  $('mine').innerHTML = up.length ? '<h3 style="margin-top:0">' + TH('home.mine') + '</h3>' + up.map(r => `<div class="res"><div><div class="dt">${dJa(r.date)} ${r.start}〜${r.end}</div><div class="sub">${esc(r.model)}</div></div><div class="no">No.${esc(r.no)}</div></div>`).join('') + '<p class="note">' + TH('home.mineNote') + '</p>' : '';
 }
 document.querySelectorAll('[data-go]').forEach(b => b.onclick = () => { if (b.dataset.go === 'home') renderHome(); show(b.dataset.go); });
 
@@ -644,12 +659,12 @@ function pickCar(i) {
 }
 function drawGarage() {
   $('garage').hidden = !cars.length; $('carForm').hidden = selCar >= 0;
-  $('carEdit').textContent = editCars ? '完了' : '編集';
-  $('carList').innerHTML = cars.map((c, i) => `<div class="car-it"><button type="button" class="carbtn ${i === selCar ? 'on' : ''}" role="radio" aria-checked="${i === selCar}" data-i="${i}"><span class="ci"><b>${esc(c.plate)}</b><small>${esc(c.model)}${isLarge(c.model) ? ' ・ 大型' : ''}</small></span><i class="rd"></i></button>${editCars ? `<button type="button" class="cardel" data-del="${i}" aria-label="${esc(c.plate)}を削除">削除</button>` : ''}</div>`).join('')
-    + `<button type="button" class="carbtn add ${selCar < 0 ? 'on' : ''}" role="radio" aria-checked="${selCar < 0}" data-i="-1"><span class="ci"><b>＋ 別のお車を登録</b></span><i class="rd"></i></button>`;
+  $('carEdit').textContent = T(editCars ? 'info.editDone' : 'info.edit');
+  $('carList').innerHTML = cars.map((c, i) => `<div class="car-it"><button type="button" class="carbtn ${i === selCar ? 'on' : ''}" role="radio" aria-checked="${i === selCar}" data-i="${i}"><span class="ci"><b>${esc(c.plate)}</b><small>${esc(c.model)}${isLarge(c.model) ? ' ・ ' + TH('info.large') : ''}</small></span><i class="rd"></i></button>${editCars ? `<button type="button" class="cardel" data-del="${i}" aria-label="${esc(c.plate)}を${TH('info.delCar')}">${TH('info.delCar')}</button>` : ''}</div>`).join('')
+    + `<button type="button" class="carbtn add ${selCar < 0 ? 'on' : ''}" role="radio" aria-checked="${selCar < 0}" data-i="-1"><span class="ci"><b>${TH('info.addCar')}</b></span><i class="rd"></i></button>`;
   $('carList').querySelectorAll('[data-i]').forEach(b => b.onclick = () => { pickCar(+b.dataset.i); if (+b.dataset.i < 0) $('fPlate').focus(); });
   $('carList').querySelectorAll('[data-del]').forEach(b => b.onclick = () => {
-    const k = +b.dataset.del; if (!confirm(cars[k].plate + ' をこの端末から削除しますか?')) return;
+    const k = +b.dataset.del; if (!confirm(T('info.delCarConfirm', { 'ナンバー': cars[k].plate }))) return;
     cars.splice(k, 1); save('wash_cars', cars);
     if (!cars.length) editCars = false;
     pickCar(selCar === k ? (cars.length ? 0 : -1) : selCar > k ? selCar - 1 : selCar);
@@ -659,7 +674,7 @@ $('carEdit').onclick = () => { editCars = !editCars; drawGarage(); };
 function drawContact() {
   const has = !!(profile.name && profile.phone && profile.email), open = contactOpen || !has;
   $('contactForm').hidden = !open; $('contactSum').hidden = open; $('contactEdit').hidden = open;
-  $('contactSum').innerHTML = has ? `<b>${esc(profile.name)} 様</b><span>${esc(profile.phone)} ・ ${esc(profile.email)}</span>` : '';
+  $('contactSum').innerHTML = has ? `<b>${esc(profile.name)} ${TH('app.sama')}</b><span>${esc(profile.phone)} ・ ${esc(profile.email)}</span>` : '';
 }
 $('contactEdit').onclick = () => { contactOpen = true; drawContact(); $('fName').focus(); };
 function updDur() {
@@ -675,7 +690,7 @@ function drawStaff() {
   const isOn = x => !!curStaff && curStaff.name === x.name && (curStaff.store || '') === (x.store || '');
   const tile = (x, i) => `<button type="button" class="mt sf ${isOn(x) ? 'on' : ''}" role="radio" aria-checked="${isOn(x)}" data-si="${i}"><b>${esc(x.name)}</b></button>`;
   let h = '';
-  if (multi) stores.forEach(st => { h += `<div class="sgrp">${esc(st || 'その他')}</div><div class="sgrid">` + list.map((x, i) => (x.store || '') === st ? tile(x, i) : '').join('') + '</div>'; });
+  if (multi) stores.forEach(st => { h += `<div class="sgrp">${esc(st || T('info.staffOther'))}</div><div class="sgrid">` + list.map((x, i) => (x.store || '') === st ? tile(x, i) : '').join('') + '</div>'; });
   else h = '<div class="sgrid">' + list.map(tile).join('') + '</div>';
   $('fStaff').innerHTML = h;
   $('fStaff').querySelectorAll('[data-si]').forEach(b => b.onclick = () => { curStaff = list[+b.dataset.si]; drawStaff(); });
@@ -719,12 +734,12 @@ $('infoNext').onclick = () => {
   const car = selCar >= 0 ? cars[selCar] : { model: curModel, plate: $('fPlate').value.trim() };
   if (selCar >= 0 && !cfg.models.some(m => m.name === car.model)) {
     // 店の車種名が変わったときは選び直してもらう
-    pickCar(-1); $('fPlate').value = car.plate; return toast('車種を選び直してください', true);
+    pickCar(-1); $('fPlate').value = car.plate; return toast(T('info.errModel'), true);
   }
-  if (!curStaff && (cfg.staff || []).some(x => x.name)) { $('staffSec').scrollIntoView({ block: 'center', behavior: 'smooth' }); return toast('担当スタッフを選んでください', true); }
+  if (!curStaff && (cfg.staff || []).some(x => x.name)) { $('staffSec').scrollIntoView({ block: 'center', behavior: 'smooth' }); return toast(T('info.errStaff'), true); }
   const p = { model: car.model, plate: car.plate, name: $('fName').value.trim(), phone: $('fPhone').value.trim(), email: $('fMail').value.trim(), staff: curStaff ? curStaff.name : '', staffStore: curStaff ? (curStaff.store || '') : '' };
-  if (!p.model || !p.plate || !p.name || !p.phone || !p.email) { if (!p.name || !p.phone || !p.email) { contactOpen = true; drawContact(); } return toast('すべての項目を入力してください', true); }
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(p.email)) { contactOpen = true; drawContact(); return toast('メールアドレスを確認してください', true); }
+  if (!p.model || !p.plate || !p.name || !p.phone || !p.email) { if (!p.name || !p.phone || !p.email) { contactOpen = true; drawContact(); } return toast(T('info.errAll'), true); }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(p.email)) { contactOpen = true; drawContact(); return toast(T('info.errMail'), true); }
   if (selCar < 0) {
     const j = cars.findIndex(c => np(c.plate) === np(p.plate));
     if (j >= 0) cars[j].model = p.model; else cars.push({ model: p.model, plate: p.plate });
@@ -775,7 +790,7 @@ function markBooked() {
   $('calWarn').hidden = !on;
   const list = months(), next = list.find(m => m > curYm && !booked.has(m));
   if (on) {
-    $('calWarn').innerHTML = `<div><b>${ymJa(curYm)}はご予約済みです</b>1台につき月1回までのため、別の月をお選びください。${next ? `<button class="wbtn" id="calWarnGo">${ymJa(next).replace(/^\d+年/, '')}を見る ›</button>` : ''}</div>`;
+    $('calWarn').innerHTML = `<div><b>${TH('cal.booked', { '月': ymJa(curYm) })}</b>${TH('cal.bookedNote')}${next ? `<button class="wbtn" id="calWarnGo">${TH('cal.seeMonth', { '月': ymJa(next).replace(/^\d+年/, '') })} ›</button>` : ''}</div>`;
     if (next) $('calWarnGo').onclick = () => openCal(next);
   }
   $('calBody').classList.toggle('blocked', on);
@@ -786,7 +801,7 @@ function monthNav(prefix, cur, onChange) {
   $(prefix + 'Prev').disabled = i <= 0; $(prefix + 'Next').disabled = i >= list.length - 1;
   $(prefix + 'Prev').onclick = () => onChange(list[i - 1]); $(prefix + 'Next').onclick = () => onChange(list[i + 1]);
 }
-const STATE_JA = { free: '空きあり', few: '残りわずか', full: '満席', closed: '休業日', out: '受付期間外' };
+const STATE_KEY = { free: 'cal.free', few: 'cal.few', full: 'cal.full', closed: 'cal.closed', out: 'cal.out' };
 function renderCal(el, ym, data, selected) {
   const a = ym.split('-').map(Number), first = new Date(a[0], a[1]-1, 1).getDay(), last = new Date(a[0], a[1], 0).getDate();
   let h = '<div class="cal">' + WD.map((w, i) => `<div class="wd ${i === 0 ? 'sun' : i === 6 ? 'sat' : ''}">${w}</div>`).join('');
@@ -794,7 +809,7 @@ function renderCal(el, ym, data, selected) {
   for (let d = 1; d <= last; d++) {
     const ds = ym + '-' + pad(d), v = (data.days || {})[ds] || { s: 'out' };
     const mark = { free: '○', few: '△', full: '×', closed: '休' }[v.s] || '';
-    h += `<button class="d ${v.s} ${selected && selected.has(ds) ? 'sel' : ''}" data-d="${ds}" data-s="${v.s}" ${v.s === 'out' || v.s === 'closed' ? 'disabled' : ''} aria-label="${dJa(ds)} ${STATE_JA[v.s]}"><span class="n">${d}</span><small>${mark}</small></button>`;
+    h += `<button class="d ${v.s} ${selected && selected.has(ds) ? 'sel' : ''}" data-d="${ds}" data-s="${v.s}" ${v.s === 'out' || v.s === 'closed' ? 'disabled' : ''} aria-label="${dJa(ds)} ${TH(STATE_KEY[v.s])}"><span class="n">${d}</span><small>${mark}</small></button>`;
   }
   el.innerHTML = h + '</div>';
 }
@@ -803,7 +818,7 @@ async function openCal(ym) {
   // はじめて開くときは、予約済みでない最初の月から
   curYm = ym || curYm || list.find(m => !booked.has(m)) || list[0];
   if (!list.includes(curYm)) curYm = list[0];
-  $('calNote').textContent = profile.model + ' ・ ' + profile.plate + ' ・ 約' + durOf(profile.model) + '分';
+  $('calNote').textContent = profile.model + ' ・ ' + profile.plate + ' ・ ' + T('cal.minutes', { '分': durOf(profile.model) });
   monthNav('cal', curYm, openCal); show('cal');
   const k = curYm, lg = large, el = $('calBody');
   let shown = null;
@@ -827,13 +842,13 @@ function dayTap(b) {
   if (booked.has(ym)) {
     const list = months(), next = list.find(m => m > ym && !booked.has(m)) || list.find(m => !booked.has(m));
     document.querySelectorAll('#calBody .d').forEach(x => x.classList.toggle('sel', x === b));
-    if (next) setBar({ main: (+ym.slice(5)) + '月はご予約済みです', sub: '1台につき月1回までです', label: ymJa(next).replace(/^\d+年/, '') + 'を見る', fn: async () => openCal(next) });
-    else toast(ymJa(ym) + 'はご予約済みです(1台につき月1回まで)', true);
+    if (next) setBar({ main: T('cal.booked', { '月': (+ym.slice(5)) + '月' }), sub: T('cal.bookedShort'), label: T('cal.seeMonth', { '月': ymJa(next).replace(/^\d+年/, '') }), fn: async () => openCal(next) });
+    else toast(T('cal.bookedToast', { '月': ymJa(ym) }), true);
     return;
   }
   if (b.dataset.s === 'full') {
     document.querySelectorAll('#calBody .d').forEach(x => x.classList.toggle('sel', x === b));
-    setBar({ main: dShort(d) + 'は満席です', sub: 'キャンセルが出たら、メールでお知らせします', label: 'キャンセル待ち', fn: async () => openWait(d) });
+    setBar({ main: T('cal.fullDay', { '日付': dShort(d) }), sub: T('cal.fullDaySub'), label: T('cal.toWaitBtn'), fn: async () => openWait(d) });
     return;
   }
   openSlots(d);
@@ -872,19 +887,19 @@ function swipeMonths(card, prevId, nextId) {
 /* ---------- 時間 ---------- */
 async function openSlots(d) {
   pick = { date: d };
-  $('slotTitle').textContent = dJa(d); $('slotSub').textContent = '開始する時間をお選びください';
-  $('slotList').innerHTML = '<p class="empty">読み込み中…</p>'; show('slots');
+  $('slotTitle').textContent = dJa(d); $('slotSub').textContent = T('slot.sub');
+  $('slotList').innerHTML = '<p class="empty">' + TH('app.loading') + '</p>'; show('slots');
   try {
     const r = await waiting(api('slots', { date: d, large }));
     // 予約済みの時間もグレーで見せる(新しいサーバーは all に全部の時間と空きの有無を返す)
     const list = r.all && r.all.length ? r.all : r.starts.map(x => Object.assign({ ok: true }, x)), open = list.filter(x => x.ok);
     const toM = t => +t.slice(0, 2) * 60 + +t.slice(3, 5);
     const tile = x => x.ok ? `<button class="slot" data-s="${x.s}" data-e="${x.e}" aria-label="${x.s}から${x.e}まで"><b>${x.s}</b><small>〜${x.e}</small></button>`
-      : `<button class="slot full" disabled aria-label="${x.s} 予約済み"><b>${x.s}</b><small>予約済み</small></button>`;
-    const group = (title, arr) => { if (!arr.length) return ''; const n = arr.filter(x => x.ok).length; return `<h3 class="grp">${title}<small>${n ? '空き ' + n + '枠' : '満席'}</small></h3><div class="grid">${arr.map(tile).join('')}</div>`; };
+      : `<button class="slot full" disabled aria-label="${x.s} ${TH('slot.booked')}"><b>${x.s}</b><small>${TH('slot.booked')}</small></button>`;
+    const group = (title, arr) => { if (!arr.length) return ''; const n = arr.filter(x => x.ok).length; return `<h3 class="grp">${title}<small>${n ? TH('slot.open', { '数': n }) : TH('slot.none')}</small></h3><div class="grid">${arr.map(tile).join('')}</div>`; };
     if (!open.length) {
-      $('slotList').innerHTML = '<p class="empty" style="padding-top:8px">この日は満席になりました。別の日を選ぶか、キャンセル待ちをご利用ください。</p>'
-        + group('午前', list.filter(x => x.s < '12:00')) + group('午後', list.filter(x => x.s >= '12:00'));
+      $('slotList').innerHTML = '<p class="empty" style="padding-top:8px">' + TH('slot.dayFull') + '</p>'
+        + group(TH('slot.am'), list.filter(x => x.s < '12:00')) + group(TH('slot.pm'), list.filter(x => x.s >= '12:00'));
       monthCache = {}; return;
     }
     const lo = Math.floor(toM(list[0].s) / 60) * 60, hi = Math.ceil(Math.max(...list.map(x => toM(x.e))) / 60) * 60, span = hi - lo || 60;
@@ -893,8 +908,8 @@ async function openSlots(d) {
     const av = []; open.map(x => [toM(x.s), toM(x.e)]).sort((a, b) => a[0] - b[0]).forEach(v => { const l = av[av.length - 1]; if (l && v[0] <= l[1]) l[1] = Math.max(l[1], v[1]); else av.push(v.slice()); });
     const step = span > 360 ? 120 : 60, ticks = [];
     for (let m = lo; m < hi; m += step) ticks.push(`<i style="left:${pos(m)}">${m / 60}:00</i>`);
-    $('slotList').innerHTML = `<div class="tl"><div class="tl-card"><div class="tl-head"><b class="ph" id="tlTime">バーをなぞるか、下から選べます</b><span id="tlDur">約${durOf(profile.model)}分</span></div><div class="trackwrap" id="tlTrack" tabindex="0" role="slider" aria-label="開始時間" aria-valuemin="0" aria-valuemax="${open.length - 1}"><div class="track">${av.map(v => `<div class="av" style="left:${pos(v[0])};width:${pos(lo + v[1] - v[0])}"></div>`).join('')}<div class="pick" id="tlPick" style="opacity:0"></div></div></div><div class="ticks">${ticks.join('')}</div></div></div>`
-      + group('午前', list.filter(s => s.s < '12:00')) + group('午後', list.filter(s => s.s >= '12:00'));
+    $('slotList').innerHTML = `<div class="tl"><div class="tl-card"><div class="tl-head"><b class="ph" id="tlTime">${TH('slot.hint')}</b><span id="tlDur">${TH('slot.dur', { '分': durOf(profile.model) })}</span></div><div class="trackwrap" id="tlTrack" tabindex="0" role="slider" aria-label="開始時間" aria-valuemin="0" aria-valuemax="${open.length - 1}"><div class="track">${av.map(v => `<div class="av" style="left:${pos(v[0])};width:${pos(lo + v[1] - v[0])}"></div>`).join('')}<div class="pick" id="tlPick" style="opacity:0"></div></div></div><div class="ticks">${ticks.join('')}</div></div></div>`
+      + group(TH('slot.am'), list.filter(s => s.s < '12:00')) + group(TH('slot.pm'), list.filter(s => s.s >= '12:00'));
     const track = $('tlTrack'), btns = [...$('slotList').querySelectorAll('.slot:not(.full)')];
     let cur = null;
     const choose = (b, drag) => {
@@ -906,7 +921,7 @@ async function openSlots(d) {
       $('tlTime').className = ''; $('tlTime').textContent = pick.start + ' → ' + pick.end;
       track.setAttribute('aria-valuenow', btns.indexOf(b)); track.setAttribute('aria-valuetext', pick.start + 'から' + pick.end + 'まで');
       if (drag && navigator.vibrate) navigator.vibrate(4);
-      setBar({ main: dShort(d) + ' ' + pick.start + '〜' + pick.end, sub: profile.model + ' / ' + profile.plate, label: 'この時間で予約', fn: doReserve });
+      setBar({ main: dShort(d) + ' ' + pick.start + '〜' + pick.end, sub: profile.model + ' / ' + profile.plate, label: T('slot.reserve'), fn: doReserve });
     };
     btns.forEach(b => b.onclick = () => choose(b));
     // 黒いバーをなぞって時間を選ぶ(指の位置にいちばん近い枠へ吸い付く)
@@ -933,11 +948,11 @@ async function doReserve() {
   catch (e) { if (/月1回/.test(e.message)) booked.add(pick.date.slice(0, 7)); throw e; }
   mine.push({ no: r.no, date: r.date, start: r.start, end: r.end, model: r.model, plate: profile.plate }); save('wash_mine', mine); monthCache = {};
   booked.add(r.date.slice(0, 7));
-  doneView(r, '予約が完了しました');
+  doneView(r, T('done.title'));
 }
 function doneView(r, title) {
   $('doneTitle').textContent = title; $('doneNo').textContent = r.no;
-  $('doneFacts').innerHTML = [['日時', dJa(r.date) + ' ' + r.start + '〜' + r.end], ['お車', r.model]].concat(r.staff ? [['担当', r.staff]] : []).map(f => `<div><dt>${f[0]}</dt><dd>${esc(f[1])}</dd></div>`).join('');
+  $('doneFacts').innerHTML = [[T('done.when'), dJa(r.date) + ' ' + r.start + '〜' + r.end], [T('done.car'), r.model]].concat(r.staff ? [[T('done.staff'), r.staff]] : []).map(f => `<div><dt>${esc(f[0])}</dt><dd>${esc(f[1])}</dd></div>`).join('');
   show('done');
 }
 
@@ -946,34 +961,34 @@ $('lGo').onclick = busy($('lGo'), async () => {
   const email = $('lMail').value.trim(), plate = $('lPlate').value.trim();
   const r = await api('lookup', { email, plate });
   profile.email = email; profile.plate = plate; save('wash_profile', profile);
-  let h = '<h3>ご予約</h3>';
-  h += r.res.length ? r.res.map(x => `<div class="item"><div class="t">${dJa(x.date)} ${x.start}〜${x.end}</div><div class="s">${esc(x.model)} / 予約番号 ${esc(x.no)}</div><button class="danger" data-cr="${x.id}">予約をキャンセル</button></div>`).join('') : '<p class="note">ご予約はありません。</p>';
-  if (r.waits.length) h += '<h3>キャンセル待ち</h3>' + r.waits.map((x, i) => `<div class="item"><div class="t">${esc(x.summary)}</div><div class="s">${x.hold ? '<b>空きが出ています(' + dJa(x.hold.date) + ' ' + x.hold.start + '〜)。下のボタンからお選びください</b>' : '登録順にご案内します'}</div>${x.hold ? `<button class="cta" style="grid-column:1/-1;margin-top:8px;min-height:44px" data-ho="${i}">空きのご案内を見る</button>` : `<button class="danger" data-cw="${x.id}">登録を取り消す</button>`}</div>`).join('');
+  let h = '<h3>' + TH('look.res') + '</h3>';
+  h += r.res.length ? r.res.map(x => `<div class="item"><div class="t">${dJa(x.date)} ${x.start}〜${x.end}</div><div class="s">${esc(x.model)} / ${TH('look.no')} ${esc(x.no)}</div><button class="danger" data-cr="${x.id}">${TH('look.cancelBtn')}</button></div>`).join('') : '<p class="note">' + TH('look.noRes') + '</p>';
+  if (r.waits.length) h += '<h3>' + TH('look.waits') + '</h3>' + r.waits.map((x, i) => `<div class="item"><div class="t">${esc(x.summary)}</div><div class="s">${x.hold ? '<b>' + TH('look.waitHold', { '日時': dJa(x.hold.date) + ' ' + x.hold.start }) + '</b>' : TH('look.waitNormal')}</div>${x.hold ? `<button class="cta" style="grid-column:1/-1;margin-top:8px;min-height:44px" data-ho="${i}">${TH('look.waitHoldBtn')}</button>` : `<button class="danger" data-cw="${x.id}">${TH('look.waitStopBtn')}</button>`}</div>`).join('');
   $('lRes').innerHTML = h;
   $('lRes').querySelectorAll('[data-cr]').forEach(b => b.onclick = busy(b, async () => {
-    if (!confirm('この予約をキャンセルしますか?')) return;
+    if (!confirm(T('look.cancelConfirm'))) return;
     await api('cancel', { id: b.dataset.cr, email, plate });
     mine = mine.filter(m => !r.res.some(x => x.id === b.dataset.cr && x.no === m.no)); save('wash_mine', mine); monthCache = {};
     if (cfg && profile.plate) refreshBooked();
-    toast('キャンセルしました'); $('lGo').click();
+    toast(T('look.cancelDone')); $('lGo').click();
   }));
   $('lRes').querySelectorAll('[data-ho]').forEach(b => b.onclick = async () => { const go = await offerHold(r.waits[+b.dataset.ho].hold); if (go !== false) $('lGo').click(); });
   $('lRes').querySelectorAll('[data-cw]').forEach(b => b.onclick = busy(b, async () => {
-    if (!confirm('このキャンセル待ちを取り消しますか?')) return;
-    await api('waitStop', { id: b.dataset.cw, email, plate }); toast('取り消しました'); $('lGo').click();
+    if (!confirm(T('look.waitStopConfirm'))) return;
+    await api('waitStop', { id: b.dataset.cw, email, plate }); toast(T('look.waitStopDone')); $('lGo').click();
   }));
 });
 
 /* ---------- キャンセル待ち ---------- */
 let W = { mode: 'dates', months: new Set(), wd: new Set(), dates: new Set(), ym: null };
-const MODES = [['dates', '日にちで選ぶ'], ['weekdays', '曜日で選ぶ']];
+const MODES = [['dates', 'wait.modeDates'], ['weekdays', 'wait.modeWd']];
 function openWait(pre) {
   const rh = ruleHtml(); $('waitRule').innerHTML = rh; $('waitRule').hidden = !rh;
   if (!profile.plate) return goInfo('wait');
   large = isLarge(profile.model);
   const list = months();
   W = { mode: 'dates', months: new Set(), wd: new Set(), dates: new Set(pre ? [pre] : []), ym: pre ? pre.slice(0, 7) : list[0] };
-  $('wMode').innerHTML = MODES.map(m => `<button class="seg ${m[0] === W.mode ? 'on' : ''}" data-m="${m[0]}">${m[1]}</button>`).join('');
+  $('wMode').innerHTML = MODES.map(m => `<button class="seg ${m[0] === W.mode ? 'on' : ''}" data-m="${m[0]}">${TH(m[1])}</button>`).join('');
   $('wMode').querySelectorAll('.seg').forEach(b => b.onclick = () => { W.mode = b.dataset.m; refreshWait(); });
   $('wMonths').innerHTML = list.map(ym => `<button class="chip" data-ym="${ym}">${ymJa(ym)}</button>`).join('');
   $('wMonths').querySelectorAll('.chip').forEach(b => b.onclick = () => { const k = b.dataset.ym; W.months.has(k) ? W.months.delete(k) : W.months.add(k); b.classList.toggle('on'); waitBar(); });
@@ -1000,13 +1015,13 @@ async function refreshWait() {
 }
 function waitBar() {
   let ready, sub;
-  if (W.mode === 'dates') { ready = W.dates.size > 0; sub = ready ? W.dates.size + '日を選択中' : '満席の日をタップして選んでください'; }
-  else if (W.mode === 'weekdays') { ready = W.months.size > 0 && W.wd.size > 0; sub = ready ? [...W.months].sort().map(ymJa).join('・') + ' / ' + [...W.wd].sort().map(i => WD[i]).join('・') + '曜日' : '月と曜日を選んでください'; }
-  else { ready = W.months.size > 0; sub = ready ? [...W.months].sort().map(ymJa).join('・') + (W.mode === 'weekend' ? ' の土日' : ' ぜんぶ') : '月を選んでください'; }
-  setBar({ main: 'キャンセル待ち', sub, label: '登録する', disabled: !ready, fn: async () => {
+  if (W.mode === 'dates') { ready = W.dates.size > 0; sub = ready ? T('wait.selected', { '数': W.dates.size }) : T('wait.pickDates'); }
+  else if (W.mode === 'weekdays') { ready = W.months.size > 0 && W.wd.size > 0; sub = ready ? T('wait.wdSummary', { '月': [...W.months].sort().map(ymJa).join('・'), '曜日': [...W.wd].sort().map(i => WD[i]).join('・') }) : T('wait.pickWd'); }
+  else { ready = W.months.size > 0; sub = ready ? [...W.months].sort().map(ymJa).join('・') + (W.mode === 'weekend' ? ' の土日' : ' ぜんぶ') : T('wait.pickMonth'); }
+  setBar({ main: T('wait.bar'), sub, label: T('wait.add'), disabled: !ready, fn: async () => {
     const r = await api('waitAdd', { staff: profile.staff || '', staffStore: profile.staffStore || '', name: profile.name, phone: profile.phone, email: profile.email, plate: profile.plate, model: profile.model, mode: W.mode, ym: [...W.months], wd: [...W.wd], dates: [...W.dates] });
     renderHome(); show('home');
-    toast('登録しました(満席の' + r.days + '日が対象)。空きが出たらメールでお知らせします。');
+    toast(T('wait.done', { '数': r.days }));
   } });
 }
 
@@ -1015,13 +1030,13 @@ async function holdView(token) {
   show('hold');
   try {
     const h = await waiting(api('holdInfo', { token }));
-    $('holdBody').innerHTML = `<p class="lead">${h.until} までに、下のボタンで予約を確定してください。過ぎると次の方へご案内します。</p><dl class="facts"><div><dt>日時</dt><dd>${dJa(h.date)} ${h.start}〜${h.end}</dd></div><div><dt>お車</dt><dd>${esc(h.model)}</dd></div>${h.staff ? `<div><dt>担当</dt><dd>${esc(h.staff)}</dd></div>` : ''}<div><dt>ナンバー</dt><dd>${esc(h.plate)}</dd></div><div><dt>お名前(登録名義)</dt><dd>${esc(h.name)} 様</dd></div></dl><button class="cta" id="hGo">予約を確定する</button>`;
+    $('holdBody').innerHTML = `<p class="lead">${TH('holdv.lead', { '期限': esc(h.until) })}</p><dl class="facts"><div><dt>${TH('done.when')}</dt><dd>${dJa(h.date)} ${h.start}〜${h.end}</dd></div><div><dt>${TH('done.car')}</dt><dd>${esc(h.model)}</dd></div>${h.staff ? `<div><dt>${TH('done.staff')}</dt><dd>${esc(h.staff)}</dd></div>` : ''}<div><dt>${TH('holdv.plate')}</dt><dd>${esc(h.plate)}</dd></div><div><dt>${TH('info.name')}</dt><dd>${esc(h.name)} ${TH('app.sama')}</dd></div></dl><button class="cta" id="hGo">${TH('holdv.go')}</button>`;
     $('hGo').onclick = busy($('hGo'), async () => {
       const r = await api('holdConfirm', { token });
       mine.push({ no: r.no, date: r.date, start: r.start, end: r.end, model: r.model, plate: h.plate }); save('wash_mine', mine);
-      history.replaceState(null, '', location.pathname); doneView(r, '予約が確定しました');
+      history.replaceState(null, '', location.pathname); doneView(r, T('done.titleHold'));
     });
-  } catch (e) { $('holdBody').innerHTML = '<p class="err">' + esc(e.message) + '</p><button class="ghost" onclick="location.href=location.pathname">トップへ</button>'; }
+  } catch (e) { $('holdBody').innerHTML = '<p class="err">' + esc(e.message) + '</p><button class="ghost" onclick="location.href=location.pathname">' + TH('app.toTop') + '</button>'; }
 }
 
 /* ---------- ダイアログ ---------- */
@@ -1068,7 +1083,7 @@ const EXPIRED_TXT = 'ご案内の待機時間(期限: {期限})を過ぎたた�
 /** 期限内に選ばれなかった案内のお知らせ(見たら確認済みにして、次からは出さない) */
 async function noticeExpired(list, plates) {
   const html = list.map(x => `<p>${nl(txt('待ち期限切れ', EXPIRED_TXT)).replace('{期限}', x.untilAt ? untilJa(x.untilAt) : '')}</p>${x.date ? `<div class="when">${dJa(x.date)} ${x.start}〜${x.end}<small>${esc(x.model || '')} ・ ${esc(x.plate || '')}</small></div>` : ''}`).join('');
-  await dialog('ご案内の期限が過ぎました', html, [{ label: '閉じる', value: 1 }], { modal: true });
+  await dialog(T('hold.expiredTitle'), html, [{ label: T('app.close'), value: 1 }], { modal: true });
   api('ackExpired', { email: profile.email, plates, ids: list.map(x => x.id) }).catch(() => {});
 }
 /** 空きのご案内を出して「はい / いいえ」を選んでもらう。続けて次の案内を出してよければ true */
@@ -1077,21 +1092,21 @@ async function offerHold(h) {
   let timer = setInterval(() => { const el = $('holdLeft'); if (el) el.textContent = leftJa(end - Date.now()); if (end - Date.now() <= 0) clearInterval(timer); }, 20000);
   const html = `<p>${nl(txt('空き案内', HOLD_TXT))}</p><div class="when">${dJa(h.date)} ${h.start}〜${h.end}<small>${esc(h.model)} ・ ${esc(h.plate)}${h.staff ? ' ・ 担当 ' + esc(h.staff) : ''}</small></div><p class="limit">${limitTxt()}</p>`;
   while (true) {
-    const v = await dialog('空きが出ました', html, [{ label: 'はい(予約する)', value: 'yes' }, { label: 'いいえ', cls: 'ghost', value: 'no' }], { modal: true });
-    if (Date.now() >= end) { clearInterval(timer); await dialog('ご案内の期限が過ぎました', `<p>${nl(txt('待ち期限切れ', EXPIRED_TXT)).replace('{期限}', untilJa(h.untilAt))}</p>`, [{ label: '閉じる', value: 1 }]); return true; }
+    const v = await dialog(T('hold.title'), html, [{ label: T('hold.yes'), value: 'yes' }, { label: T('hold.no'), cls: 'ghost', value: 'no' }], { modal: true });
+    if (Date.now() >= end) { clearInterval(timer); await dialog(T('hold.expiredTitle'), `<p>${nl(txt('待ち期限切れ', EXPIRED_TXT)).replace('{期限}', untilJa(h.untilAt))}</p>`, [{ label: T('app.close'), value: 1 }]); return true; }
     if (v === 'yes') {
       clearInterval(timer);
       try {
         const r = await waiting(api('holdConfirm', { token: h.token }));
         mine.push({ no: r.no, date: r.date, start: r.start, end: r.end, model: r.model, plate: h.plate }); save('wash_mine', mine); monthCache = {};
-        doneView(r, '予約が確定しました'); return false;
+        doneView(r, T('done.titleHold')); return false;
       } catch (e) { toast(e.message, true); return true; }
     }
     // いいえ: 誤って押したときのために、もう一度確かめる
-    const sure = await dialog('キャンセル待ちの取り消し', `<p>${nl(txt('空き案内取消', HOLD_NO))}</p>`, [{ label: '取り消す', cls: 'cta red', value: 'yes' }, { label: '戻る', cls: 'ghost', value: 'back' }], { modal: true });
+    const sure = await dialog(T('hold.noTitle'), `<p>${nl(txt('空き案内取消', HOLD_NO))}</p>`, [{ label: T('hold.noYes'), cls: 'cta red', value: 'yes' }, { label: T('app.cancel'), cls: 'ghost', value: 'back' }], { modal: true });
     if (sure !== 'yes') continue;
     clearInterval(timer);
-    try { await waiting(api('holdDecline', { token: h.token })); toast('キャンセル待ちを取り消しました'); } catch (e) { toast(e.message, true); }
+    try { await waiting(api('holdDecline', { token: h.token })); toast(T('hold.declined')); } catch (e) { toast(e.message, true); }
     return true;
   }
 }
@@ -1102,13 +1117,13 @@ const RULE_TXT = 'キャンセル待ちで空きが出た際は、予約サイ�
 const newServer = () => !!(cfg && cfg.holdHours);
 function holdRules() {
   const hh = cfg.holdHours;
-  return [['ご予約日が2週間以上先', hh.far], ['ご予約日が2週間以内', hh.mid], ['ご予約日が3日以内', hh.near]];
+  return [[T('wait.rule1'), hh.far], [T('wait.rule2'), hh.mid], [T('wait.rule3'), hh.near]];
 }
 function ruleHtml() {
   if (!newServer()) return '';
   const t = txt('待ち期限案内', RULE_TXT);
   if (!t) return '';
-  return `<p>${nl(t)}</p><ul>${holdRules().map(r => `<li><span>${r[0]}</span><b>${r[1]}時間以内</b></li>`).join('')}</ul>`;
+  return `<p>${nl(t)}</p><ul>${holdRules().map(r => `<li><span>${esc(r[0])}</span><b>${TH('wait.within', { '時間': r[1] })}</b></li>`).join('')}</ul>`;
 }
 
 /* ---------- ホーム画面への追加の手順(iPhone は新旧どちらの Safari でも分かるように、画面のマークを添える) ---------- */
@@ -1118,12 +1133,12 @@ const ICON_ADDHOME = '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><r
 /* 共有メニューの見本(「ホーム画面に追加」の場所を示す) */
 const IOS_MENU_MOCK = '<div class="mock" aria-hidden="true"><div class="mock-row"><span>□</span>ブックマークの追加先…</div><div class="mock-row"><span>☆</span>お気に入りに追加</div><div class="mock-row"><span>⌕</span>ページを検索</div>'
   + '<div class="mock-row hit">' + ICON_ADDHOME.replace('class="ico"', 'class="ico bare"') + 'ホーム画面に追加<b>◀</b></div></div>';
-const IOS_STEPS = '<p class="os">iPhone(Safari)</p><ol>'
-  + '<li>画面下のアドレス欄の左にあるボタン ' + ICON_PAGEMENU + ' を押す<br><small>(このボタンがない iPhone は、画面下の共有ボタン ' + ICON_SHARE + ')</small></li>'
-  + '<li>出てきたメニューを下へ動かし、「ホーム画面に追加」' + ICON_ADDHOME + 'を押す<br><small>(見当たらないときは「共有」' + ICON_SHARE + 'の中にあります)</small>' + IOS_MENU_MOCK + '</li>'
-  + '<li>右上の「追加」を押す</li></ol>'
-  + '<p class="note" style="margin:4px 0 0">LINE などのアプリの中で開いている場合は、一度 Safari で開いてから追加してください。マークの形は、iPhone の設定によって少し違うことがあります。</p>';
-const ANDROID_STEPS = '<p class="os">Android(Chrome)</p><ol><li>右上のメニュー(︙)を押す</li><li>「ホーム画面に追加」または「アプリをインストール」を選ぶ</li></ol>';
+const IOS_STEPS = () => '<p class="os">' + TH('ios.title') + '</p><ol>'
+  + '<li>' + TH('ios.s1', { 'ボタン': ICON_PAGEMENU }) + '<br><small>' + TH('ios.s1b', { '共有': ICON_SHARE }) + '</small></li>'
+  + '<li>' + TH('ios.s2', { '追加': ICON_ADDHOME }) + '<br><small>' + TH('ios.s2b', { '共有': ICON_SHARE }) + '</small>' + IOS_MENU_MOCK + '</li>'
+  + '<li>' + TH('ios.s3') + '</li></ol>'
+  + '<p class="note" style="margin:4px 0 0">' + TH('ios.note') + '</p>';
+const ANDROID_STEPS = () => '<p class="os">' + TH('android.title') + '</p><ol><li>' + TH('android.s1') + '</li><li>' + TH('android.s2') + '</li></ol>';
 
 /* ---------- はじめて開いたときの案内(ホーム画面への追加) ---------- */
 const FIRST_TXT = 'ホーム画面に追加すると、アプリのようにすぐに開けます。\nアプリにしてからご入力いただくと、お名前や車両ナンバーがこの端末に保存され、次回からご入力の手間が省けます。';
@@ -1131,9 +1146,9 @@ async function firstGuide() {
   const t = txt('はじめて', FIRST_TXT);
   if (!t || isStandalone() || load('wash_first_seen', false) || !$('dlg').hidden) return;
   save('wash_first_seen', true); // 一度出したら次からは出さない(すぐ閉じてもよいように)
-  const steps = isIOS ? IOS_STEPS : ANDROID_STEPS;
-  const btns = (installEv ? [{ label: 'ホーム画面に追加する', value: 'install' }] : []).concat([{ label: '閉じる', cls: installEv ? 'ghost' : 'cta', value: 'close' }]);
-  const v = await dialog('アプリとして使えます', `<p>${nl(t)}</p>${steps}<p class="note" style="margin:0">この案内は「洗車システムについて」からいつでも見られます。</p>`, btns);
+  const steps = isIOS ? IOS_STEPS() : ANDROID_STEPS();
+  const btns = (installEv ? [{ label: T('first.install'), value: 'install' }] : []).concat([{ label: T('app.close'), cls: installEv ? 'ghost' : 'cta', value: 'close' }]);
+  const v = await dialog(T('first.title'), `<p>${nl(t)}</p>${steps}<p class="note" style="margin:0">${TH('first.later')}</p>`, btns);
   if (v === 'install' && installEv) { installEv.prompt(); await installEv.userChoice; installEv = null; }
 }
 
@@ -1143,10 +1158,10 @@ const DEL_TXT = 'この端末に保存したお客様情報と、当店でお預
 async function deleteMeFlow() {
   const plates = [...new Set(cars.map(c => c.plate).concat(profile.plate ? [profile.plate] : []))];
   const has = !!(profile.email && plates.length);
-  const what = has ? `<div class="list">メール: ${esc(profile.email)}<br>お車: ${plates.map(esc).join('、')}</div>` : '<p class="note">この端末には、当店にお預かりしている情報と結び付くお客様情報(メールアドレス・車両ナンバー)が保存されていません。この端末の中の情報だけを削除します。</p>';
-  const v = await dialog('お客様情報の削除', `<p style="font-weight:600;font-size:15px">${nl(txt('情報削除確認', DEL_Q))}</p><p class="warn">${nl(txt('情報削除', DEL_TXT))}</p>${what}`, [{ label: '削除する', cls: 'cta red', value: 'yes' }, { label: 'やめる', cls: 'ghost', value: 'no' }]);
+  const what = has ? `<div class="list">${TH('del.mail')}: ${esc(profile.email)}<br>${TH('del.car')}: ${plates.map(esc).join('、')}</div>` : '<p class="note">' + TH('del.noData') + '</p>';
+  const v = await dialog(T('del.title'), `<p style="font-weight:600;font-size:15px">${nl(txt('情報削除確認', DEL_Q))}</p><p class="warn">${nl(txt('情報削除', DEL_TXT))}</p>${what}`, [{ label: T('del.yes'), cls: 'cta red', value: 'yes' }, { label: T('del.no'), cls: 'ghost', value: 'no' }]);
   if (v !== 'yes') return;
-  const sure = await dialog('本当に削除しますか?', '<p>削除すると元に戻せません。ご予約中・キャンセル待ち中の内容も取り消されます。</p>', [{ label: 'すべて削除する', cls: 'cta red', value: 'yes' }, { label: '戻る', cls: 'ghost', value: 'no' }], { modal: true });
+  const sure = await dialog(T('del.sureTitle'), '<p>' + TH('del.sureText') + '</p>', [{ label: T('del.sureYes'), cls: 'cta red', value: 'yes' }, { label: T('app.cancel'), cls: 'ghost', value: 'no' }], { modal: true });
   if (sure !== 'yes') return;
   try {
     if (has) await waiting(api('deleteMe', { email: profile.email, plates }));
@@ -1155,7 +1170,7 @@ async function deleteMeFlow() {
   try { Object.keys(localStorage).filter(k => /^wash_/.test(k)).forEach(k => localStorage.removeItem(k)); } catch (e) {}
   profile = {}; cars = []; mine = []; booked = new Set(); bookedKey = ''; monthCache = {};
   renderHome(); show('home');
-  await dialog('削除しました', '<p>お客様情報をすべて削除いたしました。ご利用ありがとうございました。</p>', [{ label: '閉じる', value: 1 }]);
+  await dialog(T('del.doneTitle'), '<p>' + TH('del.doneText') + '</p>', [{ label: T('app.close'), value: 1 }]);
 }
 
 /* ---------- 洗車システムについて ---------- */
@@ -1167,31 +1182,32 @@ addEventListener('appinstalled', () => { installEv = null; });
 /** 予約受付のしくみ(いま予約できる期間を実際の日付で出す) */
 function windowHtml() {
   const t = cfg.today.split('-').map(Number), x = cfg.max.split('-').map(Number), n = (x[0] * 12 + x[1]) - (t[0] * 12 + t[1]);
-  const from = cfg.min === cfg.today ? '今日' : '明日';
+  const from = T(cfg.min === cfg.today ? 'about.today' : 'about.tomorrow');
   const md = d => { const a = d.split('-'); return (+a[1]) + '月' + (+a[2]) + '日'; };
   return `<ul class="pts">
-    <li><span class="now">いま予約できるのは ${dJa(cfg.min)} 〜 ${dJa(cfg.max)}</span>${from}から、${n}か月先の同じ日までご予約いただけます。</li>
-    <li>毎日1日ずつ、新しい日が予約できるようになります(今日が${md(cfg.today)}なら${md(cfg.max)}まで)。</li>
-    <li>${n}か月先に同じ日がないとき(例: 12月30日・31日 → 2月)は、その月の末日で止まり、数日のあいだ新しい日は開きません。月をまたぐときは、2日ぶんが一度に開くこともあります。</li>
-    <li><b>お車1台につき、月1回まで</b>です。別の月なら、同じ日にまとめてご予約いただけます。</li>
-    <li>満席の日は、カレンダーで日にちを押すと<b>キャンセル待ち</b>に登録できます。空きが出たら登録順にメールでご案内します。</li>
+    <li><span class="now">${TH('about.now', { '開始': dJa(cfg.min), '終了': dJa(cfg.max) })}</span>${TB('about.range', { 'いつから': esc(from), '月数': n })}</li>
+    <li>${TB('about.daily', { '今日': md(cfg.today), '終了日': md(cfg.max) })}</li>
+    <li>${TB('about.monthEnd', { '月数': n })}</li>
+    <li>${TB('about.once')}</li>
+    <li>${TB('about.waitInfo')}</li>
   </ul>`;
 }
 function installHtml() {
-  if (isStandalone()) return '<div class="inst"><img src="apple-touch-icon.png" alt=""><div><b>ホーム画面から開いています</b>このままアプリのようにお使いいただけます。</div></div>';
-  return `<div class="inst"><img src="apple-touch-icon.png" alt=""><div><b>アプリのように使えます</b>ホーム画面に追加すると、すぐに開けて、登録したお車の情報も残りやすくなります。</div></div>
-    ${installEv ? '<button class="inst-go" id="instGo">ホーム画面に追加する</button>' : ''}
-    <div class="steps">${IOS_STEPS}${ANDROID_STEPS}</div>
+  if (isStandalone()) return '<div class="inst"><img src="apple-touch-icon.png" alt=""><div><b>' + TH('about.instDoneTitle') + '</b>' + TB('about.instDoneText') + '</div></div>';
+  return `<div class="inst"><img src="apple-touch-icon.png" alt=""><div><b>${TH('about.instTitle')}</b>${TB('about.instText')}</div></div>
+    ${installEv ? '<button class="inst-go" id="instGo">' + TH('first.install') + '</button>' : ''}
+    <div class="steps">${IOS_STEPS()}${ANDROID_STEPS()}</div>
 `;
 }
 function openAbout() {
   const rules = rulesHtml();
-  $('aboutBody').innerHTML = '<div class="notice">この予約はレクサス鹿児島東開でのみ有効です。</div>'
-    + (rules ? '<h4>ご案内</h4><dl class="rules">' + rules + '</dl>' : '')
-    + '<h4>予約の受付について</h4>' + windowHtml()
-    + (ruleHtml() ? '<h4>キャンセル待ちについて</h4><div class="wrule" style="margin:0">' + ruleHtml() + '</div>' : '')
-    + '<h4>ホーム画面に追加する</h4>' + installHtml()
-    + (newServer() ? '<button class="textlink danger-link" id="delMe">お客様情報をすべて削除</button>' : '');
+  const notice = T('about.notice');
+  $('aboutBody').innerHTML = (notice ? '<div class="notice">' + TB('about.notice') + '</div>' : '')
+    + (rules ? '<h4>' + TH('about.info') + '</h4><dl class="rules">' + rules + '</dl>' : '')
+    + '<h4>' + TH('about.window') + '</h4>' + windowHtml()
+    + (ruleHtml() ? '<h4>' + TH('about.wait') + '</h4><div class="wrule" style="margin:0">' + ruleHtml() + '</div>' : '')
+    + '<h4>' + TH('about.install') + '</h4>' + installHtml()
+    + (newServer() ? '<button class="textlink danger-link" id="delMe">' + TH('about.delete') + '</button>' : '');
   if ($('delMe')) $('delMe').onclick = () => { closeAbout(); deleteMeFlow(); };
   const go = $('instGo');
   if (go) go.onclick = async () => { installEv.prompt(); await installEv.userChoice; installEv = null; openAbout(); };
