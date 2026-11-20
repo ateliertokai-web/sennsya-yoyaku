@@ -1088,6 +1088,7 @@ function waitBar() {
     const r = await api('waitAdd', { staff: profile.staff || '', staffStore: profile.staffStore || '', name: profile.name, phone: profile.phone, email: profile.email, plate: profile.plate, model: profile.model, mode: W.mode, ym: [...W.months], wd: [...W.wd], dates: [...W.dates] });
     renderHome(); show('home');
     toast(T('wait.done', { '数': r.days }));
+    setTimeout(() => offerPush(), 1200); // 空きが出たらすぐ届くように、通知をおすすめする
   } });
 }
 
@@ -1142,6 +1143,7 @@ async function checkHolds() {
     const r = await api('myHolds', { email: profile.email, plates });
     if ((r.expired || []).length) await noticeExpired(r.expired, plates);
     for (const h of r.holds || []) { if (!(await offerHold(h))) break; }
+    syncPush(); // 案内を選んだあとのバッジに合わせる
   } catch (e) { /* 調べられなくても予約サイトは使えるので、ここでは何も出さない */ }
   finally { holdChecking = false; }
 }
@@ -1234,6 +1236,7 @@ async function deleteMeFlow() {
     if (has) await waiting(api('deleteMe', { email: mails[0], emails: mails.slice(1), plates }));
   } catch (e) { toast(e.message, true); return; } // サーバーで消せなかったときは、端末の情報も残しておく(もう一度試せるように)
   // 端末の情報はすべて消し、初めて開いたときと同じ状態に戻す(はじめての案内も、次に開いたときにまた出る)
+  try { const ps = pushSupported() ? await pushSub() : null; if (ps) await ps.unsubscribe(); setBadge(0); } catch (e) {} // 通知の登録もやめる(サーバー側は削除の処理で消える)
   try { Object.keys(localStorage).filter(k => /^wash_/.test(k)).forEach(k => localStorage.removeItem(k)); } catch (e) {}
   profile = {}; cars = []; mine = []; booked = new Set(); bookedKey = ''; monthCache = {};
   renderHome(); show('home');
@@ -1273,20 +1276,83 @@ function openAbout() {
     + (rules ? '<h4>' + TH('about.info') + '</h4><dl class="rules">' + rules + '</dl>' : '')
     + '<h4>' + TH('about.window') + '</h4>' + windowHtml()
     + (ruleHtml() ? '<h4>' + TH('about.wait') + '</h4><div class="wrule" style="margin:0">' + ruleHtml() + '</div>' : '')
+    + '<div id="pushSec" hidden><h4>' + TH('push.head') + '</h4><div class="inst" id="pushBox" style="flex-direction:column;align-items:stretch;gap:12px"></div></div>'
     + '<h4>' + TH('about.install') + '</h4>' + installHtml()
     + (newServer() ? '<button class="textlink danger-link" id="delMe">' + TH('about.delete') + '</button>' : '');
   if ($('delMe')) $('delMe').onclick = () => { closeAbout(); deleteMeFlow(); };
   const go = $('instGo');
   if (go) go.onclick = async () => { installEv.prompt(); await installEv.userChoice; installEv = null; openAbout(); };
+  drawPushBox();
   $('aboutBg').hidden = false; $('about').hidden = false; $('aboutBody').scrollTop = 0;
   document.addEventListener('keydown', aboutKey); $('aboutX').focus();
 }
 function closeAbout() { $('aboutBg').hidden = true; $('about').hidden = true; document.removeEventListener('keydown', aboutKey); $('aboutBtn').focus(); }
 const aboutKey = e => { if (e.key === 'Escape') closeAbout(); };
 $('aboutBtn').onclick = openAbout; $('aboutX').onclick = closeAbout; $('aboutBg').onclick = closeAbout;
-if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
+if ('serviceWorker' in navigator && window.isSecureContext) navigator.serviceWorker.register('sw.js').catch(() => {});
 
 document.addEventListener('visibilitychange', () => { if (!document.hidden && cfg && !$('home').hidden) checkHolds(); });
+if ('serviceWorker' in navigator) navigator.serviceWorker.addEventListener('message', e => { if (e.data && e.data.type === 'push-open' && cfg) { show('home'); checkHolds(); } });
+
+/* ---------- 通知(プッシュ)とアイコンのバッジ ----------
+   ホーム画面に追加したアプリで、キャンセル待ちの空き・期限切れ・前日のお知らせ・お店からのお知らせを通知で受け取る。
+   バッジ(アイコンの数字)は、選んでいない「空きのご案内」の件数 */
+const pushSupported = () => 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window && window.isSecureContext;
+const b64uToBytes = s => { s = s.replace(/-/g, '+').replace(/_/g, '/'); s += '='.repeat((4 - s.length % 4) % 4); return Uint8Array.from(atob(s), c => c.charCodeAt(0)); };
+async function pushSub() { const reg = await navigator.serviceWorker.ready; return reg.pushManager.getSubscription(); }
+const myPlates = () => [...new Set(cars.map(c => c.plate).concat(profile.plate ? [profile.plate] : []))];
+function setBadge(n) { try { if (n > 0 && navigator.setAppBadge) navigator.setAppBadge(n); else if (navigator.clearAppBadge) navigator.clearAppBadge(); } catch (e) {} }
+/** 'none'(サーバーが古い) / 'ios-install'(iPhone でホーム画面に未追加) / 'unsupported' / 'denied' / 'on' / 'off' */
+async function pushState() {
+  if (!cfg || !cfg.vapid) return 'none';
+  if (isIOS && !isStandalone()) return 'ios-install';
+  if (!pushSupported()) return 'unsupported';
+  if (Notification.permission === 'denied') return 'denied';
+  const sub = Notification.permission === 'granted' ? await pushSub().catch(() => null) : null;
+  return sub ? 'on' : 'off';
+}
+async function enablePush() {
+  try {
+    const perm = await Notification.requestPermission();
+    if (perm !== 'granted') { toast(T('push.deniedToast'), true); return false; }
+    const reg = await navigator.serviceWorker.ready;
+    const sub = (await reg.pushManager.getSubscription()) || await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64uToBytes(cfg.vapid) });
+    const r = await waiting(api('pushSub', { endpoint: sub.endpoint, email: profile.email || '', plates: myPlates() }));
+    setBadge(r.badge); toast(T('push.onToast')); return true;
+  } catch (e) { toast(T('push.failToast'), true); return false; }
+}
+async function disablePush() {
+  try { const sub = await pushSub(); if (sub) { api('pushUnsub', { endpoint: sub.endpoint }).catch(() => {}); await sub.unsubscribe(); } } catch (e) {}
+  setBadge(0); toast(T('push.offToast'));
+}
+/** アプリを開いたとき: 通知の宛先(メール・ナンバー)を新しくして、バッジを合わせる */
+async function syncPush() {
+  try {
+    if (!pushSupported() || !cfg || !cfg.vapid || Notification.permission !== 'granted') return;
+    const sub = await pushSub(); if (!sub) return;
+    const r = await api('pushSub', { endpoint: sub.endpoint, email: profile.email || '', plates: myPlates() });
+    setBadge(r.badge);
+  } catch (e) {}
+}
+/** 「洗車システムについて」の通知の欄 */
+async function drawPushBox() {
+  const st = await pushState(), box = $('pushBox'), sec = $('pushSec'); if (!box) return;
+  if (st === 'none' || st === 'unsupported') { sec.hidden = true; return; }
+  const txt = { on: 'push.onText', off: 'push.offText', 'ios-install': 'push.iosText', denied: 'push.deniedText' }[st];
+  box.innerHTML = `<div><b>${TH(st === 'on' ? 'push.onTitle' : 'push.offTitle')}</b>${TH(txt)}</div>`
+    + (st === 'on' ? `<button class="inst-go" id="pushOff" style="background:var(--soft);color:var(--ink)">${TH('push.btnOff')}</button>` : st === 'off' ? `<button class="inst-go" id="pushOn">${TH('push.btnOn')}</button>` : '');
+  sec.hidden = false;
+  if ($('pushOn')) $('pushOn').onclick = async () => { await enablePush(); drawPushBox(); };
+  if ($('pushOff')) $('pushOff').onclick = async () => { await disablePush(); drawPushBox(); };
+}
+/** キャンセル待ちを登録したあと、通知をおすすめする(この端末で1回だけ) */
+async function offerPush() {
+  if (load('wash_push_asked', false) || !$('dlg').hidden) return;
+  const st = await pushState(); if (st !== 'off') return;
+  save('wash_push_asked', true);
+  const v = await dialog(T('push.askTitle'), '<p>' + TH('push.askText') + '</p>', [{ label: T('push.askYes'), value: 'yes' }, { label: T('push.askNo'), cls: 'ghost', value: 'no' }]);
+  if (v === 'yes') enablePush();
+}
 swipeMonths($('calCard'), 'calPrev', 'calNext');
 swipeMonths($('wCard'), 'wPrev', 'wNext');
 init();
