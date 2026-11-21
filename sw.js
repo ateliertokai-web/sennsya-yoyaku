@@ -25,12 +25,18 @@ function setBadge(n) {
   return Promise.resolve();
 }
 
+/** アプリが画面に見えているか(見えている間に届いたお知らせは、すぐ既読にして数字を付けない) */
+async function visibleApps() {
+  const list = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+  return list.filter(c => c.visibilityState === 'visible');
+}
 self.addEventListener('push', e => e.waitUntil((async () => {
   let messages = [], badge = 0;
+  const open = await visibleApps().catch(() => []);
   try {
     const sub = await self.registration.pushManager.getSubscription();
     if (sub) {
-      const r = await fetch(API, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'pushInbox', endpoint: sub.endpoint }) });
+      const r = await fetch(API, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'pushInbox', endpoint: sub.endpoint, seen: open.length > 0 }) });
       const j = await r.json();
       if (j.ok) { messages = j.data.messages || []; badge = j.data.badge || 0; }
     }
@@ -38,6 +44,14 @@ self.addEventListener('push', e => e.waitUntil((async () => {
   if (!messages.length) messages = [{ title: '洗車予約', body: '新しいお知らせがあります。アプリを開いてご確認ください。', tag: 'wash' }];
   for (const m of messages) {
     await self.registration.showNotification(m.title || '洗車予約', { body: m.body || '', tag: m.tag || 'wash', icon: 'icon-192.png', badge: 'icon-192.png', data: { url: './' } });
+  }
+  if (open.length) {
+    // アプリを見ている最中: 通知はすぐ片付け、数字も付けず、画面にお知らせして案内を出してもらう
+    const shown = await self.registration.getNotifications().catch(() => []);
+    shown.forEach(n => n.close());
+    open.forEach(c => c.postMessage({ type: 'push-arrived' }));
+    await setBadge(0);
+    return;
   }
   await setBadge(badge);
 })()));
