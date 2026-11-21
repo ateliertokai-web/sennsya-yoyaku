@@ -1291,8 +1291,16 @@ const aboutKey = e => { if (e.key === 'Escape') closeAbout(); };
 $('aboutBtn').onclick = openAbout; $('aboutX').onclick = closeAbout; $('aboutBg').onclick = closeAbout;
 if ('serviceWorker' in navigator && window.isSecureContext) navigator.serviceWorker.register('sw.js').catch(() => {});
 
-document.addEventListener('visibilitychange', () => { if (!document.hidden && cfg && !$('home').hidden) checkHolds(); });
-if ('serviceWorker' in navigator) navigator.serviceWorker.addEventListener('message', e => { if (e.data && e.data.type === 'push-open' && cfg) { show('home'); checkHolds(); } });
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) return;
+  clearNotices(); // アプリに戻ってきたら(どの画面でも)、数字と通知センターの通知を消す
+  if (cfg && !$('home').hidden) checkHolds();
+});
+if ('serviceWorker' in navigator) navigator.serviceWorker.addEventListener('message', e => {
+  const t = e.data && e.data.type;
+  if (t === 'push-open' && cfg) { clearNotices(); show('home'); checkHolds(); }
+  if (t === 'push-arrived' && cfg) { clearNotices(); if (!$('home').hidden) checkHolds(); } // 開いている間に届いた: すぐ既読、ホームなら案内を出す
+});
 
 /* ---------- 通知(プッシュ)とアイコンのバッジ ----------
    ホーム画面に追加したアプリで、キャンセル待ちの空き・期限切れ・前日のお知らせ・お店からのお知らせを通知で受け取る。
@@ -1317,21 +1325,33 @@ async function enablePush() {
     if (perm !== 'granted') { toast(T('push.deniedToast'), true); return false; }
     const reg = await navigator.serviceWorker.ready;
     const sub = (await reg.pushManager.getSubscription()) || await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64uToBytes(cfg.vapid) });
-    const r = await waiting(api('pushSub', { endpoint: sub.endpoint, email: profile.email || '', plates: myPlates() }));
-    setBadge(r.badge); toast(T('push.onToast')); return true;
+    await waiting(api('pushSub', { endpoint: sub.endpoint, email: profile.email || '', plates: myPlates() }));
+    setBadge(0); toast(T('push.onToast')); return true;
   } catch (e) { toast(T('push.failToast'), true); return false; }
 }
 async function disablePush() {
   try { const sub = await pushSub(); if (sub) { api('pushUnsub', { endpoint: sub.endpoint }).catch(() => {}); await sub.unsubscribe(); } } catch (e) {}
   setBadge(0); toast(T('push.offToast'));
 }
+/** 数字(バッジ)と、通知センターに残っているこのアプリの通知を消し、サーバーでも既読にする */
+async function clearNotices() {
+  setBadge(0);
+  try {
+    if (!pushSupported()) return;
+    const reg = await navigator.serviceWorker.ready;
+    (await reg.getNotifications()).forEach(n => n.close());
+    const sub = await reg.pushManager.getSubscription();
+    if (sub && cfg && cfg.vapid) api('pushSeen', { endpoint: sub.endpoint }).catch(() => {});
+  } catch (e) {}
+}
 /** アプリを開いたとき: 通知の宛先(メール・ナンバー)を新しくして、バッジを合わせる */
 async function syncPush() {
   try {
     if (!pushSupported() || !cfg || !cfg.vapid || Notification.permission !== 'granted') return;
     const sub = await pushSub(); if (!sub) return;
-    const r = await api('pushSub', { endpoint: sub.endpoint, email: profile.email || '', plates: myPlates() });
-    setBadge(r.badge);
+    await api('pushSub', { endpoint: sub.endpoint, email: profile.email || '', plates: myPlates() }); // 開いた = 既読(数字は0)
+    setBadge(0);
+    (await (await navigator.serviceWorker.ready).getNotifications()).forEach(n => n.close());
   } catch (e) {}
 }
 /** 「洗車システムについて」の通知の欄 */
