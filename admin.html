@@ -251,6 +251,7 @@ textarea:focus,input:focus{background:#fff;box-shadow:0 0 0 1.5px var(--ink);out
 .pv-rule{padding:10px 12px;border-radius:12px;background:#fdf1dd;color:#6b4300;font-size:11.5px}
 .pv-rule li{display:flex;justify-content:space-between;padding:2px 0;border-top:1px dashed #ecd3a6;list-style:none}
 .pv-rule ul{margin:6px 0 0;padding:0}
+.textlink{padding:4px 0;border:0;background:none;color:var(--ink);font-size:13px;font-weight:600;text-decoration:underline;cursor:pointer}
 .pv-pol{white-space:pre-line;font-size:11.5px;line-height:1.7;min-height:200px}
 .pv-sheet{position:absolute;left:0;right:0;bottom:0;top:60px;padding:14px 16px;border-radius:20px 20px 0 0;background:#f5f4f1;overflow:auto;box-shadow:0 -8px 30px rgba(0,0,0,.15)}
 .pv-notice{padding:10px 12px;border-radius:12px;background:var(--ink);color:#fff;font-size:12px;font-weight:600}
@@ -467,6 +468,13 @@ textarea:focus,input:focus{background:#fff;box-shadow:0 0 0 1.5px var(--ink);out
 
   <div id="t-hol" class="pane" hidden>
     <div class="warn" id="holWarn" hidden></div>
+    <section class="card pad" id="stopCard" hidden style="margin-bottom:16px">
+      <h3>予約の受付停止日(翌年度の休日が未定のとき)</h3>
+      <p class="note" style="margin:4px 0 12px">この日から先は、お客様画面で予約できなくなります(管理画面・スタッフ画面の電話予約はできます)。お客様のカレンダーの下には、お詫びの文と「受付開始のお知らせを受け取る」ボタンが出ます。<br>休日が決まったら、休業日を入れてから「受付を再開する」を押してください。登録したお客様へ、10分以内にメールと通知が自動で届きます。</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><input type="date" id="stopDate" aria-label="受付停止日" style="max-width:200px"><button class="btn sm" id="stopSave">この日から停止する</button><button class="btn sub sm" id="stopClear">受付を再開する</button></div>
+      <p class="note" id="stopInfo" style="margin:10px 0 0"></p>
+      <button type="button" class="textlink" id="stopTxt" style="margin-top:6px">お詫びの文・お知らせメールを編集する ›</button>
+    </section>
     <p class="note hint">月を選んで日付をタップするとお休み/営業が切り替わります(自動保存)。曜日名をタップすると、その月の同じ曜日をまとめて切り替えます。お休みがない月も「この月を確定」を押してください。先1年ぶんまで設定でき、今月〜3か月先が未確定のあいだは毎日管理者メールにお知らせが届きます。</p>
     <div class="months" id="holMonths" role="tablist" aria-label="月を選ぶ"></div>
     <div id="holCal"></div>
@@ -909,7 +917,7 @@ $('addUser').onclick = () => {
 function mailPreviews() {
   const shop = (sv('店舗名') || {}).v || '洗車予約', contact = (sv('問い合わせ先') || {}).v || shop;
   const ex = { '氏名': '山田 太郎', '日時': '11月20日(金) 10:00〜10:45', '予約番号': '123456', 'お車': 'NX', 'ナンバー': '鹿児島 330 あ 12-34', '担当': '中村', '期限': '11月18日 16:00',
-    '対象': '11月20日(金)、11月21日(土)', '日数': '2', '変更前': '11月19日(木) 14:00〜14:45', '店名': shop, '問い合わせ先': contact, 'リンク': '(予約サイトを開いてご確認ください)' };
+    '対象': '11月20日(金)、11月21日(土)', '日数': '2', '変更前': '11月19日(木) 14:00〜14:45', '停止日': '4月1日(木)', '店名': shop, '問い合わせ先': contact, 'リンク': '(予約サイトを開いてご確認ください)' };
   const fill = t => String(t || '').replace(/\{([^{}\n]+)\}/g, (m, k) => ex[k] !== undefined ? ex[k] : m);
   const sig = sv('メ_署名') ? fill(sv('メ_署名').v).trim() : '';
   MAILS.forEach(m => {
@@ -1064,12 +1072,12 @@ $('saveTime').onclick = busy($('saveTime'), async () => {
 });
 
 /* 画面の文章 */
-const TXT_LABEL = { 'ヘッダー': '一番上(店名の下)', 'トップ見出し': 'トップ画面の見出し(洗車を予約する)', 'トップ': 'トップ画面の説明', '予約ボタン': 'トップ画面の予約ボタン', 'トップご案内': 'トップ画面の案内表', '洗車時間': '車種の下の洗車時間', 'お車の情報': 'お車の情報画面の注意書き', 'キャンセル待ち': 'キャンセル待ち画面の説明', '完了': '予約完了画面の注意書き', '空き案内': 'キャンセル待ちの順番が来たときの案内(予約サイトを開いたときに出る)', '空き案内期限': '上の案内の期限の説明({残り}・{期限}が置き換わる)', '空き案内取消': '「いいえ」を押したときの確認', 'はじめて': '初めて開いたときの案内(ホーム画面への追加)', '情報削除': '「お客様情報をすべて削除」の確認', '情報削除確認': '「お客様情報をすべて削除」の問いかけ(一番上)', '待ち期限案内': 'キャンセル待ちの期限の説明(キャンセル待ち画面・洗車システムについて。下に期限の時間が付く)', '待ち期限切れ': '案内の期限が過ぎたお客様へのお知らせ({期限}が置き換わる)', 'プライバシーポリシー': 'プライバシーポリシー(お客様画面)', '同意': '「日にちを選ぶ」の上の、個人情報の使い方と同意の一文' };
+const TXT_LABEL = { 'ヘッダー': '一番上(店名の下)', 'トップ見出し': 'トップ画面の見出し(洗車を予約する)', 'トップ': 'トップ画面の説明', '予約ボタン': 'トップ画面の予約ボタン', 'トップご案内': 'トップ画面の案内表', '洗車時間': '車種の下の洗車時間', 'お車の情報': 'お車の情報画面の注意書き', 'キャンセル待ち': 'キャンセル待ち画面の説明', '完了': '予約完了画面の注意書き', '空き案内': 'キャンセル待ちの順番が来たときの案内(予約サイトを開いたときに出る)', '空き案内期限': '上の案内の期限の説明({残り}・{期限}が置き換わる)', '空き案内取消': '「いいえ」を押したときの確認', 'はじめて': '初めて開いたときの案内(ホーム画面への追加)', '情報削除': '「お客様情報をすべて削除」の確認', '情報削除確認': '「お客様情報をすべて削除」の問いかけ(一番上)', '待ち期限案内': 'キャンセル待ちの期限の説明(キャンセル待ち画面・洗車システムについて。下に期限の時間が付く)', '待ち期限切れ': '案内の期限が過ぎたお客様へのお知らせ({期限}が置き換わる)', 'プライバシーポリシー': 'プライバシーポリシー(お客様画面)', '同意': '「日にちを選ぶ」の上の、個人情報の使い方と同意の一文', '受付準備中': '受付停止中のお詫び(カレンダーの下。{停止日}が日付に置き換わる)' };
 /* ---------- 画面で編集: お客様画面の見本の上で、文章をその場で書き換える ---------- */
 // 空欄のときの扱い: hide = 表示されない / 既定の文に戻る(既定の文)
 const PV_EMPTY = { 'ヘッダー': 'hide', 'トップ見出し': 'hide', 'トップ': 'hide', 'トップご案内': 'hide', '洗車時間': 'hide', 'お車の情報': 'hide', 'キャンセル待ち': 'hide', '完了': 'hide', 'はじめて': 'hide', '待ち期限案内': 'hide',
-  '予約ボタン': '予約する', '空き案内': '最初の文', '空き案内期限': '最初の文', '空き案内取消': '最初の文', '待ち期限切れ': '最初の文', '情報削除確認': '最初の文', '情報削除': '最初の文', '同意': '最初の文', 'プライバシーポリシー': '最初の文' };
-const PV_TAGS = { '洗車時間': ['分'], 'トップご案内': ['普通分', '大型分', '昼休憩', '店名'], 'トップ': ['店名'], 'ヘッダー': ['店名'], '空き案内期限': ['残り', '期限'], '待ち期限切れ': ['期限'], '同意': ['保存期間', '店名'], 'プライバシーポリシー': ['店名', '問い合わせ先', '保存期間', '保存日数'] };
+  '予約ボタン': '予約する', '空き案内': '最初の文', '空き案内期限': '最初の文', '空き案内取消': '最初の文', '待ち期限切れ': '最初の文', '情報削除確認': '最初の文', '情報削除': '最初の文', '受付準備中': '最初の文', '同意': '最初の文', 'プライバシーポリシー': '最初の文' };
+const PV_TAGS = { '洗車時間': ['分'], 'トップご案内': ['普通分', '大型分', '昼休憩', '店名'], 'トップ': ['店名'], 'ヘッダー': ['店名'], '空き案内期限': ['残り', '期限'], '待ち期限切れ': ['期限'], '同意': ['保存期間', '店名'], '受付準備中': ['停止日', '店名'], 'プライバシーポリシー': ['店名', '問い合わせ先', '保存期間', '保存日数'] };
 const PV_SCREENS = [
   ['home', 'ホーム'], ['info', 'お車の情報'], ['cal', '日にち'], ['slots', '時間'], ['lookup', '予約の確認'], ['wait', 'キャンセル待ち'], ['done', '予約完了'], ['offer', '空きのご案内'], ['offerNo', '取り消しの確認'],
   ['expired', '期限切れ'], ['first', 'はじめての案内'], ['delete', '削除の確認'], ['about', '洗車システムについて'], ['policy', 'プライバシーポリシー']
@@ -1110,7 +1118,7 @@ function pvRules() {
 const pvWhen = '<div class="pv-when">11月20日(金) 10:00〜10:45<small>NX ・ 鹿児島 330 あ 12-34 ・ 担当 中村</small></div>';
 const PV_RENDER = {
   home: () => pvHome(),
-  cal: () => pvTop() + `<div class="pv-body"><div class="pv-row" style="width:max-content;min-height:32px">‹ ${u('cal.back')}</div>${u('cal.title', 'h2')}<p class="pv-note">NX ・ 鹿児島 330 あ 12-34 ・ ${uFill('cal.minutes', { '分': (sv('洗車分(普通)') || {}).v || 45 })}</p><div class="pv-card" style="text-align:center;color:#888">(カレンダー)</div><p class="pv-note">● ${u('cal.free')}　● ${u('cal.few')}　● ${u('cal.full')}</p><div class="pv-row">${u('cal.toWait')}<span>›</span></div><div class="pv-card" style="margin-top:12px"><b>${uFill('cal.booked', { '月': '12月' })}</b><br>${u('cal.bookedNote')}</div><div class="pv-card"><b>${uFill('cal.fullDay', { '日付': '11/20(金)' })}</b><br><small>${u('cal.fullDaySub')}</small><div class="pv-btn" style="margin-top:8px">${u('cal.toWaitBtn')}</div></div><p class="pv-note"><small>({月}・{日付} の入った文は「一覧で編集」で書き換えられます)</small></p></div>`,
+  cal: () => pvTop() + `<div class="pv-body"><div class="pv-row" style="width:max-content;min-height:32px">‹ ${u('cal.back')}</div>${u('cal.title', 'h2')}<p class="pv-note">NX ・ 鹿児島 330 あ 12-34 ・ ${uFill('cal.minutes', { '分': (sv('洗車分(普通)') || {}).v || 45 })}</p><div class="pv-card" style="text-align:center;color:#888">(カレンダー)</div><p class="pv-note">● ${u('cal.free')}　● ${u('cal.few')}　● ${u('cal.full')}</p>${sv('文_受付準備中') ? `<div class="pv-card" style="background:#fdf6ea"><small style="color:#a3471c">(受付停止日を設定しているときだけ出ます)</small>${ed('受付準備中', 'p', 'pv-note')}<div class="pv-btn" style="margin-top:8px">${u('prep.notify')}</div></div>` : ''}<div class="pv-row">${u('cal.toWait')}<span>›</span></div><div class="pv-card" style="margin-top:12px"><b>${uFill('cal.booked', { '月': '12月' })}</b><br>${u('cal.bookedNote')}</div><div class="pv-card"><b>${uFill('cal.fullDay', { '日付': '11/20(金)' })}</b><br><small>${u('cal.fullDaySub')}</small><div class="pv-btn" style="margin-top:8px">${u('cal.toWaitBtn')}</div></div><p class="pv-note"><small>({月}・{日付} の入った文は「一覧で編集」で書き換えられます)</small></p></div>`,
   slots: () => pvTop() + `<div class="pv-body"><div class="pv-row" style="width:max-content;min-height:32px">‹ ${u('slot.back')}</div><h2>11月20日(金)</h2><p class="pv-lead">${u('slot.sub')}</p><div class="pv-card"><b style="font-size:12px">${u('slot.hint')}</b></div><p class="pv-note" style="font-weight:600">${u('slot.am')} <small>${uFill('slot.open', { '数': 3 })}</small></p><div class="pv-tiles"><i>10:00</i><i>10:45</i><i style="color:#aaa">11:30<br><small>${u('slot.booked')}</small></i></div><p class="pv-note" style="font-weight:600">${u('slot.pm')}</p><div class="pv-btn">${u('slot.reserve')}</div></div>`,
   lookup: () => pvTop() + `<div class="pv-body"><div class="pv-row" style="width:max-content;min-height:32px">‹ ${u('app.back')}</div>${u('look.title', 'h2')}<div class="pv-card"><div class="pv-note" style="margin:0">${u('look.email')}</div><div class="pv-note" style="margin:8px 0 0">${u('look.plate')}</div></div><div class="pv-btn">${u('look.go')}</div><p class="pv-note" style="font-weight:600;margin-top:14px">${u('look.res')}</p><div class="pv-card">11月20日(金) 10:00〜10:45<br><small>NX / ${u('look.no')} 123456</small><div class="pv-btn red" style="margin-top:8px">${u('look.cancelBtn')}</div></div><p class="pv-note" style="font-weight:600">${u('look.waits')}</p><div class="pv-card"><small>${u('look.waitNormal')}</small><div class="pv-btn ghost" style="margin-top:8px">${u('look.waitStopBtn')}</div></div></div>`,
   info: () => pvTop() + `<div class="pv-body"><div class="pv-row" style="width:max-content;min-height:32px">‹ ${u('app.back')}</div>${u('info.title', 'h2')}<div class="pv-card"><div class="pv-note" style="margin:0 0 6px">${u('info.model')}</div><div class="pv-tiles"><i>UX</i><i class="on">NX</i><i>RX</i><i>IS</i></div><div class="pv-note" style="margin:10px 0 0">${u('info.plate')}</div></div>${ed('洗車時間', 'p', 'pv-note')}<p class="pv-note" style="font-weight:600;margin-top:14px">${u('info.staff')}</p><p class="pv-note" style="font-weight:600;margin-top:14px">${u('info.contact')}</p><div class="pv-card">山田 太郎 ${u('app.sama')}<br><small style="color:#888">090-1234-5678 ・ yamada@example.com</small></div>${ed('お車の情報', 'p', 'pv-note')}${ed('同意', 'p', 'pv-note')}<p class="pv-link" style="text-align:center">${u('policy.link')}</p><div class="pv-btn">${u('info.next')}</div></div>`,
@@ -1207,6 +1215,7 @@ const MAILS = [
   ['空き案内', '空きのご案内', 'キャンセル待ちの方に空きが出たとき。詐欺メール対策のためリンクは入れず、予約サイトを開いて選んでもらう案内にしてください', ['氏名', '日時', '期限', 'お車', 'ナンバー', '担当', '店名']],
   ['リマインド', '前日のお知らせ', '「設定」の「リマインド時刻」を過ぎたころ、翌日にご予約のあるお客様へ(予約してから3時間以内の方には送りません)', ['氏名', '日時', '予約番号', 'お車', 'ナンバー', '担当', '店名']],
   ['変更', '日時の変更', 'お客様・管理画面でご予約の日時を変えたとき', ['氏名', '日時', '変更前', '予約番号', 'お車', 'ナンバー', '担当', '店名']],
+  ['受付開始', '受付開始のお知らせ', '「休業日」タブで受付を再開したとき(または停止日を先に延ばしたとき)、「受付開始のお知らせを受け取る」を押したお客様へ。通知も届きます', ['氏名', '停止日', '店名']],
   ['署名', 'すべてのメールの最後', 'どのメールにも最後に付きます(空欄で付けない)', ['問い合わせ先', '店名']]
 ];
 function drawMail() {
@@ -1241,7 +1250,31 @@ function holMonths() {
   const cur = G.today.slice(0, 7);
   return [...set].filter(m => m >= cur).sort();
 }
+function drawStop() {
+  const s0 = sv('受付停止日'); $('stopCard').hidden = !s0; if (!s0) return;
+  const v = String(s0.v || ''), n = G.prepCount || 0;
+  $('stopDate').value = v; $('stopClear').hidden = !v;
+  $('stopInfo').innerHTML = v ? `<b style="color:#a3471c">停止中: ${esc(ymdJa(v))}から先は予約を受け付けていません。</b><br>受付開始のお知らせを待っているお客様: <b>${n}人</b>` : '停止していません(いつもどおり受け付けています)。';
+}
+const ymdJa = d => { const a = d.split('-'); return a[0] + '年' + (+a[1]) + '月' + (+a[2]) + '日(' + WD[new Date(+a[0], a[1] - 1, +a[2]).getDay()] + ')'; };
+async function saveStop(v) { await api('adminSave', { settings: { '受付停止日': v } }); await reloadG(); }
+$('stopSave').onclick = busy($('stopSave'), async () => {
+  const v = $('stopDate').value, cur = String((sv('受付停止日') || {}).v || '');
+  if (!v) return alert('停止する日付を選んでください');
+  if (v <= G.today) return alert('明日以降の日付を選んでください');
+  const n = G.prepCount || 0;
+  if (cur && v > cur && n && !confirm(`停止日を先に延ばすと、${ymdJa(cur)}〜の受付が始まり、お待ちのお客様 ${n}人へお知らせが届きます。よろしいですか?`)) return;
+  if (!cur && !confirm(`${ymdJa(v)}から先の予約を停止します。\nすでに入っているご予約はそのままです。よろしいですか?`)) return;
+  await saveStop(v); alert('保存しました');
+});
+$('stopClear').onclick = busy($('stopClear'), async () => {
+  const n = G.prepCount || 0;
+  if (!confirm('受付を再開します。' + (n ? `\nお待ちのお客様 ${n}人へ、10分以内にメールと通知でお知らせが届きます。` : '') + '\n休業日はもう入れましたか?')) return;
+  await saveStop(''); alert('受付を再開しました');
+});
+$('stopTxt').onclick = () => { document.querySelector('.tab[data-t="txt"]').click(); };
 function drawHol() {
+  drawStop();
   const need = G.need, un = need.filter(m => !G.confirmed.includes(m));
   $('holWarn').hidden = !un.length;
   $('holWarn').textContent = un.length ? '未確定の月があります: ' + un.map(ymJa).join('、') + '。お休みを選んで「この月を確定」を押してください。' : '';

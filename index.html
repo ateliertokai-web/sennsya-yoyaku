@@ -201,7 +201,12 @@ body.hashome .app{padding-bottom:calc(330px + env(safe-area-inset-bottom))}
 .d.few small{background:var(--few)}
 .d.full .n{color:#b9b8b3;font-weight:500}
 .d.full small{background:#cfcec9}
-.d.out .n,.d.closed .n{color:#d3d2cd;font-weight:400}
+.d.out .n,.d.closed .n,.d.prep .n{color:#d3d2cd;font-weight:400}
+.d.prep small{width:10px;height:2px;border-radius:1px;background:#d9b98a}
+.prepcard{margin:0 0 12px;padding:14px 16px;border-radius:14px;background:#fdf6ea;color:#5c4210;font-size:13px;line-height:1.75}
+.prepcard p{margin:0;white-space:pre-line}
+.prepcard .wbtn{margin-top:10px}
+.prepcard .ok{margin-top:10px;font-weight:600;color:#2f6b3a}
 .d:disabled{cursor:default}
 @media (hover:hover){.d:not(:disabled):hover .n{background:var(--soft)}}
 .d.sel .n,.d.sel:hover .n{background:var(--ink);color:#fff}
@@ -417,6 +422,7 @@ body.hasbar .toast{bottom:calc(100px + env(safe-area-inset-bottom))}
     <span><i style="background:#cfcec9"></i><span data-t="cal.full">満席</span></span>
   </div>
   </div>
+  <div class="prepcard" id="calPrep" hidden><p id="prepText"></p><div id="prepAct"></div></div>
   <div class="list"><button class="rowbtn" id="calWait"><span data-t="cal.toWait">満席の日をキャンセル待ちする</span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button></div>
 </section>
 
@@ -614,6 +620,7 @@ function months() {
   const out = [], a = cfg.min.split('-').map(Number), b = cfg.max.split('-').map(Number);
   let y = a[0], m = a[1];
   while (y < b[0] || (y === b[0] && m <= b[1])) { out.push(y + '-' + pad(m)); m++; if (m > 12) { m = 1; y++; } }
+  if (!out.length) out.push(cfg.min.slice(0, 7)); // 受付停止日がすぐ先で、開いている日がないとき
   return out;
 }
 function isLarge(name) { const m = cfg.models.find(m => m.name === name); return !!(m && m.large); }
@@ -832,7 +839,7 @@ function monthNav(prefix, cur, onChange) {
   $(prefix + 'Prev').disabled = i <= 0; $(prefix + 'Next').disabled = i >= list.length - 1;
   $(prefix + 'Prev').onclick = () => onChange(list[i - 1]); $(prefix + 'Next').onclick = () => onChange(list[i + 1]);
 }
-const STATE_KEY = { free: 'cal.free', few: 'cal.few', full: 'cal.full', closed: 'cal.closed', out: 'cal.out' };
+const STATE_KEY = { free: 'cal.free', few: 'cal.few', full: 'cal.full', closed: 'cal.closed', out: 'cal.out', prep: 'cal.prep' };
 function renderCal(el, ym, data, selected) {
   const a = ym.split('-').map(Number), first = new Date(a[0], a[1]-1, 1).getDay(), last = new Date(a[0], a[1], 0).getDate();
   let h = '<div class="cal">' + WD.map((w, i) => `<div class="wd ${i === 0 ? 'sun' : i === 6 ? 'sat' : ''}">${w}</div>`).join('');
@@ -840,7 +847,7 @@ function renderCal(el, ym, data, selected) {
   for (let d = 1; d <= last; d++) {
     const ds = ym + '-' + pad(d), v = (data.days || {})[ds] || { s: 'out' };
     const mark = { free: '○', few: '△', full: '×', closed: '休' }[v.s] || '';
-    h += `<button class="d ${v.s} ${selected && selected.has(ds) ? 'sel' : ''}" data-d="${ds}" data-s="${v.s}" ${v.s === 'out' || v.s === 'closed' ? 'disabled' : ''} aria-label="${dJa(ds)} ${TH(STATE_KEY[v.s])}"><span class="n">${d}</span><small>${mark}</small></button>`;
+    h += `<button class="d ${v.s} ${selected && selected.has(ds) ? 'sel' : ''}" data-d="${ds}" data-s="${v.s}" ${v.s === 'out' || v.s === 'closed' || v.s === 'prep' ? 'disabled' : ''} aria-label="${dJa(ds)} ${TH(STATE_KEY[v.s])}"><span class="n">${d}</span><small>${mark}</small></button>`;
   }
   el.innerHTML = h + '</div>';
 }
@@ -852,7 +859,7 @@ async function openCal(ym) {
   const cc = curCar();
   $('calNote').textContent = cc.model + ' ・ ' + cc.plate + ' ・ ' + T('cal.minutes', { '分': durOf(cc.model) });
   $('chgNote').hidden = !changing; if (changing) $('chgNote').textContent = T('chg.note', { '予約番号': changing.no, '日時': changing.when });
-  monthNav('cal', curYm, openCal); show('cal');
+  monthNav('cal', curYm, openCal); show('cal'); drawPrep();
   const k = curYm, lg = large, el = $('calBody');
   let shown = null;
   const draw = data => {
@@ -870,6 +877,25 @@ async function openCal(ym) {
 }
 $('calBack').onclick = () => { if (changing) { changing = null; show('lookup'); } else goInfo('cal'); };
 $('calWait').onclick = () => openWait();
+/* ---------- 受付停止日(翌年度の休日が未定のときなど)のお詫びと、受付開始のお知らせの登録 ---------- */
+const PREP_TXT = "誠に申し訳ございません。休業日の調整のため、{停止日}以降のご予約の受付を、しばらくお待ちいただいております。\n受付を始めましたら、通知とメールでお知らせいたします。ご不便をおかけしますが、何卒よろしくお願いいたします。";
+const prepKey = () => cfg.prep ? cfg.prep.from + '|' + np(profile.plate || '') + '|' + String(profile.email || '').toLowerCase() : '';
+function drawPrep() {
+  const on = !!(cfg && cfg.prep) && !changing; $('calPrep').hidden = !on; if (!on) return;
+  const from = cfg.prep.from, a = from.split('-');
+  $('prepText').textContent = txt('受付準備中', PREP_TXT).replace(/\{停止日\}/g, (+a[1]) + '月' + (+a[2]) + '日(' + WD[new Date(+a[0], a[1] - 1, +a[2]).getDay()] + ')');
+  const done = load('wash_prep', []).includes(prepKey());
+  $('prepAct').innerHTML = done ? '<p class="ok">' + TH('prep.done') + '</p>' : '<button type="button" class="wbtn" id="prepGo">' + TH('prep.notify') + '</button>';
+  if (!done) $('prepGo').onclick = async () => {
+    $('prepGo').disabled = true;
+    try {
+      await waiting(api('prepAdd', { name: profile.name, email: profile.email, plate: profile.plate }));
+      const list = load('wash_prep', []).filter(k => k.split('|')[0] >= cfg.today); list.push(prepKey()); save('wash_prep', list.slice(-10));
+      drawPrep(); toast(T('prep.toast'));
+      setTimeout(() => offerPush(), 900); // 通知でも受け取れるように
+    } catch (e) { toast(e.message, true); if ($('prepGo')) $('prepGo').disabled = false; }
+  };
+}
 function dayTap(b) {
   const d = b.dataset.d, ym = d.slice(0, 7);
   if (isBooked(ym)) {
