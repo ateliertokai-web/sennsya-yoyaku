@@ -49,7 +49,7 @@ h3{margin:0 0 4px;font-size:15px;font-weight:600;letter-spacing:.06em}
 label{display:block;margin:16px 0 6px;font-size:12.5px;font-weight:600;color:var(--sub);letter-spacing:.04em}
 label .note{display:block;margin-top:1px;font-weight:400;font-size:11.5px;color:var(--mute)}
 textarea{display:block;width:100%;min-height:88px;padding:11px 14px;border:0;border-radius:var(--r);background:var(--soft);color:var(--ink);font:inherit;font-size:15px;line-height:1.7;resize:vertical;transition:box-shadow .15s,background .15s}
-input[type=text],input[type=password],input[type=date],input[type=time],input[type=number]{display:block;width:100%;height:44px;padding:0 14px;border:0;border-radius:var(--r);background:var(--soft);color:var(--ink);font:inherit;font-size:15px;transition:box-shadow .15s,background .15s}
+input[type=text],input[type=tel],input[type=email],input[type=month],input[type=password],input[type=date],input[type=time],input[type=number]{display:block;width:100%;height:44px;padding:0 14px;border:0;border-radius:var(--r);background:var(--soft);color:var(--ink);font:inherit;font-size:15px;transition:box-shadow .15s,background .15s}
 /* iPhone(Safari)対策: 日付・時刻欄が独自の幅と高さで描かれて枠からはみ出すのを防ぐ。
    文字は16px未満だと入力時に画面が拡大されるので16pxにする */
 input,textarea{font-size:16px!important;max-width:100%}
@@ -251,6 +251,36 @@ textarea:focus,input:focus{background:#fff;box-shadow:0 0 0 1.5px var(--ink);out
 .pv-rule{padding:10px 12px;border-radius:12px;background:#fdf1dd;color:#6b4300;font-size:11.5px}
 .pv-rule li{display:flex;justify-content:space-between;padding:2px 0;border-top:1px dashed #ecd3a6;list-style:none}
 .pv-rule ul{margin:6px 0 0;padding:0}
+/* 説明書 */
+.bgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px}
+.blink{display:flex;flex-direction:column;gap:4px;padding:14px 16px;border-radius:14px;background:var(--soft);color:var(--ink);text-decoration:none;border:0;text-align:left;font:inherit;cursor:pointer}
+.blink b{font-size:14.5px}.blink span{font-size:12px;line-height:1.6;color:var(--sub)}
+.blink:hover{background:#ebe9e4}.blink.off{opacity:.55;cursor:default}
+.blink.go{background:var(--ink);color:#fff}.blink.go span{color:#d9d8d3}
+.htools{position:sticky;top:96px;z-index:5;margin:22px 0 12px;padding:10px 0;background:var(--bg)}
+.htools{}@media (max-width:700px){.htools{position:static}}
+.hcats{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.hcats button{min-height:34px;padding:0 14px;border:0;border-radius:99px;background:var(--card);box-shadow:inset 0 0 0 1px var(--line);font:inherit;font-size:13px;font-weight:600;color:var(--ink);cursor:pointer}
+.hcats button.on{background:var(--ink);color:#fff;box-shadow:none}
+.hcat{margin:22px 4px 8px;font-size:13px;color:var(--sub);letter-spacing:.1em}
+details.hcard{margin-bottom:10px;background:var(--card);border-radius:var(--rl);box-shadow:0 0 0 1px var(--line)}
+details.hcard>summary{list-style:none;display:flex;align-items:center;gap:12px;padding:16px 18px;cursor:pointer}
+details.hcard>summary::-webkit-details-marker{display:none}
+details.hcard>summary::after{content:"＋";margin-left:auto;font-weight:700;color:var(--sub)}
+details.hcard[open]>summary::after{content:"－"}
+details.hcard>summary b{display:block;font-size:15.5px;line-height:1.5}
+details.hcard>summary small{display:block;margin-top:2px;font-size:12.5px;line-height:1.6;color:var(--sub)}
+.hbody{padding:0 18px 20px}
+.hbody ol{margin:0;padding:0;list-style:none;counter-reset:st}
+.hbody li{position:relative;margin:0 0 18px;padding-left:40px;counter-increment:st;font-size:14.5px;line-height:1.85;white-space:pre-line}
+.hbody li::before{content:counter(st);position:absolute;left:0;top:1px;width:28px;height:28px;border-radius:50%;background:var(--ink);color:#fff;font-size:13px;font-weight:700;line-height:28px;text-align:center}
+.hbody figure{margin:10px 0 0}
+.hbody figure img{display:block;max-width:100%;border-radius:12px;box-shadow:0 0 0 1px var(--line);cursor:zoom-in;background:#fff}
+.hbody figcaption{margin-top:6px;font-size:12.5px;color:var(--sub)}
+.hnote{margin-top:6px;padding:12px 14px;border-radius:12px;background:#fdf1dd;color:#6b4300;font-size:13px;line-height:1.8}
+.hnote p{margin:0 0 4px}.hnote p:last-child{margin:0}
+.hwhen{margin:0 0 14px;padding:10px 14px;border-radius:12px;background:var(--soft);font-size:13px;line-height:1.7}
+@media print{.head,.savebar,#helpTools,.bgrid,#helpPrint{display:none!important}details.hcard{break-inside:avoid-page;box-shadow:none;border:1px solid #ccc}details.hcard>summary::after{content:""}body{background:#fff}}
 .textlink{padding:4px 0;border:0;background:none;color:var(--ink);font-size:13px;font-weight:600;text-decoration:underline;cursor:pointer}
 .pv-pol{white-space:pre-line;font-size:11.5px;line-height:1.7;min-height:200px}
 .pv-sheet{position:absolute;left:0;right:0;bottom:0;top:60px;padding:14px 16px;border-radius:20px 20px 0 0;background:#f5f4f1;overflow:auto;box-shadow:0 -8px 30px rgba(0,0,0,.15)}
@@ -323,6 +353,7 @@ textarea:focus,input:focus{background:#fff;box-shadow:0 0 0 1.5px var(--ink);out
     <button class="tab" data-t="login">ログイン管理</button>
     <button class="tab" data-t="txt">文章・メール</button>
     <button class="tab" data-t="stat">集計</button>
+    <button class="tab" data-t="help">説明書</button>
 </nav>
 </div>
 <div class="wrap">
@@ -404,6 +435,21 @@ textarea:focus,input:focus{background:#fff;box-shadow:0 0 0 1.5px var(--ink);out
   <div id="t-stat" class="pane" hidden>
     <div class="card tool"><label for="stYm">月</label><input type="month" id="stYm"><button class="btn" id="stGo">表示</button></div>
     <div id="stBody" style="margin-top:16px"></div>
+  </div>
+
+  <div id="t-help" class="pane" hidden>
+    <section class="card pad" id="bridge">
+      <div class="hrow"><h3>引き継ぎ・バックアップ</h3><button class="btn sub sm" id="helpPrint">説明書を印刷する</button></div>
+      <p class="note" style="margin:2px 0 14px">このシステムの「中身」が置いてある場所です。担当者が替わるとき、トラブルのとき、プログラムを更新するときに使います。開くには、その場所の権限がある Google・GitHub のアカウントでログインしている必要があります。<b>普段の作業は、この管理画面だけでできます。</b></p>
+      <div class="bgrid" id="bGrid"></div>
+      <p class="note" id="bLast" style="margin:12px 0 0"></p>
+    </section>
+    <div class="htools" id="helpTools">
+      <input type="text" id="helpQ" placeholder="困っていることを入れて探す(例: 辞めた、パスワード、休み、メール)" aria-label="説明書を探す">
+      <div class="hcats" id="helpCats"></div>
+    </div>
+    <div id="helpList"></div>
+    <p class="note" style="margin:20px 4px 0">この説明書の写真は見本のデータで撮っています。お店の実際の画面とは、名前や数字が違います。</p>
   </div>
 
   <div id="t-wait" class="pane" hidden>
@@ -508,6 +554,7 @@ textarea:focus,input:focus{background:#fff;box-shadow:0 0 0 1.5px var(--ink);out
 
 <div class="loader" id="loader" role="status" aria-live="polite"><i aria-hidden="true"></i><div>読み込み中…<small>通信に数秒かかることがあります。そのままお待ちください。</small></div></div>
 <script src="texts.js"></script>
+<script src="manual.js"></script>
 <script src="config.js"></script>
 <script src="auth.js"></script>
 <script>
@@ -590,11 +637,52 @@ $('lEmail').addEventListener('keydown', e => { if (e.key === 'Enter') $('pw').fo
 $('logout').onclick = () => { sessionStorage.removeItem('wash_admin_pw'); sessionStorage.removeItem('wash_admin_email'); if (GA.enabled) GA.signOut(); location.reload(); };
 document.querySelectorAll('.tab').forEach(b => b.onclick = () => {
   document.querySelectorAll('.tab').forEach(x => x.classList.toggle('on', x === b));
-  ['res', 'wait', 'hol', 'time', 'set', 'login', 'txt', 'stat'].forEach(k => $('t-' + k).hidden = k !== b.dataset.t);
+  ['res', 'wait', 'hol', 'time', 'set', 'login', 'txt', 'stat', 'help'].forEach(k => $('t-' + k).hidden = k !== b.dataset.t);
+  if (b.dataset.t === 'help') ensureG().catch(() => {}).then(drawHelp);
   if (b.dataset.t === 'wait') loadWait().catch(e => alert(e.message));
   if (['hol', 'time', 'set', 'login', 'txt'].includes(b.dataset.t)) ensureG().then(drawAll).catch(e => alert(e.message));
   if (b.dataset.t === 'stat' && !$('stBody').innerHTML) loadStats().catch(e => { $('stBody').innerHTML = '<p class="warn">' + esc(e.message) + '</p>'; });
 });
+
+/* ---------- 説明書・引き継ぎ ---------- */
+const MAN = window.WASH_MANUAL || [];
+let helpCat = '';
+const repoUrl = () => { const m = location.hostname.match(/^([^.]+)\.github\.io$/); return m ? 'https://github.com/' + m[1] + '/' + (location.pathname.split('/')[1] || '') : 'https://github.com/ateliertokai-web/sennsya-yoyaku'; };
+const mdb = t => esc(t).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
+function drawBridge() {
+  const L = (G && G.links) || null, old = !L;
+  const card = (href, title, desc, cls) => href ? `<a class="blink ${cls || ''}" href="${esc(href)}" target="_blank" rel="noopener"><b>${title} ↗</b><span>${desc}</span></a>` : `<div class="blink off"><b>${title}</b><span>${old ? 'サーバー(Code.gs)を更新すると使えます。' : desc}</span></div>`;
+  $('bGrid').innerHTML = card(L && L.sheet, 'スプレッドシートを開く', '予約・設定・ログインなど、すべてのデータが入っている表のファイル。')
+    + card(L && L.script, 'Apps Script を開く', '予約の受付やメールを自動で行うプログラム。更新・引き継ぎのときに使います。')
+    + card(L && L.backup, '控えのフォルダを開く', L && !L.backup ? 'まだ控えがありません。「今すぐ控えを作る」を押すと作られます。' : '毎日自動で作られる控え(30日分)。')
+    + `<button type="button" class="blink go" id="bBackup" ${old ? 'disabled' : ''}><b>今すぐ控えを作る</b><span>いまのスプレッドシートを、控えのフォルダにコピーします。大きな変更の前に。</span></button>`
+    + card(repoUrl(), 'GitHub(画面のファイル)を開く', 'お客様画面・スタッフ画面・管理画面のファイルの置き場所。普段は触りません。');
+  $('bLast').textContent = L && L.last ? '最後の控え: ' + L.last : '';
+  if ($('bBackup') && !old) $('bBackup').onclick = busy($('bBackup'), async () => {
+    const r = await api('adminBackup'); alert('控えを作りました: ' + r.name);
+    G.links = Object.assign({}, G.links, { backup: r.folder, last: r.name.replace('洗車予約_控え_', '') }); drawBridge();
+  });
+}
+function drawHelp() {
+  drawBridge();
+  const cats = [...new Set(MAN.map(m => m.cat))];
+  $('helpCats').innerHTML = ['', ...cats].map(c => `<button type="button" class="${c === helpCat ? 'on' : ''}" data-hc="${esc(c)}">${c || 'すべて'}</button>`).join('');
+  $('helpCats').querySelectorAll('[data-hc]').forEach(b => b.onclick = () => { helpCat = b.dataset.hc; drawHelp(); });
+  const q = $('helpQ').value.trim();
+  const text = m => [m.title, m.when, ...m.steps.map(x => typeof x === 'string' ? x : x.t + ' ' + (x.cap || '')), ...(m.notes || [])].join(' ');
+  const list = MAN.filter(m => (!helpCat || m.cat === helpCat) && (!q || q.split(/\s+/).every(w => text(m).indexOf(w) >= 0)));
+  let h = '', cur = '';
+  list.forEach(m => {
+    if (m.cat !== cur) { cur = m.cat; h += `<p class="hcat">${esc(cur)}</p>`; }
+    const steps = m.steps.map(x => { const o = typeof x === 'string' ? { t: x } : x; return `<li>${mdb(o.t)}${o.img ? `<figure><img src="manual/${esc(o.img)}.jpg" alt="${esc(o.cap || '')}" loading="lazy" data-zoom><figcaption>${esc(o.cap || '')}</figcaption></figure>` : ''}</li>`; }).join('');
+    h += `<details class="hcard" id="h-${esc(m.id)}" ${q ? 'open' : ''}><summary><div><b>${esc(m.title)}</b><small>${esc(m.when)}</small></div></summary><div class="hbody"><p class="hwhen"><b>こんなとき:</b> ${esc(m.when)}</p><ol>${steps}</ol>`
+      + ((m.notes || []).length ? `<div class="hnote"><b>気をつけること</b>${m.notes.map(n => `<p>・${mdb(n)}</p>`).join('')}</div>` : '') + '</div></details>';
+  });
+  $('helpList').innerHTML = h || '<p class="note" style="margin:12px 4px">見つかりませんでした。別の言葉で探すか、「すべて」を押してください。</p>';
+  $('helpList').querySelectorAll('[data-zoom]').forEach(img => img.onclick = () => window.open(img.src, '_blank'));
+}
+$('helpQ').oninput = () => drawHelp();
+$('helpPrint').onclick = () => { document.querySelectorAll('#helpList details').forEach(d => d.open = true); setTimeout(() => window.print(), 300); };
 
 /* 予約 */
 async function loadRes() {
