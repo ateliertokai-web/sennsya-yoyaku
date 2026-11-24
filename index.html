@@ -308,6 +308,9 @@ body.hasbar .toast{bottom:calc(100px + env(safe-area-inset-bottom))}
 .dlg-x:hover{background:var(--soft)}
 .dlg-body{font-size:14px;line-height:1.85;color:var(--ink)}
 .dlg-body p{margin:0 0 10px;white-space:pre-line}
+.dlg-body .pol-h{margin:16px 0 4px;font-size:14.5px;font-weight:700}
+.dlg-body .pol p{margin:0 0 6px;font-size:13.5px}
+.agree{margin:18px 4px 0;font-size:12.5px;line-height:1.75;color:var(--sub)}
 .dlg-body .when{margin:12px 0;padding:14px 16px;border-radius:14px;background:var(--ink);color:#fff;font-size:17px;font-weight:600;font-variant-numeric:tabular-nums;line-height:1.5}
 .dlg-body .when small{display:block;font-size:12px;font-weight:500;color:#c7c7cc}
 .dlg-body .limit{padding:10px 12px;border-radius:12px;background:#fdf1dd;color:#7a4a00;font-size:13px}
@@ -393,6 +396,8 @@ body.hasbar .toast{bottom:calc(100px + env(safe-area-inset-bottom))}
   <input type="email" id="fMail" autocomplete="email">
   </div>
   <p class="note" id="infoNote" hidden></p>
+  <p class="agree" id="agreeNote"></p>
+  <button type="button" class="textlink" id="policyLink" style="margin:2px auto 14px" data-t="policy.link">プライバシーポリシーを読む</button>
   <button class="cta" id="infoNext" data-t="info.next">日にちを選ぶ</button>
 </section>
 
@@ -637,6 +642,7 @@ function applyCfg() {
   const X = cfg.texts || {};
   setText('subline', X['ヘッダー']); setText('homeTitle', X['トップ見出し']); setText('homeLead', X['トップ']); $('goReserve').textContent = X['予約ボタン'] || '予約する'; setText('infoNote', X['お車の情報']);
   setText('waitLead', X['キャンセル待ち']); setText('doneNote', X['完了']);
+  $('agreeNote').textContent = fillPol(txt('同意', AGREE_TXT));
   $('noticeBar').textContent = cfg.notice || ''; $('noticeBar').hidden = !(cfg.notice && !$('home').hidden);
 }
 /** 前回のお車がわかっていれば、カレンダーと予約済みの月を先に読み込んでおく */
@@ -1243,6 +1249,18 @@ async function deleteMeFlow() {
   await dialog(T('del.doneTitle'), '<p>' + TH('del.doneText') + '</p>', [{ label: T('app.close'), value: 1 }]);
 }
 
+/* ---------- プライバシーポリシー(管理画面の「文章・メール」で編集。サーバーが古いときは下の文) ---------- */
+const POLICY_TXT = "{店名}(以下「当店」)は、洗車予約サイト(以下「本サイト」)でお預かりするお客様の個人情報を、個人情報の保護に関する法律その他の法令を守り、次のとおり大切に取り扱います。\nお名前・連絡先・車両ナンバーは、予約の確認、照合とご連絡のためだけに使い、{保存期間}で削除します。\n\n■ 事業者\n[会社名]\n[住所]\n代表者: [代表者の役職・氏名]\n\n■ お預かりする情報\n・お名前(登録名義)、電話番号、メールアドレス\n・車種、車両ナンバー、担当スタッフ\n・ご予約・キャンセル待ちの内容(日時など)、ご来店の記録\n・通知を受け取る設定をされた場合、通知をお届けするための端末の識別情報(お名前などは含みません)\n入力内容やお車の情報は、次回の入力を省くため、お客様の端末(スマホのブラウザ)にも保存されます。\n\n■ 利用目的\n1. 洗車のご予約の受付・確認・日時の変更・キャンセル\n2. キャンセル待ちで空きが出た際のご案内\n3. ご予約の前日のお知らせ、営業日の変更など大切なお知らせ\n4. ご来店時のご予約内容・お車の照合と、作業の準備\n5. サービス向上のための集計(お客様が特定されない形に限ります)\n上記以外の目的(広告・宣伝など)には、お客様の同意なく利用しません。\n\n■ 第三者への提供\n法令に基づく場合を除き、お客様の同意なく第三者に提供することはありません。\n\n■ 保管と取り扱いの委託\n情報は、Google LLC が提供するクラウドサービス(Google Workspace、Firebase など)で保管し、メールの送信にも同社のサービスを使います。保管先のサーバーが日本国外にある場合があります。通知のお届けには Apple・Google などの通知サービスを使いますが、通知の内容にお名前や連絡先は含めません。\n\n■ 保存期間\nご予約日から{保存日数}日を過ぎた情報は、お名前・電話番号・メールアドレス・車両ナンバーを自動で削除します(お客様が特定されない日時・車種などの記録のみ残ります)。\n\n■ 安全のための取り組み\n情報を見られる従業員を限定し、一人ひとりのIDとパスワードで管理しています。操作の記録、通信の暗号化、毎日のバックアップを行っています。当店からのメールにリンクは載せていません。リンクの付いたメールが届いた場合は開かず、当店までご連絡ください。\n\n■ 開示・訂正・削除などのご請求\n本サイトの「洗車システムについて」にある「お客様情報をすべて削除」から、ご自身でいつでも削除できます。そのほか、情報の開示・訂正・利用の停止などをご希望の場合は、下記までご連絡ください。ご本人であることを確認したうえで、速やかに対応します。\n\n■ お問い合わせ先\n{問い合わせ先}\n\n■ 改定\nこの内容を改定する場合は、本サイトでお知らせします。\n\n制定日: 2026年11月24日";
+const AGREE_TXT = "お名前・連絡先・車両ナンバーは、予約の確認、照合とご連絡のためだけに使い、{保存期間}で削除します。「日にちを選ぶ」に進むと、プライバシーポリシーに同意したものとみなします。";
+/** 古いサーバーのときに残る {店名} などを埋める */
+const fillPol = t => String(t || '').replace(/\{店名\}/g, (cfg && cfg.name) || '当店').replace(/\{問い合わせ先\}/g, (cfg && cfg.contact) || (((cfg && cfg.name) || '当店') + 'の店頭・お電話')).replace(/\{保存日数\}/g, '365').replace(/\{保存期間\}/g, '1年');
+function openPolicy() {
+  const html = '<div class="pol">' + fillPol(txt('プライバシーポリシー', POLICY_TXT)).split('\n').map(l => l.trim()).filter(Boolean)
+    .map(l => /^■/.test(l) ? '<h4 class="pol-h">' + esc(l.replace(/^■\s*/, '')) + '</h4>' : '<p>' + esc(l) + '</p>').join('') + '</div>';
+  dialog(T('policy.title'), html, [{ label: T('app.close'), value: 1 }]);
+}
+$('policyLink').onclick = openPolicy;
+
 /* ---------- 洗車システムについて ---------- */
 const isStandalone = () => matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
 const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
@@ -1278,8 +1296,10 @@ function openAbout() {
     + (ruleHtml() ? '<h4>' + TH('about.wait') + '</h4><div class="wrule" style="margin:0">' + ruleHtml() + '</div>' : '')
     + '<div id="pushSec" hidden><h4>' + TH('push.head') + '</h4><div class="inst" id="pushBox" style="flex-direction:column;align-items:stretch;gap:12px"></div></div>'
     + '<h4>' + TH('about.install') + '</h4>' + installHtml()
+    + '<button class="textlink" id="policyBtn">' + TH('policy.link') + '</button>'
     + (newServer() ? '<button class="textlink danger-link" id="delMe">' + TH('about.delete') + '</button>' : '');
   if ($('delMe')) $('delMe').onclick = () => { closeAbout(); deleteMeFlow(); };
+  $('policyBtn').onclick = () => { closeAbout(); openPolicy(); };
   const go = $('instGo');
   if (go) go.onclick = async () => { installEv.prompt(); await installEv.userChoice; installEv = null; openAbout(); };
   drawPushBox();
