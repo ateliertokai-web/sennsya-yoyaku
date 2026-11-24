@@ -554,7 +554,7 @@ details.hcard>summary small{display:block;margin-top:2px;font-size:12.5px;line-h
 
 <div class="loader" id="loader" role="status" aria-live="polite"><i aria-hidden="true"></i><div>読み込み中…<small>通信に数秒かかることがあります。そのままお待ちください。</small></div></div>
 <script src="texts.js"></script>
-<script src="manual.js"></script>
+<script src="manual.js?v=20261124-2"></script>
 <script src="config.js"></script>
 <script src="auth.js"></script>
 <script>
@@ -674,7 +674,7 @@ function drawHelp() {
   let h = '', cur = '';
   list.forEach(m => {
     if (m.cat !== cur) { cur = m.cat; h += `<p class="hcat">${esc(cur)}</p>`; }
-    const steps = m.steps.map(x => { const o = typeof x === 'string' ? { t: x } : x; return `<li>${mdb(o.t)}${o.img ? `<figure><img src="manual/${esc(o.img)}.jpg" alt="${esc(o.cap || '')}" loading="lazy" data-zoom><figcaption>${esc(o.cap || '')}</figcaption></figure>` : ''}</li>`; }).join('');
+    const steps = m.steps.map(x => { const o = typeof x === 'string' ? { t: x } : x; return `<li>${mdb(o.t)}${o.img ? `<figure><img src="manual/${esc(o.img)}.jpg?v=${esc(window.WASH_MANUAL_VER || 1)}" alt="${esc(o.cap || '')}" loading="lazy" data-zoom><figcaption>${esc(o.cap || '')}</figcaption></figure>` : ''}</li>`; }).join('');
     h += `<details class="hcard" id="h-${esc(m.id)}" ${q ? 'open' : ''}><summary><div><b>${esc(m.title)}</b><small>${esc(m.when)}</small></div></summary><div class="hbody"><p class="hwhen"><b>こんなとき:</b> ${esc(m.when)}</p><ol>${steps}</ol>`
       + ((m.notes || []).length ? `<div class="hnote"><b>気をつけること</b>${m.notes.map(n => `<p>・${mdb(n)}</p>`).join('')}</div>` : '') + '</div></details>';
   });
