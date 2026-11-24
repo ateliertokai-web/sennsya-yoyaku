@@ -1391,8 +1391,12 @@ function drawHol() {
   });
   $('holCal').querySelectorAll('[data-cf]').forEach(b => b.onclick = busy(b, async () => {
     const ym = b.dataset.cf;
-    G.confirmed = G.confirmed.includes(ym) ? G.confirmed.filter(m => m !== ym) : G.confirmed.concat(ym);
+    const confirming = !G.confirmed.includes(ym);
+    G.confirmed = confirming ? G.confirmed.concat(ym) : G.confirmed.filter(m => m !== ym);
     await saveHol();
+    // 受付停止日のある月を確定したら、受付を再開するか聞く(休業日を入れても、停止は自動では外れない)
+    const stop = String((sv('受付停止日') || {}).v || '');
+    if (confirming && stop && stop.slice(0, 7) === ym && confirm(ymJa(ym) + 'を確定しました。\n止めている予約の受付(' + ymdJa(stop) + '〜)を、いま再開しますか?' + (G.prepCount ? '\nお待ちのお客様 ' + G.prepCount + '人へ、メールと通知でお知らせが届きます。' : '') + '\n\n(あとで「受付を再開する」ボタンで再開することもできます)')) { await saveStop(''); alert('受付を再開しました'); }
   }));
 }
 /** 指定した日を切り替える。全部休みなら営業に、そうでなければ全部休みにする */
