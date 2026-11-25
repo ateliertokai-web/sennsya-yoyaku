@@ -281,6 +281,19 @@ details.hcard>summary small{display:block;margin-top:2px;font-size:12.5px;line-h
 .hnote p{margin:0 0 4px}.hnote p:last-child{margin:0}
 .hwhen{margin:0 0 14px;padding:10px 14px;border-radius:12px;background:var(--soft);font-size:13px;line-height:1.7}
 @media print{.head,.savebar,#helpTools,.bgrid,#helpPrint{display:none!important}details.hcard{break-inside:avoid-page;box-shadow:none;border:1px solid #ccc}details.hcard>summary::after{content:""}body{background:#fff}}
+.exrow{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.logtool{grid-template-columns:auto minmax(0,1fr) auto}
+@media (max-width:700px){.logtool{grid-template-columns:minmax(0,1fr)}}
+.lgrow{display:grid;grid-template-columns:150px 140px minmax(0,1fr);gap:4px 12px;padding:10px 16px;border-bottom:1px solid var(--line);font-size:13.5px}
+.lgrow:last-child{border-bottom:0}.lgrow .t{color:var(--sub);font-variant-numeric:tabular-nums}.lgrow .w{font-weight:600;overflow-wrap:anywhere}.lgrow .d{overflow-wrap:anywhere}
+.lgrow .d small{display:block;color:var(--sub)}
+@media (max-width:700px){.lgrow{grid-template-columns:1fr}}
+.clg{margin:0 0 12px;padding:10px 12px 4px;border-radius:12px;background:var(--soft)}
+.clg-h{display:flex;align-items:center;gap:8px;margin-bottom:6px;font-weight:700;font-size:14px}
+.clr{display:flex;align-items:flex-start;gap:10px;padding:8px 4px;border-top:1px solid var(--line);font-size:13.5px;line-height:1.6;cursor:pointer}
+.clr input,.clg-h input{width:20px;height:20px;flex:none;margin-top:2px;accent-color:var(--ink)}
+.clr,.clg-h{color:var(--ink);font-weight:500}.clr b{font-weight:700}
+.clr small{color:var(--sub);font-weight:400}
 .textlink{padding:4px 0;border:0;background:none;color:var(--ink);font-size:13px;font-weight:600;text-decoration:underline;cursor:pointer}
 .pv-pol{white-space:pre-line;font-size:11.5px;line-height:1.7;min-height:200px}
 .pv-sheet{position:absolute;left:0;right:0;bottom:0;top:60px;padding:14px 16px;border-radius:20px 20px 0 0;background:#f5f4f1;overflow:auto;box-shadow:0 -8px 30px rgba(0,0,0,.15)}
@@ -353,6 +366,7 @@ details.hcard>summary small{display:block;margin-top:2px;font-size:12.5px;line-h
     <button class="tab" data-t="login">ログイン管理</button>
     <button class="tab" data-t="txt">文章・メール</button>
     <button class="tab" data-t="stat">集計</button>
+    <button class="tab" data-t="log">操作ログ</button>
     <button class="tab" data-t="help">説明書</button>
 </nav>
 </div>
@@ -434,7 +448,14 @@ details.hcard>summary small{display:block;margin-top:2px;font-size:12.5px;line-h
 
   <div id="t-stat" class="pane" hidden>
     <div class="card tool"><label for="stYm">月</label><input type="month" id="stYm"><button class="btn" id="stGo">表示</button></div>
+    <div class="exrow"><button class="btn sub sm" id="exAnon">この月の予約を書き出す(Excel用・個人情報なし)</button><button class="btn sub sm" id="exFull">お名前・連絡先も含めて書き出す</button></div>
     <div id="stBody" style="margin-top:16px"></div>
+  </div>
+
+  <div id="t-log" class="pane" hidden>
+    <p class="note hint" style="margin-top:0">管理画面・スタッフ画面で、誰が・いつ・何をしたかの記録です(新しい順)。お客様ご自身の予約・キャンセルは入りません。記録は「個人情報の保存日数」を過ぎると自動で消えます。</p>
+    <div class="card tool logtool"><div class="range"><input type="date" id="lgFrom" aria-label="いつから"><span aria-hidden="true">〜</span><input type="date" id="lgTo" aria-label="いつまで"></div><input type="text" id="lgQ" placeholder="言葉で探す(例: 取り消し、tanaka、保存)" aria-label="言葉で探す"><button class="btn" id="lgGo">表示</button></div>
+    <div id="logList" style="margin-top:14px"></div>
   </div>
 
   <div id="t-help" class="pane" hidden>
@@ -514,6 +535,12 @@ details.hcard>summary small{display:block;margin-top:2px;font-size:12.5px;line-h
 
   <div id="t-hol" class="pane" hidden>
     <div class="warn" id="holWarn" hidden></div>
+    <section class="card pad" id="closedCard" hidden style="margin-bottom:16px;box-shadow:0 0 0 2px #e0891c">
+      <div class="hrow"><h3>休業日に入っている予約 <span class="count-pill" id="clCnt"></span></h3></div>
+      <p class="note" style="margin:2px 0 12px">お休みにした日に、まだ予約が残っています。お客様ごとに、どう連絡するか決めてください。<br>・<b>チェックを入れたお客様</b> … お詫びのメールと通知が届き、予約は取り消されます(メールのない方は通知だけ)。<br>・<b>チェックしないお客様</b> … 担当から直接ご連絡のうえ、「予約」タブで日時の変更か取り消しをしてください。<br>お詫びメールの文は「文章・メール」タブで変えられます。</p>
+      <div id="clList"></div>
+      <div style="display:flex;justify-content:flex-end;margin-top:14px"><button class="btn" id="clSend" disabled>選んだお客様に送って取り消す</button></div>
+    </section>
     <section class="card pad" id="stopCard" hidden style="margin-bottom:16px">
       <h3>予約の受付停止日(翌年度の休日が未定のとき)</h3>
       <p class="note" style="margin:4px 0 12px">この日から先は、お客様画面で予約できなくなります(管理画面・スタッフ画面の電話予約はできます)。お客様のカレンダーの下には、お詫びの文と「受付開始のお知らせを受け取る」ボタンが出ます。<br>休日が決まったら、休業日を入れてから「受付を再開する」を押してください。登録したお客様へ、10分以内にメールと通知が自動で届きます。</p>
@@ -554,7 +581,7 @@ details.hcard>summary small{display:block;margin-top:2px;font-size:12.5px;line-h
 
 <div class="loader" id="loader" role="status" aria-live="polite"><i aria-hidden="true"></i><div>読み込み中…<small>通信に数秒かかることがあります。そのままお待ちください。</small></div></div>
 <script src="texts.js"></script>
-<script src="manual.js?v=20261124-2"></script>
+<script src="manual.js?v=20261125-1"></script>
 <script src="config.js"></script>
 <script src="auth.js"></script>
 <script>
@@ -637,7 +664,9 @@ $('lEmail').addEventListener('keydown', e => { if (e.key === 'Enter') $('pw').fo
 $('logout').onclick = () => { sessionStorage.removeItem('wash_admin_pw'); sessionStorage.removeItem('wash_admin_email'); if (GA.enabled) GA.signOut(); location.reload(); };
 document.querySelectorAll('.tab').forEach(b => b.onclick = () => {
   document.querySelectorAll('.tab').forEach(x => x.classList.toggle('on', x === b));
-  ['res', 'wait', 'hol', 'time', 'set', 'login', 'txt', 'stat', 'help'].forEach(k => $('t-' + k).hidden = k !== b.dataset.t);
+  ['res', 'wait', 'hol', 'time', 'set', 'login', 'txt', 'stat', 'log', 'help'].forEach(k => $('t-' + k).hidden = k !== b.dataset.t);
+  if (b.dataset.t === 'log' && !$('logList').innerHTML) loadLog().catch(e => { $('logList').innerHTML = '<p class="warn">' + esc(e.message) + '</p>'; });
+  if (b.dataset.t === 'hol') loadClosed();
   if (b.dataset.t === 'help') ensureG().catch(() => {}).then(drawHelp);
   if (b.dataset.t === 'wait') loadWait().catch(e => alert(e.message));
   if (['hol', 'time', 'set', 'login', 'txt'].includes(b.dataset.t)) ensureG().then(drawAll).catch(e => alert(e.message));
@@ -766,7 +795,7 @@ async function loadStats() {
   const hours = Object.keys(d.byHour).sort();
   $('stBody').innerHTML = `<div class="stgrid">${box(d.total, '予約(確定)')}${box(d.cancel, 'キャンセル(率 ' + pct(d.cancel, d.total + d.cancel) + ')')}${box(d.fromWait, 'キャンセル待ちから成立')}${box(d.phone, '電話などで受付')}${box(d.visited, '来店の記録')}${box(d.noShow, '来られなかった')}${box(d.waits, 'キャンセル待ちの登録')}${box(d.expired, '案内の期限切れ')}</div>`
     + `<div class="st2">${card('ここ6か月の予約数', bars(trend, Object.keys(trend)))}${card('担当スタッフ別', bars(d.byStaff))}${card('車種別', bars(d.byModel))}${card('曜日別', bars(d.byWd, ['月', '火', '水', '木', '金', '土', '日']))}${card('時間帯別(開始)', bars(d.byHour, hours))}`
-    + card('来られなかったお車(過去1年)', d.noShows.length ? `<div class="bars">${d.noShows.map(n => `<span>${esc(n.plate)}<br><small class="note">${esc(n.name)} ・ 最後 ${dJa(n.last)}</small></span><i style="width:${Math.min(100, n.count * 20)}%;background:#c4412d"></i><em>${n.count}回</em>`).join('')}</div>` + (d.noShowLimit ? `<p class="note">${d.noShowLimit}回になると、お客様画面から予約できなくなります(「設定」の「無断キャンセルの上限」)。記録を直すと解除されます。</p>` : '<p class="note">「設定」の「無断キャンセルの上限」を入れると、回数の多いお車は画面から予約できなくなります。</p>') : '<p class="note" style="margin:0">ありません</p>') + '</div>';
+    + card('来られなかったお車(過去' + (d.noShowDays && d.noShowDays < 365 ? d.noShowDays + '日' : '1年') + ')', d.noShows.length ? `<div class="bars">${d.noShows.map(n => `<span>${esc(n.plate)}<br><small class="note">${esc(n.name)} ・ 最後 ${dJa(n.last)}</small></span><i style="width:${Math.min(100, n.count * 20)}%;background:#c4412d"></i><em>${n.count}回</em>`).join('')}</div>` + (d.noShowLimit ? `<p class="note">${d.noShowLimit}回になると、お客様画面から予約できなくなります(「設定」の「無断キャンセルの上限」)。記録を直すと解除されます。</p>` : '<p class="note">「設定」の「無断キャンセルの上限」を入れると、回数の多いお車は画面から予約できなくなります。</p>') : '<p class="note" style="margin:0">ありません</p>') + '</div>';
 }
 $('stGo').onclick = busy($('stGo'), loadStats);
 $('resGo').onclick = busy($('resGo'), loadRes);
@@ -1304,6 +1333,7 @@ const MAILS = [
   ['空き案内', '空きのご案内', 'キャンセル待ちの方に空きが出たとき。詐欺メール対策のためリンクは入れず、予約サイトを開いて選んでもらう案内にしてください', ['氏名', '日時', '期限', 'お車', 'ナンバー', '担当', '店名']],
   ['リマインド', '前日のお知らせ', '「設定」の「リマインド時刻」を過ぎたころ、翌日にご予約のあるお客様へ(予約してから3時間以内の方には送りません)', ['氏名', '日時', '予約番号', 'お車', 'ナンバー', '担当', '店名']],
   ['変更', '日時の変更', 'お客様・管理画面でご予約の日時を変えたとき', ['氏名', '日時', '変更前', '予約番号', 'お車', 'ナンバー', '担当', '店名']],
+  ['休業連絡', '臨時休業のお知らせ(休業日の予約者へ)', '「休業日」タブの「休業日に入っている予約」で、チェックを入れたお客様へ送るとき(予約は取り消されます)', ['氏名', '日時', '予約番号', 'お車', 'ナンバー', '担当', '店名']],
   ['受付待ち', '受付停止中のお詫び(登録の控え)', '受付停止中に「受付開始のお知らせを受け取る」を押したお客様へ、すぐに届きます', ['氏名', '停止日', 'ナンバー', '店名']],
   ['受付開始', '受付開始のお知らせ', '「休業日」タブで受付を再開したとき(または停止日を先に延ばしたとき)、「受付開始のお知らせを受け取る」を押したお客様へ。通知も届きます', ['氏名', '停止日', '店名']],
   ['署名', 'すべてのメールの最後', 'どのメールにも最後に付きます(空欄で付けない)', ['問い合わせ先', '店名']]
@@ -1340,6 +1370,59 @@ function holMonths() {
   const cur = G.today.slice(0, 7);
   return [...set].filter(m => m >= cur).sort();
 }
+/* ---------- 休業日に入っている予約(お客様への連絡) ---------- */
+let closedList = null;
+async function loadClosed(afterSave) {
+  let r; try { r = await api('adminClosedRes'); } catch (e) { $('closedCard').hidden = true; return; } // 古いサーバー
+  const before = closedList ? closedList.length : 0; closedList = r.list; drawClosed();
+  if (afterSave && closedList.length > before) alert('お休みにした日に、ご予約が ' + closedList.length + '件 あります。\n画面の上の「休業日に入っている予約」から、お客様への連絡方法を選んでください。');
+}
+function drawClosed() {
+  const L = closedList || []; $('closedCard').hidden = !L.length; if (!L.length) return;
+  $('clCnt').textContent = L.length + '件';
+  const groups = {}; L.forEach(r => { const k = r.staff ? (r.store ? r.store + ' ' : '') + r.staff : '担当なし(電話予約など)'; (groups[k] = groups[k] || []).push(r); });
+  $('clList').innerHTML = Object.keys(groups).map((k, gi) => `<div class="clg"><label class="clg-h"><input type="checkbox" data-cg="${gi}">${esc(k)} <span class="note" style="font-weight:400">${groups[k].length}件・まとめて選ぶ</span></label>`
+    + groups[k].map(r => `<label class="clr"><input type="checkbox" data-cl="${esc(r.id)}" data-g="${gi}"><span><b>${esc(dJa(r.date))} ${esc(r.start)}〜</b> ${esc(r.name)} 様 ・ ${esc(r.model)} ${esc(r.plate || '')}${r.hasMail ? '' : ' <span class="tag w">メールなし</span>'}<br><small>${esc(r.phone || '電話番号なし')}${r.memo ? ' ・ メモ: ' + esc(r.memo) : ''} ・ No.${esc(r.no)}</small></span></label>`).join('') + '</div>').join('');
+  const upd = () => { const n = $('clList').querySelectorAll('[data-cl]:checked').length; $('clSend').disabled = !n; $('clSend').textContent = n ? `選んだ ${n}人に送って取り消す` : '選んだお客様に送って取り消す';
+    $('clList').querySelectorAll('[data-cg]').forEach(g => { const all = [...$('clList').querySelectorAll(`[data-g="${g.dataset.cg}"]`)]; g.checked = all.every(x => x.checked); g.indeterminate = !g.checked && all.some(x => x.checked); }); };
+  $('clList').querySelectorAll('[data-cg]').forEach(g => g.onchange = () => { $('clList').querySelectorAll(`[data-g="${g.dataset.cg}"]`).forEach(x => x.checked = g.checked); upd(); });
+  $('clList').querySelectorAll('[data-cl]').forEach(x => x.onchange = upd); upd();
+}
+$('clSend').onclick = busy($('clSend'), async () => {
+  const ids = [...$('clList').querySelectorAll('[data-cl]:checked')].map(x => x.dataset.cl);
+  if (!ids.length) return;
+  if (!confirm(ids.length + '人のお客様へ、臨時休業のお詫び(メール・通知)を送り、ご予約を取り消します。\n送ったあとは元に戻せません。よろしいですか?')) return;
+  const r = await api('adminClosedNotify', { ids });
+  alert('送りました。\nメール: ' + r.sent + '人' + (r.noMail ? '\nメールアドレスのない方(通知のみ): ' + r.noMail + '人。念のためお電話でもご連絡ください。' : '') + (r.skipped ? '\nすでに変更・取り消し済みのため送らなかった方: ' + r.skipped + '人' : ''));
+  await loadClosed();
+});
+
+/* ---------- 操作ログ ---------- */
+const ACT_JA = { adminSave: '設定・休業日などの保存', adminReserve: '電話予約(管理画面)', adminChange: '日時の変更(管理画面)', adminCancel: '取り消し(管理画面)', adminResend: '確認メールの再送', adminMark: '来店の記録(管理画面)', adminPush: 'お知らせの通知', adminWaitStop: 'キャンセル待ちの削除', adminBackup: '控えの作成', adminClosedNotify: '休業日の予約者へ連絡', adminExport: '予約の書き出し', deskReserve: '電話予約(スタッフ画面)', deskChange: '日時の変更(スタッフ画面)', deskCancel: '取り消し(スタッフ画面)', staffMark: '来店の記録(スタッフ画面)' };
+async function loadLog() {
+  $('logList').innerHTML = '<p class="empty">読み込み中…</p>';
+  let d; try { d = await api('adminLog', { from: $('lgFrom').value, to: $('lgTo').value, q: $('lgQ').value.trim() }); } catch (e) { throw new Error(/不明な操作/.test(e.message) ? 'サーバー(Code.gs)の更新が必要です' : e.message); }
+  const who = w => String(w || '').replace(/^スタッフ:/, 'スタッフ ').replace('(パスワード)', '管理者パスワード');
+  $('logList').innerHTML = d.list.length ? `<p class="count">${d.total}件${d.total > d.list.length ? '(新しい ' + d.list.length + '件を表示)' : ''}</p><div class="card">` + d.list.map(r => `<div class="lgrow"><span class="t">${esc(r.t.slice(0, 16))}</span><span class="w">${esc(who(r.who))}</span><span class="d">${esc(ACT_JA[r.act] || r.act)}${r.detail ? `<small>${esc(r.detail)}</small>` : ''}</span></div>`).join('') + '</div>'
+    : '<p class="empty">記録が見つかりませんでした。</p>';
+}
+$('lgGo').onclick = busy($('lgGo'), loadLog);
+$('lgQ').addEventListener('keydown', e => { if (e.key === 'Enter') $('lgGo').click(); });
+
+/* ---------- 予約の書き出し(CSV) ---------- */
+async function exportCsv(personal) {
+  if (!$('stYm').value) $('stYm').value = (G && G.today || new Date().toISOString()).slice(0, 7);
+  if (personal && !confirm('お客様のお名前・電話番号・メールアドレス・ナンバーを含めて書き出します。\nファイルは会社のパソコンだけに保存し、使い終わったら削除してください。\n(書き出したことは操作ログに残ります)')) return;
+  let d; try { d = await api('adminExport', { ym: $('stYm').value, personal: personal ? 1 : 0 }); } catch (e) { throw new Error(/不明な操作/.test(e.message) ? 'サーバー(Code.gs)の更新が必要です' : e.message); }
+  if (!d.rows.length) return alert('この月の予約はありません');
+  const cell = v => { let t = String(v == null ? '' : v); if (/^[=+\-@]/.test(t)) t = "'" + t; return /[",\r\n]/.test(t) ? '"' + t.replace(/"/g, '""') + '"' : t; };
+  const csv = '\ufeff' + [d.head].concat(d.rows).map(r => r.map(cell).join(',')).join('\r\n');
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' })); a.download = 'wash_' + d.ym + (personal ? '_personal' : '') + '.csv'; // 日本語のファイル名は、ブラウザによって「download」になるため英字
+  document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+}
+$('exAnon').onclick = busy($('exAnon'), () => exportCsv(false));
+$('exFull').onclick = busy($('exFull'), () => exportCsv(true));
+
 function drawStop() {
   const s0 = sv('受付停止日'); $('stopCard').hidden = !s0; if (!s0) return;
   const v = String(s0.v || ''), n = G.prepCount || 0;
@@ -1413,7 +1496,7 @@ function saveHolSoon() { clearTimeout(ht); ht = setTimeout(() => saveHol().catch
 async function saveHol() {
   clearTimeout(ht);
   await api('adminSave', { holidays: G.holidays, confirmed: G.confirmed });
-  drawHol(); dot();
+  drawHol(); dot(); loadClosed(true);
 }
 
 /* 設定・文章の保存 */
