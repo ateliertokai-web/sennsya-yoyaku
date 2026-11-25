@@ -191,6 +191,18 @@ body.desk .dnav,body.desk #print{display:none}
 .drange{display:grid;grid-template-columns:1fr auto 1fr;gap:6px;align-items:center;margin-top:8px}
 .drange span{color:var(--sub);font-size:13px}
 .dfind>*,.drange>*,.dgrid2>*{min-width:0}
+.mhead{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:12px 0 8px}
+.mhead>div{text-align:center}.mhead b{display:block;font-size:16px}.mhead span{font-size:12.5px;color:var(--sub)}
+.mnav{width:40px;height:40px;border:0;border-radius:50%;background:var(--soft);font-size:20px;font-weight:700;color:var(--ink);cursor:pointer}
+.mgrid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
+.mgrid .wd{padding:2px 0;text-align:center;font-size:11px;font-weight:600;color:var(--sub)}
+.mgrid .wd.sun{color:#c0503c}.mgrid .wd.sat{color:#4a72b0}
+.mday{display:flex;flex-direction:column;align-items:center;gap:1px;min-height:52px;padding:5px 0;border:0;border-radius:10px;background:var(--soft);font:inherit;color:var(--ink);cursor:pointer}
+.mday b{font-size:14px;line-height:1.2}.mday small{font-size:11.5px;font-weight:600;font-variant-numeric:tabular-nums;color:var(--sub)}
+.mday.few{background:#fdf1dd}.mday.few small{color:#9a5300}
+.mday.full{background:#fbe6e2}.mday.full small{color:#a8331f}
+.mday.cl{background:transparent;box-shadow:inset 0 0 0 1px var(--line)}.mday.cl small{color:var(--mute)}
+.mday.past{opacity:.45}.mday.today{box-shadow:inset 0 0 0 2px var(--ink)}.mday.sel{background:var(--ink);color:#fff}.mday.sel small{color:#ddd}
 .dcount{margin:18px 4px 0;font-size:12.5px;color:var(--sub)}
 .dday{margin-top:18px}
 .dday h4{margin:0 4px 8px;font-size:14px;font-weight:600}
@@ -255,6 +267,11 @@ body.desk .dnav,body.desk #print{display:none}
   </div>
   <div id="deskView" hidden>
     <button class="dbtn big" id="dAdd" style="margin-top:16px">＋ 電話の予約を入れる</button>
+    <div class="dcard mcard" id="mCard">
+      <div class="mhead"><button type="button" class="mnav" id="mPrev" aria-label="前の月">‹</button><div><b id="mLabel"></b><span id="mTotal"></span></div><button type="button" class="mnav" id="mNext" aria-label="次の月">›</button></div>
+      <div class="mgrid" id="mGrid"></div>
+      <p class="dnote" style="margin:8px 2px 0">数字は「予約数 / 受けられる数」(普通車で数えた目安。大型車は1台で枠を多く使います)。過ぎた日は予約数だけ。日にちを押すと、その日の予約が下に出ます。</p>
+    </div>
     <div class="dcard">
       <label for="dQ">予約を探す(お名前・電話番号・ナンバー・予約番号)</label>
       <div class="dfind"><input type="search" id="dQ" placeholder="例: 山田 / 090 / 1234" enterkeyhint="search"><button class="dbtn" id="dGo">探す</button></div>
@@ -631,7 +648,7 @@ $('go').onclick = async () => {
 $('pw').addEventListener('keydown', e => { if (e.key === 'Enter') $('go').click(); });
 $('sid').addEventListener('keydown', e => { if (e.key === 'Enter') $('pw').focus(); });
 $('logout').onclick = () => logout();
-$('reload').onclick = () => view === 'desk' ? deskList().catch(e => alert(e.message)) : load();
+$('reload').onclick = () => view === 'desk' ? (drawMonth(), deskList().catch(e => alert(e.message))) : load();
 // 印刷・PDF: 印刷の画面を開く(PDFはそこから保存できる)
 // (iPhone は押した直後でないと印刷の画面を開けないので、表示中の内容ですぐ印刷する。内容は1分ごとに自動で最新になる)
 $('print').onclick = () => {
@@ -678,8 +695,37 @@ document.querySelectorAll('.vtabs [data-v]').forEach(b => b.onclick = () => setV
 let D = null, DLIST = [];
 const dJa2 = d => { const a = d.split('-'); return (+a[1]) + '/' + (+a[2]) + '(' + WD[new Date(+a[0], a[1] - 1, +a[2]).getDay()] + ')'; };
 const dcall = (action, data) => waiting(api(Object.assign({ action }, data || {})));
+/* 月の予約状況(日ごとの 予約数 / 受けられる数) */
+let mYm = '', mSel = '';
+async function drawMonth(ym) {
+  mYm = ym || mYm || D.today.slice(0, 7);
+  const a = mYm.split('-').map(Number);
+  $('mLabel').textContent = a[0] + '年' + a[1] + '月'; $('mTotal').textContent = '読み込み中…';
+  let d; try { d = await dcall('deskMonth', { ym: mYm }); } catch (e) { $('mCard').hidden = true; return; } // 古いサーバー
+  if (d.ym !== mYm) return;
+  $('mCard').hidden = false;
+  let fn = 0, fc = 0; Object.keys(d.days).forEach(k => { if (k >= D.today && !d.days[k].closed) { fn += d.days[k].n; fc += d.days[k].cap; } });
+  $('mTotal').textContent = 'この月の予約 ' + d.total.n + '件' + (fc ? ' ・ 今日から ' + fn + ' / ' + fc : '');
+  const first = new Date(a[0], a[1] - 1, 1).getDay(), last = new Date(a[0], a[1], 0).getDate();
+  let h = WD.map((w, i) => `<div class="wd ${i === 0 ? 'sun' : i === 6 ? 'sat' : ''}">${w}</div>`).join('');
+  for (let i = 0; i < first; i++) h += '<div></div>';
+  for (let i = 1; i <= last; i++) {
+    const ds = mYm + '-' + pad(i), v = d.days[ds] || { n: 0, cap: 0 };
+    const cls = v.closed ? 'cl' : v.cap && v.n >= v.cap ? 'full' : v.cap && v.n / v.cap >= 0.8 ? 'few' : '';
+    h += `<button type="button" class="mday ${cls} ${ds < D.today ? 'past' : ''} ${ds === D.today ? 'today' : ''} ${ds === mSel ? 'sel' : ''}" data-md="${ds}" aria-label="${dJa2(ds)} ${v.closed ? '休業日' : '予約' + v.n + '件 / ' + v.cap + '件'}"><b>${i}</b><small>${v.closed ? '休' + (v.n ? ' ' + v.n + '件' : '') : ds < D.today ? v.n + '件' : v.n + '/' + v.cap}</small></button>`;
+  }
+  $('mGrid').innerHTML = h;
+  $('mGrid').querySelectorAll('[data-md]').forEach(b => b.onclick = () => {
+    mSel = b.dataset.md; $('mGrid').querySelectorAll('.mday').forEach(x => x.classList.toggle('sel', x === b));
+    $('dQ').value = ''; $('dFrom').value = mSel; $('dTo').value = mSel;
+    deskList().then(() => $('dList').scrollIntoView({ behavior: 'smooth', block: 'start' })).catch(e => alert(e.message));
+  });
+}
+const shiftMonth = n => { const a = mYm.split('-').map(Number), t = new Date(a[0], a[1] - 1 + n, 1); drawMonth(t.getFullYear() + '-' + pad(t.getMonth() + 1)); };
+$('mPrev').onclick = () => shiftMonth(-1); $('mNext').onclick = () => shiftMonth(1);
 async function deskOpen() {
   if (!D) D = await dcall('deskInit');
+  drawMonth();
   if (!$('dFrom').value) { $('dFrom').value = D.today; const t = toD(D.today); t.setMonth(t.getMonth() + 3); $('dTo').value = fmt(t); }
   await deskList();
 }
@@ -699,7 +745,7 @@ async function deskList() {
     const r = DLIST.find(x => x.id === b.dataset.cx);
     if (!confirm(`${r.name} 様の ${dJa2(r.date)} ${r.start} のご予約を取り消しますか?\n${r.email ? 'お客様にキャンセルのメールが届きます。' : ''}空いた枠はキャンセル待ちの方へご案内します。`)) return;
     b.disabled = true;
-    try { await dcall('deskCancel', { id: r.id }); await deskList(); } catch (e) { alert(e.message.replace(/^パスワード:/, '')); b.disabled = false; }
+    try { await dcall('deskCancel', { id: r.id }); await deskList(); drawMonth(); } catch (e) { alert(e.message.replace(/^パスワード:/, '')); b.disabled = false; }
   });
 }
 $('dGo').onclick = () => deskList().catch(e => alert(e.message));
@@ -756,7 +802,7 @@ $('fGo').onclick = async () => {
     const r = await send(false); if (!r) return;
     closeForm();
     alert(fMode ? '日時を変更しました' : '予約を入れました。\n予約番号: ' + r.no + '\nお客様に予約番号をお伝えください。');
-    await deskList();
+    await deskList(); drawMonth();
   } catch (e) { alert(e.message.replace(/^パスワード:/, '')); }
   finally { $('fGo').disabled = false; }
 };
