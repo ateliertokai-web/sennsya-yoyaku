@@ -593,7 +593,7 @@ details.hcard>summary small{display:block;margin-top:2px;font-size:12.5px;line-h
 
 <div class="loader" id="loader" role="status" aria-live="polite"><i aria-hidden="true"></i><div>読み込み中…<small>通信に数秒かかることがあります。そのままお待ちください。</small></div></div>
 <script src="texts.js"></script>
-<script src="manual.js?v=20261127-1"></script>
+<script src="manual.js?v=20261127-2"></script>
 <script src="config.js"></script>
 <script src="auth.js"></script>
 <div class="poled" id="polEd" role="dialog" aria-modal="true" aria-labelledby="polTitle" hidden>
@@ -707,13 +707,13 @@ function drawBridge() {
   const card = (href, title, desc, cls) => href ? `<a class="blink ${cls || ''}" href="${esc(href)}" target="_blank" rel="noopener"><b>${title} ↗</b><span>${desc}</span></a>` : `<div class="blink off"><b>${title}</b><span>${old ? 'サーバー(Code.gs)を更新すると使えます。' : desc}</span></div>`;
   $('bGrid').innerHTML = card(L && L.sheet, 'スプレッドシートを開く', '予約・設定・ログインなど、すべてのデータが入っている表のファイル。')
     + card(L && L.script, 'Apps Script を開く', '予約の受付やメールを自動で行うプログラム。更新・引き継ぎのときに使います。')
-    + card(L && L.backup, '控えのフォルダを開く', L && !L.backup ? 'まだ控えがありません。「今すぐ控えを作る」を押すと作られます。' : '毎日自動で作られる控え(30日分)。')
+    + card(L && L.backup, '控えのフォルダを開く', L && !L.backup ? 'まだ控えがありません。「今すぐ控えを作る」を押すと作られます。' : '毎日自動で作られる控え(30日分)。名前は「【控え】洗車予約_日付」。')
     + `<button type="button" class="blink go" id="bBackup" ${old ? 'disabled' : ''}><b>今すぐ控えを作る</b><span>いまのスプレッドシートを、控えのフォルダにコピーします。大きな変更の前に。</span></button>`
     + card(repoUrl(), 'GitHub(画面のファイル)を開く', 'お客様画面・スタッフ画面・管理画面のファイルの置き場所。普段は触りません。');
   $('bLast').textContent = L && L.last ? '最後の控え: ' + L.last : '';
   if ($('bBackup') && !old) $('bBackup').onclick = busy($('bBackup'), async () => {
     const r = await api('adminBackup'); alert('控えを作りました: ' + r.name);
-    G.links = Object.assign({}, G.links, { backup: r.folder, last: r.name.replace('洗車予約_控え_', '') }); drawBridge();
+    G.links = Object.assign({}, G.links, { backup: r.folder, last: r.last || r.name.replace(/^(【控え】洗車予約_|洗車予約_控え_)/, '') }); drawBridge();
   });
 }
 function drawHelp() {
